@@ -1254,6 +1254,7 @@ exports[`UpdateAssistant | v0.1 - v0.2 should correctly update the connection re
   "7781341d-be29-441b-9b79-4a957d8c6d37": {
     "id": "7781341d-be29-441b-9b79-4a957d8c6d37",
     "tags": {
+      "alias": undefined,
       "connectionTypes": [],
       "did": "did:peer:1zQmSMBVNMDrh7fyE8bkAmk1ZatshjinpsEqPA3nx8JYjuKb",
       "invitationDid": "did:peer:2.SeyJzIjoicnhqczphbGljZSIsInQiOiJkaWQtY29tbXVuaWNhdGlvbiIsInByaW9yaXR5IjowLCJyZWNpcGllbnRLZXlzIjpbImRpZDprZXk6ejZNa3QxdHNwMTVjbkREN3dCQ0ZnZWhpUjJTeEhYMWFQeHQ0c3VlRTI0dHdIOUJkI3o2TWt0MXRzcDE1Y25ERDd3QkNGZ2VoaVIyU3hIWDFhUHh0NHN1ZUUyNHR3SDlCZCJdLCJyIjpbXX0",
@@ -1266,6 +1267,7 @@ exports[`UpdateAssistant | v0.1 - v0.2 should correctly update the connection re
       "state": "request-received",
       "theirDid": "did:peer:1zQmc3BZoTinpVaG3oZ4PmRVN4JMdNZGCmPkS6smmTNLnvEZ",
       "theirKey": "6JwodG44KanZhhSvDS3dNmWjmWyeVFYRPxVaBntqmSCi",
+      "theirLabel": "Agent: PopulateWallet2",
       "threadId": "a0c0e4d2-1501-42a2-a09b-7d5adc90b353",
       "verkey": "EZdqDkqBSfiepgMZ15jsZvtxTwjiz5diBtjJBnvvMvQF",
     },
@@ -1292,6 +1294,7 @@ exports[`UpdateAssistant | v0.1 - v0.2 should correctly update the connection re
   "8f4908ee-15ad-4058-9106-eda26eae735c": {
     "id": "8f4908ee-15ad-4058-9106-eda26eae735c",
     "tags": {
+      "alias": "connection alias",
       "connectionTypes": [],
       "did": "did:peer:1zQmRAfQ6J5qk4qcbHyoStFVkhusazLT9xQcFhdC9dhhQ1cJ",
       "invitationDid": "did:peer:2.SeyJzIjoicnhqczpmYWJlciIsInQiOiJkaWQtY29tbXVuaWNhdGlvbiIsInByaW9yaXR5IjowLCJyZWNpcGllbnRLZXlzIjpbImRpZDprZXk6ejZNa2ZpUE1QeENRZVNEWkdNa0N2bTFZMnJCb1BzbXc0WkhNdjcxalh0Y1dSUmlNI3o2TWtmaVBNUHhDUWVTRFpHTWtDdm0xWTJyQm9Qc213NFpITXY3MWpYdGNXUlJpTSJdLCJyIjpbXX0",
@@ -1304,6 +1307,7 @@ exports[`UpdateAssistant | v0.1 - v0.2 should correctly update the connection re
       "state": "completed",
       "theirDid": "did:peer:1zQmeHpGaZ48DnAP2k3KntXB1vmd8MgLEdcb4EQzqWJDHcbX",
       "theirKey": "2G8JohwyJtj69ruWFC3hBkdoaJW5eg31E66ohceVWCvy",
+      "theirLabel": "Agent: PopulateWallet2",
       "threadId": "fe287ec6-711b-4582-bb2b-d155aee86e61",
       "verkey": "HfkCHGAHTz3j33TRDkKMabYLdnr2FKuWcaXTLzZkZcCp",
     },
@@ -1330,6 +1334,7 @@ exports[`UpdateAssistant | v0.1 - v0.2 should correctly update the connection re
   "9383d8e5-c002-4aae-8300-4a21384c919e": {
     "id": "9383d8e5-c002-4aae-8300-4a21384c919e",
     "tags": {
+      "alias": undefined,
       "connectionTypes": [],
       "did": "did:peer:1zQmP96nW6vbNjzwPt19z1NYqhnAfgnAFqfLHcktkmdUFzhT",
       "invitationDid": "did:peer:2.SeyJzIjoicnhqczphbGljZSIsInQiOiJkaWQtY29tbXVuaWNhdGlvbiIsInByaW9yaXR5IjowLCJyZWNpcGllbnRLZXlzIjpbImRpZDprZXk6ejZNa3RDWkFRTkd2V2I0V0hBandCcVB0WGhaZERZb3JiU0prR1c5dmoxdWh3MUhEI3o2TWt0Q1pBUU5HdldiNFdIQWp3QnFQdFhoWmREWW9yYlNKa0dXOXZqMXVodzFIRCJdLCJyIjpbXX0",
@@ -1342,6 +1347,7 @@ exports[`UpdateAssistant | v0.1 - v0.2 should correctly update the connection re
       "state": "completed",
       "theirDid": "did:peer:1zQmXYj3nNwsF37WXXdb8XkCAtsTCBpJJbsLKPPGfi2PWCTU",
       "theirKey": "J9qc5VredX3YUBbFNoJz5oJpWPcUWURKVDiUv1DvYukX",
+      "theirLabel": "Agent: PopulateWallet2",
       "threadId": "0b2f1133-ced9-49f1-83a1-eb6ba1c24cdf",
       "verkey": "EkJ7p82VB3a3AfuEWGS3gc1dPyY1BZ4PaVEztjwh1nVq",
     },
@@ -1379,6 +1385,7 @@ exports[`UpdateAssistant | v0.1 - v0.2 should correctly update the connection re
   "b65c2ccd-277c-4140-9d87-c8dd30e7a98c": {
     "id": "b65c2ccd-277c-4140-9d87-c8dd30e7a98c",
     "tags": {
+      "alias": undefined,
       "connectionTypes": [],
       "did": "did:peer:1zQmfDAtfDZcK4trJBsvVTXrBx9uaLCHSUZH9X2LFaAd3JKv",
       "invitationDid": "did:peer:2.SeyJzIjoicnhqczphbGljZSIsInQiOiJkaWQtY29tbXVuaWNhdGlvbiIsInByaW9yaXR5IjowLCJyZWNpcGllbnRLZXlzIjpbImRpZDprZXk6ejZNa3VXVEVtSDFtVW82Vzk2elNXeUg2MTJoRkhvd1J6TkVzY1BZQkwyQ0NNeUMyI3o2TWt1V1RFbUgxbVVvNlc5NnpTV3lINjEyaEZIb3dSek5Fc2NQWUJMMkNDTXlDMiJdLCJyIjpbXX0",
@@ -1390,6 +1397,7 @@ exports[`UpdateAssistant | v0.1 - v0.2 should correctly update the connection re
       "role": "responder",
       "state": "invitation-sent",
       "theirDid": undefined,
+      "theirLabel": undefined,
       "threadId": undefined,
       "verkey": "G4CCB2mL9Fc32c9jqQKF9w9FUEfaaUzWvNdFVkEBSkQe",
     },
@@ -1413,6 +1421,7 @@ exports[`UpdateAssistant | v0.1 - v0.2 should correctly update the connection re
   "da518433-0e55-4b74-a05b-aa75c1095a99": {
     "id": "da518433-0e55-4b74-a05b-aa75c1095a99",
     "tags": {
+      "alias": undefined,
       "connectionTypes": [],
       "did": "did:peer:1zQmPbGa8KDwyjcw9UgwCCgJMV7jU5kKCyvBuwFVc88WxA56",
       "invitationDid": "did:peer:2.SeyJzIjoicnhqczphbGljZSIsInQiOiJkaWQtY29tbXVuaWNhdGlvbiIsInByaW9yaXR5IjowLCJyZWNpcGllbnRLZXlzIjpbImRpZDprZXk6ejZNa28zMURORTNncU1SWmoxSk5odjJCSGIxY2FRc2hjZDluamdLa0VRWHNnRlJwI3o2TWtvMzFETkUzZ3FNUlpqMUpOaHYyQkhiMWNhUXNoY2Q5bmpnS2tFUVhzZ0ZScCJdLCJyIjpbXX0",
@@ -1425,6 +1434,7 @@ exports[`UpdateAssistant | v0.1 - v0.2 should correctly update the connection re
       "state": "response-sent",
       "theirDid": "did:peer:1zQmadmBfngrYSWhYYxZ24fpW29iwhKhQ6CB6euLabbSK6ga",
       "theirKey": "J57UsQT3wa4FcivfKpvjgUtaPDScZhFJ8kd5Q2iR5sBT",
+      "theirLabel": "Agent: PopulateWallet2",
       "threadId": "6eeb6a80-cd75-491d-b2e0-7bae65ced1c3",
       "verkey": "9akAmyoFVow6cWTg2M4LSVTckqbrCjuS3fQpQ8Zrm2eS",
     },
@@ -2413,6 +2423,7 @@ exports[`UpdateAssistant | v0.1 - v0.2 should correctly update the connection re
   "e3f9bc2b-f0a1-4a2c-ab81-2f0a3488c199": {
     "id": "e3f9bc2b-f0a1-4a2c-ab81-2f0a3488c199",
     "tags": {
+      "alias": undefined,
       "connectionTypes": [],
       "did": "did:peer:1zQma8LpnJ22GxQdyASV5jP6psacAGtJ6ytk4pVayYp4erRf",
       "invitationDid": "did:peer:2.SeyJzIjoicnhqczpmYWJlciIsInQiOiJkaWQtY29tbXVuaWNhdGlvbiIsInByaW9yaXR5IjowLCJyZWNpcGllbnRLZXlzIjpbImRpZDprZXk6ejZNa2pESkw0WDdZR29INmdqYW1oWlIyTnpvd1BacXRKZlg1a1B1TnVXaVZkak1yI3o2TWtqREpMNFg3WUdvSDZnamFtaFpSMk56b3dQWnF0SmZYNWtQdU51V2lWZGpNciJdLCJyIjpbXX0",
@@ -2425,6 +2436,7 @@ exports[`UpdateAssistant | v0.1 - v0.2 should correctly update the connection re
       "state": "response-received",
       "theirDid": "did:peer:1zQmcXZepLE55VGCMELEFjMd4nKrzp3GGyRR3r3MYermagui",
       "theirKey": "5m3HUGs6wFndaEk51zTBXuFwZza2tnGj4NzT5EkUiWaU",
+      "theirLabel": "Agent: PopulateWallet2",
       "threadId": "daf3372c-1ee2-4246-a1f4-f62f54f7d68b",
       "verkey": "FNEqnwqHoU6WVmYkQFeosoaESjx8wCAzFpFdMdEg3iH7",
     },
@@ -2451,6 +2463,7 @@ exports[`UpdateAssistant | v0.1 - v0.2 should correctly update the connection re
   "ee88e2e1-e27e-46a6-a910-f87690109e32": {
     "id": "ee88e2e1-e27e-46a6-a910-f87690109e32",
     "tags": {
+      "alias": undefined,
       "connectionTypes": [],
       "did": "did:peer:1zQmduuYkxRKJuVyvDqttdd9eDfBwDnF1DAU5FFQo4whx7Uw",
       "invitationDid": "did:peer:2.SeyJzIjoicnhqczpmYWJlciIsInQiOiJkaWQtY29tbXVuaWNhdGlvbiIsInByaW9yaXR5IjowLCJyZWNpcGllbnRLZXlzIjpbImRpZDprZXk6ejZNa21vZDh2cDJuVVJWa3RWQzVjZVFleXIyVlV6MjZpdTJaQU5MTlZnOXBNYXdhI3o2TWttb2Q4dnAyblVSVmt0VkM1Y2VRZXlyMlZVejI2aXUyWkFOTE5WZzlwTWF3YSJdLCJyIjpbXX0",
@@ -2462,6 +2475,7 @@ exports[`UpdateAssistant | v0.1 - v0.2 should correctly update the connection re
       "role": "requester",
       "state": "request-sent",
       "theirDid": undefined,
+      "theirLabel": "Agent: PopulateWallet2",
       "threadId": undefined,
       "verkey": "HARupCd5jxffp7M74mbDFuEnsquRgh4oaXsswxWeZZd7",
     },
