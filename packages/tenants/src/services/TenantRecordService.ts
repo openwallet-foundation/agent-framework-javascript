@@ -1,5 +1,5 @@
 import type { TenantConfig } from '../models/TenantConfig'
-import type { AgentContext, Key, Query } from '@credo-ts/core'
+import type { AgentContext, Key, Query, QueryOptions } from '@credo-ts/core'
 
 import { UpdateAssistant, injectable, utils, KeyDerivationMethod } from '@credo-ts/core'
 
@@ -73,8 +73,8 @@ export class TenantRecordService {
     return this.tenantRepository.update(agentContext, tenantRecord)
   }
 
-  public async findTenantsByQuery(agentContext: AgentContext, query: Query<TenantRecord>) {
-    return this.tenantRepository.findByQuery(agentContext, query)
+  public async findTenantsByQuery(agentContext: AgentContext, query: Query<TenantRecord>, queryOptions?: QueryOptions) {
+    return this.tenantRepository.findByQuery(agentContext, query, queryOptions)
   }
 
   public async findTenantRoutingRecordByRecipientKey(

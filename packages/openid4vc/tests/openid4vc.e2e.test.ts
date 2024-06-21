@@ -90,6 +90,10 @@ describe('OpenId4Vc', () => {
 
                 if (credentialRequest.format === 'vc+sd-jwt') {
                   return {
+                    credentialSupportedId:
+                      credentialRequest.vct === 'UniversityDegreeCredential'
+                        ? universityDegreeCredentialSdJwt.id
+                        : universityDegreeCredentialSdJwt2.id,
                     format: credentialRequest.format,
                     payload: { vct: credentialRequest.vct, university: 'innsbruck', degree: 'bachelor' },
                     holder: holderBinding,
@@ -97,7 +101,7 @@ describe('OpenId4Vc', () => {
                       method: 'did',
                       didUrl: verificationMethod.id,
                     },
-                    disclosureFrame: { university: true, degree: true },
+                    disclosureFrame: { _sd: ['university', 'degree'] },
                   }
                 }
 
@@ -264,7 +268,7 @@ describe('OpenId4Vc', () => {
       contextCorrelationId: issuer1.tenantId,
     })
     await waitForCredentialIssuanceSessionRecordSubject(issuer.replaySubject, {
-      state: OpenId4VcIssuanceSessionState.CredentialIssued,
+      state: OpenId4VcIssuanceSessionState.Completed,
       issuanceSessionId: issuanceSession1.id,
       contextCorrelationId: issuer1.tenantId,
     })
@@ -319,7 +323,7 @@ describe('OpenId4Vc', () => {
       contextCorrelationId: issuer2.tenantId,
     })
     await waitForCredentialIssuanceSessionRecordSubject(issuer.replaySubject, {
-      state: OpenId4VcIssuanceSessionState.CredentialIssued,
+      state: OpenId4VcIssuanceSessionState.Completed,
       issuanceSessionId: issuanceSession2.id,
       contextCorrelationId: issuer2.tenantId,
     })
@@ -330,6 +334,75 @@ describe('OpenId4Vc', () => {
     expect(sdJwtVcTenant2.payload.vct).toEqual('UniversityDegreeCredential2')
 
     await holderTenant1.endSession()
+  })
+
+  it('e2e flow with tenants only requesting an id-token', async () => {
+    const holderTenant = await holder.agent.modules.tenants.getTenantAgent({ tenantId: holder1.tenantId })
+    const verifierTenant1 = await verifier.agent.modules.tenants.getTenantAgent({ tenantId: verifier1.tenantId })
+
+    const openIdVerifierTenant1 = await verifierTenant1.modules.openId4VcVerifier.createVerifier()
+
+    const { authorizationRequest: authorizationRequestUri1, verificationSession: verificationSession } =
+      await verifierTenant1.modules.openId4VcVerifier.createAuthorizationRequest({
+        verifierId: openIdVerifierTenant1.verifierId,
+        requestSigner: {
+          method: 'did',
+          didUrl: verifier1.verificationMethod.id,
+        },
+      })
+
+    expect(authorizationRequestUri1).toEqual(
+      `openid://?request_uri=${encodeURIComponent(verificationSession.authorizationRequestUri)}`
+    )
+
+    await verifierTenant1.endSession()
+
+    const resolvedAuthorizationRequest = await holderTenant.modules.openId4VcHolder.resolveSiopAuthorizationRequest(
+      authorizationRequestUri1
+    )
+
+    expect(resolvedAuthorizationRequest.presentationExchange).toBeUndefined()
+
+    const { submittedResponse: submittedResponse1, serverResponse: serverResponse1 } =
+      await holderTenant.modules.openId4VcHolder.acceptSiopAuthorizationRequest({
+        authorizationRequest: resolvedAuthorizationRequest.authorizationRequest,
+        openIdTokenIssuer: {
+          method: 'did',
+          didUrl: holder1.verificationMethod.id,
+        },
+      })
+
+    expect(submittedResponse1).toEqual({
+      expires_in: 6000,
+      id_token: expect.any(String),
+      state: expect.any(String),
+    })
+    expect(serverResponse1).toMatchObject({
+      status: 200,
+    })
+
+    // The RP MUST validate that the aud (audience) Claim contains the value of the client_id
+    // that the RP sent in the Authorization Request as an audience.
+    // When the request has been signed, the value might be an HTTPS URL, or a Decentralized Identifier.
+    const verifierTenant1_2 = await verifier.agent.modules.tenants.getTenantAgent({ tenantId: verifier1.tenantId })
+    await waitForVerificationSessionRecordSubject(verifier.replaySubject, {
+      contextCorrelationId: verifierTenant1_2.context.contextCorrelationId,
+      state: OpenId4VcVerificationSessionState.ResponseVerified,
+      verificationSessionId: verificationSession.id,
+    })
+
+    const { idToken, presentationExchange } =
+      await verifierTenant1_2.modules.openId4VcVerifier.getVerifiedAuthorizationResponse(verificationSession.id)
+
+    const requestObjectPayload = JsonEncoder.fromBase64(
+      verificationSession.authorizationRequestJwt?.split('.')[1] as string
+    )
+    expect(idToken?.payload).toMatchObject({
+      state: requestObjectPayload.state,
+      nonce: requestObjectPayload.nonce,
+    })
+
+    expect(presentationExchange).toBeUndefined()
   })
 
   it('e2e flow with tenants, verifier endpoints verifying a jwt-vc', async () => {
@@ -380,7 +453,7 @@ describe('OpenId4Vc', () => {
       })
 
     expect(authorizationRequestUri1).toEqual(
-      `openid://?request_uri=${encodeURIComponent(verificationSession1.authorizationRequestUri)}`
+      `openid4vp://?request_uri=${encodeURIComponent(verificationSession1.authorizationRequestUri)}`
     )
 
     const { authorizationRequest: authorizationRequestUri2, verificationSession: verificationSession2 } =
@@ -396,7 +469,7 @@ describe('OpenId4Vc', () => {
       })
 
     expect(authorizationRequestUri2).toEqual(
-      `openid://?request_uri=${encodeURIComponent(verificationSession2.authorizationRequestUri)}`
+      `openid4vp://?request_uri=${encodeURIComponent(verificationSession2.authorizationRequestUri)}`
     )
 
     await verifierTenant1.endSession()
@@ -414,8 +487,11 @@ describe('OpenId4Vc', () => {
             {
               verifiableCredentials: [
                 {
-                  credential: {
-                    type: ['VerifiableCredential', 'OpenBadgeCredential'],
+                  type: ClaimFormat.JwtVc,
+                  credentialRecord: {
+                    credential: {
+                      type: ['VerifiableCredential', 'OpenBadgeCredential'],
+                    },
                   },
                 },
               ],
@@ -437,8 +513,11 @@ describe('OpenId4Vc', () => {
             {
               verifiableCredentials: [
                 {
-                  credential: {
-                    type: ['VerifiableCredential', 'UniversityDegreeCredential'],
+                  type: ClaimFormat.JwtVc,
+                  credentialRecord: {
+                    credential: {
+                      type: ['VerifiableCredential', 'UniversityDegreeCredential'],
+                    },
                   },
                 },
               ],
@@ -467,7 +546,6 @@ describe('OpenId4Vc', () => {
 
     expect(submittedResponse1).toEqual({
       expires_in: 6000,
-      id_token: expect.any(String),
       presentation_submission: {
         definition_id: 'OpenBadgeCredential',
         descriptor_map: [
@@ -504,14 +582,7 @@ describe('OpenId4Vc', () => {
     const { idToken: idToken1, presentationExchange: presentationExchange1 } =
       await verifierTenant1_2.modules.openId4VcVerifier.getVerifiedAuthorizationResponse(verificationSession1.id)
 
-    const requestObjectPayload1 = JsonEncoder.fromBase64(
-      verificationSession1.authorizationRequestJwt?.split('.')[1] as string
-    )
-    expect(idToken1?.payload).toMatchObject({
-      state: requestObjectPayload1.state,
-      nonce: requestObjectPayload1.nonce,
-    })
-
+    expect(idToken1).toBeUndefined()
     expect(presentationExchange1).toMatchObject({
       definition: openBadgePresentationDefinition,
       submission: {
@@ -554,14 +625,7 @@ describe('OpenId4Vc', () => {
     })
     const { idToken: idToken2, presentationExchange: presentationExchange2 } =
       await verifierTenant2_2.modules.openId4VcVerifier.getVerifiedAuthorizationResponse(verificationSession2.id)
-
-    const requestObjectPayload2 = JsonEncoder.fromBase64(
-      verificationSession2.authorizationRequestJwt?.split('.')[1] as string
-    )
-    expect(idToken2?.payload).toMatchObject({
-      state: requestObjectPayload2.state,
-      nonce: requestObjectPayload2.nonce,
-    })
+    expect(idToken2).toBeUndefined()
 
     expect(presentationExchange2).toMatchObject({
       definition: universityDegreePresentationDefinition,
@@ -599,8 +663,7 @@ describe('OpenId4Vc', () => {
         name: 'John Doe',
       },
       disclosureFrame: {
-        university: true,
-        name: true,
+        _sd: ['university', 'name'],
       },
     })
 
@@ -648,24 +711,44 @@ describe('OpenId4Vc', () => {
       })
 
     expect(authorizationRequest).toEqual(
-      `openid://?request_uri=${encodeURIComponent(verificationSession.authorizationRequestUri)}`
+      `openid4vp://?request_uri=${encodeURIComponent(verificationSession.authorizationRequestUri)}`
     )
 
     const resolvedAuthorizationRequest = await holder.agent.modules.openId4VcHolder.resolveSiopAuthorizationRequest(
       authorizationRequest
     )
 
-    expect(resolvedAuthorizationRequest.presentationExchange?.credentialsForRequest).toMatchObject({
+    expect(resolvedAuthorizationRequest.presentationExchange?.credentialsForRequest).toEqual({
       areRequirementsSatisfied: true,
+      name: undefined,
+      purpose: undefined,
       requirements: [
         {
+          isRequirementSatisfied: true,
+          needsCount: 1,
+          rule: 'pick',
           submissionEntry: [
             {
+              name: undefined,
+              purpose: undefined,
+              inputDescriptorId: 'OpenBadgeCredentialDescriptor',
               verifiableCredentials: [
                 {
-                  // FIXME: because we have the record, we don't know which fields will be disclosed
-                  // Can we temp-assign these to the record?
-                  compactSdJwtVc: signedSdJwtVc.compact,
+                  type: ClaimFormat.SdJwtVc,
+                  credentialRecord: expect.objectContaining({
+                    compactSdJwtVc: signedSdJwtVc.compact,
+                  }),
+                  // Name is NOT in here
+                  disclosedPayload: {
+                    cnf: {
+                      kid: 'did:key:z6MkpGR4gs4Rc3Zph4vj8wRnjnAxgAPSxcR8MAVKutWspQzc#z6MkpGR4gs4Rc3Zph4vj8wRnjnAxgAPSxcR8MAVKutWspQzc',
+                    },
+                    degree: 'bachelor',
+                    iat: expect.any(Number),
+                    iss: 'did:key:z6MkrzQPBr4pyqC776KKtrz13SchM5ePPbssuPuQZb5t4uKQ',
+                    university: 'innsbruck',
+                    vct: 'OpenBadgeCredential',
+                  },
                 },
               ],
             },
@@ -696,7 +779,6 @@ describe('OpenId4Vc', () => {
     expect(submittedResponse.presentation_submission?.descriptor_map[0].path_nested).toBeUndefined()
     expect(submittedResponse).toEqual({
       expires_in: 6000,
-      id_token: expect.any(String),
       presentation_submission: {
         definition_id: 'OpenBadgeCredential',
         descriptor_map: [
@@ -726,13 +808,7 @@ describe('OpenId4Vc', () => {
     const { idToken, presentationExchange } =
       await verifier.agent.modules.openId4VcVerifier.getVerifiedAuthorizationResponse(verificationSession.id)
 
-    const requestObjectPayload = JsonEncoder.fromBase64(
-      verificationSession.authorizationRequestJwt?.split('.')[1] as string
-    )
-    expect(idToken?.payload).toMatchObject({
-      state: requestObjectPayload.state,
-      nonce: requestObjectPayload.nonce,
-    })
+    expect(idToken).toBeUndefined()
 
     const presentation = presentationExchange?.presentations[0] as SdJwtVc
 
@@ -743,19 +819,46 @@ describe('OpenId4Vc', () => {
     expect(presentation.payload).not.toHaveProperty('university')
     expect(presentation.payload).not.toHaveProperty('name')
 
-    expect(presentationExchange).toMatchObject({
+    expect(presentationExchange).toEqual({
       definition: presentationDefinition,
       submission: {
         definition_id: 'OpenBadgeCredential',
+        descriptor_map: [
+          {
+            format: 'vc+sd-jwt',
+            id: 'OpenBadgeCredentialDescriptor',
+            path: '$',
+          },
+        ],
+        id: expect.any(String),
       },
       presentations: [
         {
+          compact: expect.any(String),
+          header: {
+            alg: 'EdDSA',
+            kid: '#z6MkrzQPBr4pyqC776KKtrz13SchM5ePPbssuPuQZb5t4uKQ',
+            typ: 'vc+sd-jwt',
+          },
           payload: {
+            _sd: [expect.any(String), expect.any(String)],
+            _sd_alg: 'sha-256',
+            cnf: {
+              kid: 'did:key:z6MkpGR4gs4Rc3Zph4vj8wRnjnAxgAPSxcR8MAVKutWspQzc#z6MkpGR4gs4Rc3Zph4vj8wRnjnAxgAPSxcR8MAVKutWspQzc',
+            },
+            iat: expect.any(Number),
+            iss: 'did:key:z6MkrzQPBr4pyqC776KKtrz13SchM5ePPbssuPuQZb5t4uKQ',
             vct: 'OpenBadgeCredential',
             degree: 'bachelor',
           },
           // university SHOULD be disclosed
           prettyClaims: {
+            cnf: {
+              kid: 'did:key:z6MkpGR4gs4Rc3Zph4vj8wRnjnAxgAPSxcR8MAVKutWspQzc#z6MkpGR4gs4Rc3Zph4vj8wRnjnAxgAPSxcR8MAVKutWspQzc',
+            },
+            iat: expect.any(Number),
+            iss: 'did:key:z6MkrzQPBr4pyqC776KKtrz13SchM5ePPbssuPuQZb5t4uKQ',
+            vct: 'OpenBadgeCredential',
             degree: 'bachelor',
             university: 'innsbruck',
           },

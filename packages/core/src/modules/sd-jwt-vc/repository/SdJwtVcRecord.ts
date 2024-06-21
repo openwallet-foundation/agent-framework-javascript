@@ -2,10 +2,10 @@ import type { JwaSignatureAlgorithm } from '../../../crypto'
 import type { TagsBase } from '../../../storage/BaseRecord'
 import type { Constructable } from '../../../utils/mixins'
 
-import { SdJwtVc } from '@sd-jwt/core'
+import { decodeSdJwtSync } from '@sd-jwt/decode'
 
 import { BaseRecord } from '../../../storage/BaseRecord'
-import { JsonTransformer } from '../../../utils'
+import { Hasher, JsonTransformer } from '../../../utils'
 import { uuid } from '../../../utils/uuid'
 
 export type DefaultSdJwtVcRecordTags = {
@@ -50,13 +50,16 @@ export class SdJwtVcRecord extends BaseRecord<DefaultSdJwtVcRecordTags> {
   }
 
   public getTags() {
-    const sdJwtVc = SdJwtVc.fromCompact(this.compactSdJwtVc)
+    const sdjwt = decodeSdJwtSync(this.compactSdJwtVc, Hasher.hash)
+    const vct = sdjwt.jwt.payload['vct'] as string
+    const sdAlg = sdjwt.jwt.payload['_sd_alg'] as string | undefined
+    const alg = sdjwt.jwt.header['alg'] as JwaSignatureAlgorithm
 
     return {
       ...this._tags,
-      vct: sdJwtVc.getClaimInPayload<string>('vct'),
-      sdAlg: (sdJwtVc.payload._sd_alg as string | undefined) ?? 'sha-256',
-      alg: sdJwtVc.getClaimInHeader<JwaSignatureAlgorithm>('alg'),
+      vct,
+      sdAlg: sdAlg ?? 'sha-256',
+      alg,
     }
   }
 

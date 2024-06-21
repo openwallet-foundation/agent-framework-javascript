@@ -1,5 +1,5 @@
 import type { QuestionAnswerRecord } from './repository'
-import type { Query } from '@credo-ts/core'
+import type { Query, QueryOptions } from '@credo-ts/core'
 
 import { getOutboundMessageContext, AgentContext, ConnectionService, injectable, MessageSender } from '@credo-ts/core'
 
@@ -113,8 +113,8 @@ export class QuestionAnswerApi {
    *
    * @returns list containing all QuestionAnswer records matching specified query params
    */
-  public findAllByQuery(query: Query<QuestionAnswerRecord>) {
-    return this.questionAnswerService.findAllByQuery(this.agentContext, query)
+  public findAllByQuery(query: Query<QuestionAnswerRecord>, queryOptions?: QueryOptions) {
+    return this.questionAnswerService.findAllByQuery(this.agentContext, query, queryOptions)
   }
 
   /**

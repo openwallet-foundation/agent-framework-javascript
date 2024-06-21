@@ -192,6 +192,7 @@ export class V2ProofProtocol<PFs extends ProofFormatService[] = ProofFormatServi
       await connectionService.assertConnectionOrOutOfBandExchange(messageContext, {
         lastReceivedMessage,
         lastSentMessage,
+        expectedConnectionId: proofRecord.connectionId,
       })
 
       await this.proofFormatCoordinator.processProposal(messageContext.agentContext, {
@@ -447,6 +448,7 @@ export class V2ProofProtocol<PFs extends ProofFormatService[] = ProofFormatServi
       await connectionService.assertConnectionOrOutOfBandExchange(messageContext, {
         lastReceivedMessage,
         lastSentMessage,
+        expectedConnectionId: proofRecord.connectionId,
       })
 
       await this.proofFormatCoordinator.processRequest(messageContext.agentContext, {
@@ -697,6 +699,7 @@ export class V2ProofProtocol<PFs extends ProofFormatService[] = ProofFormatServi
     await connectionService.assertConnectionOrOutOfBandExchange(messageContext, {
       lastReceivedMessage,
       lastSentMessage,
+      expectedConnectionId: proofRecord.connectionId,
     })
 
     // This makes sure that the sender of the incoming message is authorized to do so.
@@ -815,6 +818,7 @@ export class V2ProofProtocol<PFs extends ProofFormatService[] = ProofFormatServi
     await connectionService.assertConnectionOrOutOfBandExchange(messageContext, {
       lastReceivedMessage,
       lastSentMessage,
+      expectedConnectionId: proofRecord.connectionId,
     })
 
     // Update record

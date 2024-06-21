@@ -19,11 +19,11 @@
     "@types/ws": "^8.5.4"
   },
   "dependencies": {
-    "@credo-ts/core": "*",
-    "@credo-ts/node": "*",
-    "@credo-ts/askar": "*",
+    "@credo-ts/core": "workspace:*",
+    "@credo-ts/node": "workspace:*",
+    "@credo-ts/askar": "workspace:*",
     "class-validator": "0.14.1",
     "rxjs": "^7.8.0",
-    "@hyperledger/aries-askar-nodejs": "^0.2.0"
+    "@hyperledger/aries-askar-nodejs": "^0.2.1"
   }
 }

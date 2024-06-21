@@ -209,7 +209,7 @@ describe('Drpc Messages E2E', () => {
   test('Alice sends Faber Drpc notification', async () => {
     testLogger.test('Alice sends notification to Faber')
     let notified = false
-    messageHandlers.set('notify', async (_) => {
+    messageHandlers.set('notify', async () => {
       notified = true
       return {}
     })
@@ -254,7 +254,7 @@ describe('Drpc Messages E2E', () => {
   })
 
   test('Alice sends Faber invalid Drpc message | Faber responds with invalid Drpc message', async () => {
-    messageHandlers.set('hello', async (_) => {
+    messageHandlers.set('hello', async () => {
       return [] as unknown as DrpcResponseObject
     })
     let error = false

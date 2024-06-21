@@ -1,4 +1,5 @@
 import type { AnonCredsProofRequest } from '@credo-ts/anoncreds'
+import type { DidRepository } from '@credo-ts/core'
 
 import {
   DidResolverService,
@@ -67,7 +68,7 @@ const agentContext = getAgentContext({
     ],
 
     [InjectionSymbols.Logger, testLogger],
-    [DidResolverService, new DidResolverService(testLogger, new DidsModuleConfig())],
+    [DidResolverService, new DidResolverService(testLogger, new DidsModuleConfig(), {} as unknown as DidRepository)],
     [W3cCredentialsModuleConfig, new W3cCredentialsModuleConfig()],
     [SignatureSuiteToken, 'default'],
   ],
@@ -205,6 +206,8 @@ describe('AnonCredsRsServices', () => {
       revocationRegistryId: null,
       credentialRevocationId: null,
       methodName: 'inMemory',
+      createdAt: expect.any(Date),
+      updatedAt: expect.any(Date),
     })
 
     const proofRequest: AnonCredsProofRequest = {
@@ -214,9 +217,6 @@ describe('AnonCredsRsServices', () => {
       requested_attributes: {
         attr1_referent: {
           name: 'name',
-        },
-        attr2_referent: {
-          name: 'age',
         },
       },
       requested_predicates: {
@@ -230,7 +230,6 @@ describe('AnonCredsRsServices', () => {
       selectedCredentials: {
         attributes: {
           attr1_referent: { credentialId, credentialInfo, revealed: true },
-          attr2_referent: { credentialId, credentialInfo, revealed: true },
         },
         predicates: {
           predicate1_referent: { credentialId, credentialInfo },
@@ -410,6 +409,8 @@ describe('AnonCredsRsServices', () => {
       revocationRegistryId: null,
       credentialRevocationId: null,
       methodName: 'inMemory',
+      createdAt: expect.any(Date),
+      updatedAt: expect.any(Date),
     })
 
     const proofRequest: AnonCredsProofRequest = {
@@ -419,9 +420,6 @@ describe('AnonCredsRsServices', () => {
       requested_attributes: {
         attr1_referent: {
           name: 'name',
-        },
-        attr2_referent: {
-          name: 'age',
         },
       },
       requested_predicates: {
@@ -435,7 +433,6 @@ describe('AnonCredsRsServices', () => {
       selectedCredentials: {
         attributes: {
           attr1_referent: { credentialId, credentialInfo, revealed: true },
-          attr2_referent: { credentialId, credentialInfo, revealed: true },
         },
         predicates: {
           predicate1_referent: { credentialId, credentialInfo },

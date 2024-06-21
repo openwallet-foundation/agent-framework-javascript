@@ -9,21 +9,25 @@ import type {
 } from './SdJwtVcOptions'
 import type { AgentContext } from '../../agent'
 import type { JwkJson, Key } from '../../crypto'
-import type { Query } from '../../storage/StorageService'
-import type { Signer, SdJwtVcVerificationResult, Verifier, HasherAndAlgorithm, DisclosureItem } from '@sd-jwt/core'
+import type { Query, QueryOptions } from '../../storage/StorageService'
+import type { SDJwt } from '@sd-jwt/core'
+import type { Signer, Verifier, HasherSync, PresentationFrame, DisclosureFrame } from '@sd-jwt/types'
 
-import { KeyBinding, SdJwtVc as _SdJwtVc, HasherAlgorithm } from '@sd-jwt/core'
-import { decodeSdJwtVc } from '@sd-jwt/decode'
+import { decodeSdJwtSync, getClaimsSync } from '@sd-jwt/decode'
+import { SDJwtVcInstance } from '@sd-jwt/sd-jwt-vc'
+import { uint8ArrayToBase64Url } from '@sd-jwt/utils'
 import { injectable } from 'tsyringe'
 
-import { Jwk, getJwkFromJson, getJwkFromKey } from '../../crypto'
-import { TypedArrayEncoder, Hasher, Buffer } from '../../utils'
+import { JwtPayload, Jwk, getJwkFromJson, getJwkFromKey } from '../../crypto'
+import { CredoError } from '../../error'
+import { TypedArrayEncoder, Hasher, nowInSeconds } from '../../utils'
+import { fetchWithTimeout } from '../../utils/fetch'
 import { DidResolverService, parseDid, getKeyFromVerificationMethod } from '../dids'
 
 import { SdJwtVcError } from './SdJwtVcError'
 import { SdJwtVcRecord, SdJwtVcRepository } from './repository'
 
-export { SdJwtVcVerificationResult, DisclosureItem }
+type SdJwtVcConfig = SDJwtVcInstance['userConfig']
 
 export interface SdJwtVc<
   Header extends SdJwtVcHeader = SdJwtVcHeader,
@@ -35,6 +39,24 @@ export interface SdJwtVc<
   // TODO: payload type here is a lie, as it is the signed payload (so fields replaced with _sd)
   payload: Payload
   prettyClaims: Payload
+}
+
+export interface CnfPayload {
+  jwk?: JwkJson
+  kid?: string
+}
+
+export interface VerificationResult {
+  isValid: boolean
+  isValidJwtPayload?: boolean
+  isSignatureValid?: boolean
+  isStatusValid?: boolean
+  isNotBeforeValid?: boolean
+  isExpiryTimeValid?: boolean
+  areRequiredClaimsIncluded?: boolean
+  isKeyBindingValid?: boolean
+  containsExpectedKeyBinding?: boolean
+  containsRequiredVcProperties?: boolean
 }
 
 /**
@@ -57,7 +79,11 @@ export class SdJwtVcService {
     }
 
     const issuer = await this.extractKeyFromIssuer(agentContext, options.issuer)
-    const holderBinding = await this.extractKeyFromHolderBinding(agentContext, options.holder)
+
+    // holer binding is optional
+    const holderBinding = options.holder
+      ? await this.extractKeyFromHolderBinding(agentContext, options.holder)
+      : undefined
 
     const header = {
       alg: issuer.alg,
@@ -65,71 +91,89 @@ export class SdJwtVcService {
       kid: issuer.kid,
     } as const
 
-    const sdJwtVc = new _SdJwtVc<typeof header, Payload>({}, { disclosureFrame })
-      .withHasher(this.hasher)
-      .withSigner(this.signer(agentContext, issuer.key))
-      .withSaltGenerator(agentContext.wallet.generateNonce)
-      .withHeader(header)
-      .withPayload({ ...payload })
+    const sdjwt = new SDJwtVcInstance({
+      ...this.getBaseSdJwtConfig(agentContext),
+      signer: this.signer(agentContext, issuer.key),
+      hashAlg: 'sha-256',
+      signAlg: issuer.alg,
+    })
 
-    // Add the `cnf` claim for the holder key binding
-    sdJwtVc.addPayloadClaim('cnf', holderBinding.cnf)
+    if (!payload.vct || typeof payload.vct !== 'string') {
+      throw new SdJwtVcError("Missing required parameter 'vct'")
+    }
 
-    // Add `iss` claim
-    sdJwtVc.addPayloadClaim('iss', issuer.iss)
+    const compact = await sdjwt.issue(
+      {
+        ...payload,
+        cnf: holderBinding?.cnf,
+        iss: issuer.iss,
+        iat: nowInSeconds(),
+        vct: payload.vct,
+      },
+      disclosureFrame as DisclosureFrame<Payload>,
+      { header }
+    )
 
-    // Add the issued at (iat) claim
-    sdJwtVc.addPayloadClaim('iat', Math.floor(new Date().getTime() / 1000))
-
-    const compact = await sdJwtVc.toCompact()
-    if (!sdJwtVc.signature) {
-      throw new SdJwtVcError('Invalid sd-jwt-vc state. Signature should have been set when calling `toCompact`.')
+    const prettyClaims = (await sdjwt.getClaims(compact)) as Payload
+    const a = await sdjwt.decode(compact)
+    const sdjwtPayload = a.jwt?.payload as Payload | undefined
+    if (!sdjwtPayload) {
+      throw new SdJwtVcError('Invalid sd-jwt-vc state.')
     }
 
     return {
       compact,
-      prettyClaims: await sdJwtVc.getPrettyClaims(),
-      header: sdJwtVc.header,
-      payload: sdJwtVc.payload,
+      prettyClaims,
+      header: header,
+      payload: sdjwtPayload,
     } satisfies SdJwtVc<typeof header, Payload>
   }
 
   public fromCompact<Header extends SdJwtVcHeader = SdJwtVcHeader, Payload extends SdJwtVcPayload = SdJwtVcPayload>(
     compactSdJwtVc: string
   ): SdJwtVc<Header, Payload> {
-    // NOTE: we use decodeSdJwtVc so we can make this method sync
-    const { decodedPayload, header, signedPayload } = decodeSdJwtVc(compactSdJwtVc, Hasher.hash)
+    // NOTE: we use decodeSdJwtSync so we can make this method sync
+    const { jwt, disclosures } = decodeSdJwtSync(compactSdJwtVc, this.hasher)
+    const prettyClaims = getClaimsSync(jwt.payload, disclosures, this.hasher)
 
     return {
       compact: compactSdJwtVc,
-      header: header as Header,
-      payload: signedPayload as Payload,
-      prettyClaims: decodedPayload as Payload,
+      header: jwt.header as Header,
+      payload: jwt.payload as Payload,
+      prettyClaims: prettyClaims as Payload,
     }
   }
 
-  public async present<Header extends SdJwtVcHeader = SdJwtVcHeader, Payload extends SdJwtVcPayload = SdJwtVcPayload>(
+  public async present<Payload extends SdJwtVcPayload = SdJwtVcPayload>(
     agentContext: AgentContext,
     { compactSdJwtVc, presentationFrame, verifierMetadata }: SdJwtVcPresentOptions<Payload>
   ): Promise<string> {
-    const sdJwtVc = _SdJwtVc.fromCompact<Header>(compactSdJwtVc).withHasher(this.hasher)
-    const holder = await this.extractKeyFromHolderBinding(agentContext, this.parseHolderBindingFromCredential(sdJwtVc))
+    const sdjwt = new SDJwtVcInstance(this.getBaseSdJwtConfig(agentContext))
 
-    const compactDerivedSdJwtVc = await sdJwtVc
-      .withKeyBinding(
-        new KeyBinding({
-          header: {
-            alg: holder.alg,
-            typ: 'kb+jwt',
-          },
-          payload: {
-            iat: verifierMetadata.issuedAt,
-            nonce: verifierMetadata.nonce,
-            aud: verifierMetadata.audience,
-          },
-        }).withSigner(this.signer(agentContext, holder.key))
-      )
-      .present(presentationFrame === true ? undefined : presentationFrame)
+    const sdJwtVc = await sdjwt.decode(compactSdJwtVc)
+
+    const holderBinding = this.parseHolderBindingFromCredential(sdJwtVc)
+    if (!holderBinding && verifierMetadata) {
+      throw new SdJwtVcError("Verifier metadata provided, but credential has no 'cnf' claim to create a KB-JWT from")
+    }
+
+    const holder = holderBinding ? await this.extractKeyFromHolderBinding(agentContext, holderBinding) : undefined
+    sdjwt.config({
+      kbSigner: holder ? this.signer(agentContext, holder.key) : undefined,
+      kbSignAlg: holder?.alg,
+    })
+
+    const compactDerivedSdJwtVc = await sdjwt.present(compactSdJwtVc, presentationFrame as PresentationFrame<Payload>, {
+      kb: verifierMetadata
+        ? {
+            payload: {
+              iat: verifierMetadata.issuedAt,
+              nonce: verifierMetadata.nonce,
+              aud: verifierMetadata.audience,
+            },
+          }
+        : undefined,
+    })
 
     return compactDerivedSdJwtVc
   }
@@ -137,44 +181,124 @@ export class SdJwtVcService {
   public async verify<Header extends SdJwtVcHeader = SdJwtVcHeader, Payload extends SdJwtVcPayload = SdJwtVcPayload>(
     agentContext: AgentContext,
     { compactSdJwtVc, keyBinding, requiredClaimKeys }: SdJwtVcVerifyOptions
-  ) {
-    const sdJwtVc = _SdJwtVc.fromCompact<Header, Payload>(compactSdJwtVc).withHasher(this.hasher)
+  ): Promise<
+    | { isValid: true; verification: VerificationResult; sdJwtVc: SdJwtVc<Header, Payload> }
+    | { isValid: false; verification: VerificationResult; sdJwtVc?: SdJwtVc<Header, Payload>; error: Error }
+  > {
+    const sdjwt = new SDJwtVcInstance(this.getBaseSdJwtConfig(agentContext))
 
-    const issuer = await this.extractKeyFromIssuer(agentContext, this.parseIssuerFromCredential(sdJwtVc))
-    const holder = await this.extractKeyFromHolderBinding(agentContext, this.parseHolderBindingFromCredential(sdJwtVc))
-
-    const verificationResult = await sdJwtVc.verify(
-      this.verifier(agentContext),
-      requiredClaimKeys,
-      holder.cnf,
-      getJwkFromKey(holder.key).toJson(),
-      getJwkFromKey(issuer.key).toJson()
-    )
-
-    // If keyBinding is present, verify the key binding
-    try {
-      if (keyBinding) {
-        if (!sdJwtVc.keyBinding || !sdJwtVc.keyBinding.payload) {
-          throw new SdJwtVcError('Keybinding is required for verification of the sd-jwt-vc')
-        }
-
-        // Assert `aud` and `nonce` claims
-        sdJwtVc.keyBinding.assertClaimInPayload('aud', keyBinding.audience)
-        sdJwtVc.keyBinding.assertClaimInPayload('nonce', keyBinding.nonce)
-      }
-    } catch (error) {
-      verificationResult.isKeyBindingValid = false
-      verificationResult.isValid = false
+    const verificationResult: VerificationResult = {
+      isValid: false,
     }
 
+    let sdJwtVc: SDJwt
+
+    try {
+      sdJwtVc = await sdjwt.decode(compactSdJwtVc)
+      if (!sdJwtVc.jwt) throw new CredoError('Invalid sd-jwt-vc')
+    } catch (error) {
+      return {
+        isValid: false,
+        verification: verificationResult,
+        error,
+      }
+    }
+
+    const returnSdJwtVc: SdJwtVc<Header, Payload> = {
+      payload: sdJwtVc.jwt.payload as Payload,
+      header: sdJwtVc.jwt.header as Header,
+      compact: compactSdJwtVc,
+      prettyClaims: await sdJwtVc.getClaims(this.hasher),
+    } satisfies SdJwtVc<Header, Payload>
+
+    try {
+      const issuer = await this.extractKeyFromIssuer(agentContext, this.parseIssuerFromCredential(sdJwtVc))
+      const holderBinding = this.parseHolderBindingFromCredential(sdJwtVc)
+      const holder = holderBinding ? await this.extractKeyFromHolderBinding(agentContext, holderBinding) : undefined
+
+      sdjwt.config({
+        verifier: this.verifier(agentContext, issuer.key),
+        kbVerifier: holder ? this.verifier(agentContext, holder.key) : undefined,
+      })
+
+      const requiredKeys = requiredClaimKeys ? [...requiredClaimKeys, 'vct'] : ['vct']
+
+      try {
+        await sdjwt.verify(compactSdJwtVc, requiredKeys, keyBinding !== undefined)
+
+        verificationResult.isSignatureValid = true
+        verificationResult.areRequiredClaimsIncluded = true
+        verificationResult.isStatusValid = true
+      } catch (error) {
+        return {
+          verification: verificationResult,
+          error,
+          isValid: false,
+          sdJwtVc: returnSdJwtVc,
+        }
+      }
+
+      try {
+        JwtPayload.fromJson(returnSdJwtVc.payload).validate()
+        verificationResult.isValidJwtPayload = true
+      } catch (error) {
+        verificationResult.isValidJwtPayload = false
+
+        return {
+          isValid: false,
+          error,
+          verification: verificationResult,
+          sdJwtVc: returnSdJwtVc,
+        }
+      }
+
+      // If keyBinding is present, verify the key binding
+      try {
+        if (keyBinding) {
+          if (!sdJwtVc.kbJwt || !sdJwtVc.kbJwt.payload) {
+            throw new SdJwtVcError('Keybinding is required for verification of the sd-jwt-vc')
+          }
+
+          // Assert `aud` and `nonce` claims
+          if (sdJwtVc.kbJwt.payload.aud !== keyBinding.audience) {
+            throw new SdJwtVcError('The key binding JWT does not contain the expected audience')
+          }
+
+          if (sdJwtVc.kbJwt.payload.nonce !== keyBinding.nonce) {
+            throw new SdJwtVcError('The key binding JWT does not contain the expected nonce')
+          }
+
+          verificationResult.isKeyBindingValid = true
+          verificationResult.containsExpectedKeyBinding = true
+          verificationResult.containsRequiredVcProperties = true
+        }
+      } catch (error) {
+        verificationResult.isKeyBindingValid = false
+        verificationResult.containsExpectedKeyBinding = false
+        verificationResult.isValid = false
+
+        return {
+          isValid: false,
+          error,
+          verification: verificationResult,
+          sdJwtVc: returnSdJwtVc,
+        }
+      }
+    } catch (error) {
+      verificationResult.isValid = false
+      return {
+        isValid: false,
+        error,
+        verification: verificationResult,
+        sdJwtVc: returnSdJwtVc,
+      }
+    }
+
+    verificationResult.isValid = true
     return {
+      isValid: true,
       verification: verificationResult,
-      sdJwtVc: {
-        payload: sdJwtVc.payload,
-        header: sdJwtVc.header,
-        compact: compactSdJwtVc,
-        prettyClaims: await sdJwtVc.getPrettyClaims(),
-      } satisfies SdJwtVc<Header, Payload>,
+      sdJwtVc: returnSdJwtVc,
     }
   }
 
@@ -195,8 +319,12 @@ export class SdJwtVcService {
     return await this.sdJwtVcRepository.getAll(agentContext)
   }
 
-  public async findByQuery(agentContext: AgentContext, query: Query<SdJwtVcRecord>): Promise<Array<SdJwtVcRecord>> {
-    return await this.sdJwtVcRepository.findByQuery(agentContext, query)
+  public async findByQuery(
+    agentContext: AgentContext,
+    query: Query<SdJwtVcRecord>,
+    queryOptions?: QueryOptions
+  ): Promise<Array<SdJwtVcRecord>> {
+    return await this.sdJwtVcRepository.findByQuery(agentContext, query, queryOptions)
   }
 
   public async deleteById(agentContext: AgentContext, id: string) {
@@ -217,32 +345,28 @@ export class SdJwtVcService {
     }
   }
 
-  private get hasher(): HasherAndAlgorithm {
-    return {
-      algorithm: HasherAlgorithm.Sha256,
-      hasher: Hasher.hash,
+  /**
+   * @todo validate the JWT header (alg)
+   */
+  private signer(agentContext: AgentContext, key: Key): Signer {
+    return async (input: string) => {
+      const signedBuffer = await agentContext.wallet.sign({ key, data: TypedArrayEncoder.fromString(input) })
+      return uint8ArrayToBase64Url(signedBuffer)
     }
   }
 
   /**
    * @todo validate the JWT header (alg)
    */
-  private signer<Header extends SdJwtVcHeader = SdJwtVcHeader>(agentContext: AgentContext, key: Key): Signer<Header> {
-    return async (input: string) => agentContext.wallet.sign({ key, data: TypedArrayEncoder.fromString(input) })
-  }
-
-  /**
-   * @todo validate the JWT header (alg)
-   */
-  private verifier<Header extends SdJwtVcHeader = SdJwtVcHeader>(agentContext: AgentContext): Verifier<Header> {
-    return async ({ message, signature, publicKeyJwk }) => {
-      if (!publicKeyJwk) {
+  private verifier(agentContext: AgentContext, key: Key): Verifier {
+    return async (message: string, signatureBase64Url: string) => {
+      if (!key) {
         throw new SdJwtVcError('The public key used to verify the signature is missing')
       }
 
       return await agentContext.wallet.verify({
-        signature: Buffer.from(signature),
-        key: getJwkFromJson(publicKeyJwk as JwkJson).key,
+        signature: TypedArrayEncoder.fromBase64(signatureBase64Url),
+        key,
         data: TypedArrayEncoder.fromString(message),
       })
     }
@@ -273,15 +397,31 @@ export class SdJwtVcService {
   }
 
   private parseIssuerFromCredential<Header extends SdJwtVcHeader, Payload extends SdJwtVcPayload>(
-    sdJwtVc: _SdJwtVc<Header, Payload>
+    sdJwtVc: SDJwt<Header, Payload>
   ): SdJwtVcIssuer {
-    const iss = sdJwtVc.getClaimInPayload<string>('iss')
+    if (!sdJwtVc.jwt?.payload) {
+      throw new SdJwtVcError('Credential not exist')
+    }
+
+    if (!sdJwtVc.jwt?.payload['iss']) {
+      throw new SdJwtVcError('Credential does not contain an issuer')
+    }
+
+    const iss = sdJwtVc.jwt.payload['iss'] as string
 
     if (iss.startsWith('did:')) {
       // If `did` is used, we require a relative KID to be present to identify
       // the key used by issuer to sign the sd-jwt-vc
-      sdJwtVc.assertClaimInHeader('kid')
-      const issuerKid = sdJwtVc.getClaimInHeader<string>('kid')
+
+      if (!sdJwtVc.jwt?.header) {
+        throw new SdJwtVcError('Credential does not contain a header')
+      }
+
+      if (!sdJwtVc.jwt.header['kid']) {
+        throw new SdJwtVcError('Credential does not contain a kid in the header')
+      }
+
+      const issuerKid = sdJwtVc.jwt.header['kid'] as string
 
       let didUrl: string
       if (issuerKid.startsWith('#')) {
@@ -310,9 +450,16 @@ export class SdJwtVcService {
   }
 
   private parseHolderBindingFromCredential<Header extends SdJwtVcHeader, Payload extends SdJwtVcPayload>(
-    sdJwtVc: _SdJwtVc<Header, Payload>
-  ): SdJwtVcHolderBinding {
-    const cnf = sdJwtVc.getClaimInPayload<{ jwk?: JwkJson; kid?: string }>('cnf')
+    sdJwtVc: SDJwt<Header, Payload>
+  ): SdJwtVcHolderBinding | null {
+    if (!sdJwtVc.jwt?.payload) {
+      throw new SdJwtVcError('Credential not exist')
+    }
+
+    if (!sdJwtVc.jwt?.payload['cnf']) {
+      return null
+    }
+    const cnf: CnfPayload = sdJwtVc.jwt.payload['cnf']
 
     if (cnf.jwk) {
       return {
@@ -369,5 +516,32 @@ export class SdJwtVcService {
     }
 
     throw new SdJwtVcError("Unsupported credential holder binding. Only 'did' and 'jwk' are supported at the moment.")
+  }
+
+  private getBaseSdJwtConfig(agentContext: AgentContext): SdJwtVcConfig {
+    return {
+      hasher: this.hasher,
+      statusListFetcher: this.getStatusListFetcher(agentContext),
+      saltGenerator: agentContext.wallet.generateNonce,
+    }
+  }
+
+  private get hasher(): HasherSync {
+    return Hasher.hash
+  }
+
+  private getStatusListFetcher(agentContext: AgentContext) {
+    return async (uri: string) => {
+      const response = await fetchWithTimeout(agentContext.config.agentDependencies.fetch, uri)
+      if (!response.ok) {
+        throw new CredoError(
+          `Received invalid response with status ${
+            response.status
+          } when fetching status list from ${uri}. ${await response.text()}`
+        )
+      }
+
+      return await response.text()
+    }
   }
 }

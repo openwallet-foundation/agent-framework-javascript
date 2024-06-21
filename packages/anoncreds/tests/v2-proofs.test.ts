@@ -365,11 +365,9 @@ describe('PP V2 AnonCreds Proofs', () => {
       presentation: {
         anoncreds: {
           proof: {
+            // Only one proof means the predicate and attribute was combined into one proof (and thus we can
+            // know that it was the same cred)
             proofs: [
-              {
-                primary_proof: expect.any(Object),
-                non_revoc_proof: null,
-              },
               {
                 primary_proof: expect.any(Object),
                 non_revoc_proof: null,
@@ -621,7 +619,7 @@ describe('PP V2 AnonCreds Proofs', () => {
                     image_0: 'hl:zQmfDXo7T3J43j3CTkEZaz7qdHuABhWktksZ7JEBueZ5zUS',
                     image_1: 'hl:zQmRHBT9rDs5QhsnYuPY3mNpXxgLcnNXkhjWJvTSAPMmcVd',
                     name: 'John',
-                    age: '99',
+                    age: 99,
                   },
                   schemaId: expect.any(String),
                   credentialDefinitionId: expect.any(String),
@@ -637,7 +635,7 @@ describe('PP V2 AnonCreds Proofs', () => {
                 credentialInfo: {
                   credentialId: expect.any(String),
                   attributes: {
-                    age: '99',
+                    age: 99,
                     image_0: 'hl:zQmfDXo7T3J43j3CTkEZaz7qdHuABhWktksZ7JEBueZ5zUS',
                     image_1: 'hl:zQmRHBT9rDs5QhsnYuPY3mNpXxgLcnNXkhjWJvTSAPMmcVd',
                     name: 'John',
@@ -660,7 +658,7 @@ describe('PP V2 AnonCreds Proofs', () => {
                     image_1: 'hl:zQmRHBT9rDs5QhsnYuPY3mNpXxgLcnNXkhjWJvTSAPMmcVd',
                     image_0: 'hl:zQmfDXo7T3J43j3CTkEZaz7qdHuABhWktksZ7JEBueZ5zUS',
                     name: 'John',
-                    age: '99',
+                    age: 99,
                   },
                   schemaId: expect.any(String),
                   credentialDefinitionId: expect.any(String),
@@ -898,7 +896,7 @@ describe('PP V2 AnonCreds Proofs', () => {
     })
   })
 
-  test.only('Credential is revoked before proof request', async () => {
+  test('Credential is revoked before proof request', async () => {
     // Revoke the credential
     const credentialRevocationRegistryDefinitionId = faberCredentialExchangeRecord.getTag(
       'anonCredsRevocationRegistryId'

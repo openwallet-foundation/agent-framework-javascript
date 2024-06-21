@@ -1,5 +1,5 @@
 import type { DummyRecord } from './repository/DummyRecord'
-import type { Query } from '@credo-ts/core'
+import type { Query, QueryOptions } from '@credo-ts/core'
 
 import { getOutboundMessageContext, AgentContext, ConnectionService, injectable, MessageSender } from '@credo-ts/core'
 
@@ -93,7 +93,7 @@ export class DummyApi {
    *
    * @returns List containing all records
    */
-  public findAllByQuery(query: Query<DummyRecord>): Promise<DummyRecord[]> {
-    return this.dummyService.findAllByQuery(this.agentContext, query)
+  public findAllByQuery(query: Query<DummyRecord>, queryOptions?: QueryOptions): Promise<DummyRecord[]> {
+    return this.dummyService.findAllByQuery(this.agentContext, query, queryOptions)
   }
 }

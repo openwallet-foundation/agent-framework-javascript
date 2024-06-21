@@ -3,7 +3,7 @@ import type { W3cAnonCredsCredentialMetadata } from './metadata'
 import type { AnonCredsCredentialInfo, AnonCredsSchema } from '../models'
 import type { AnonCredsCredentialRecord } from '../repository'
 import type { StoreCredentialOptions } from '../services'
-import type { DefaultW3cCredentialTags } from '@credo-ts/core'
+import type { DefaultW3cCredentialTags, W3cCredentialSubject } from '@credo-ts/core'
 
 import { CredoError, W3cCredentialRecord, utils } from '@credo-ts/core'
 
@@ -20,6 +20,7 @@ import {
   isUnqualifiedRevocationRegistryId,
   isIndyDid,
   getUnQualifiedDidIndyDid,
+  isUnqualifiedIndyDid,
 } from './indyIdentifiers'
 import { W3cAnonCredsCredentialMetadataKey } from './metadata'
 
@@ -47,7 +48,10 @@ export type AnonCredsCredentialTags = {
   anonCredsUnqualifiedRevocationRegistryId?: string
 }
 
-function anonCredsCredentialInfoFromW3cRecord(w3cCredentialRecord: W3cCredentialRecord): AnonCredsCredentialInfo {
+function anonCredsCredentialInfoFromW3cRecord(
+  w3cCredentialRecord: W3cCredentialRecord,
+  useUnqualifiedIdentifiers?: boolean
+): AnonCredsCredentialInfo {
   if (Array.isArray(w3cCredentialRecord.credential.credentialSubject)) {
     throw new CredoError('Credential subject must be an object, not an array.')
   }
@@ -60,15 +64,32 @@ function anonCredsCredentialInfoFromW3cRecord(w3cCredentialRecord: W3cCredential
   )
   if (!anonCredsCredentialMetadata) throw new CredoError('AnonCreds metadata not found on credential record.')
 
+  const credentialDefinitionId =
+    useUnqualifiedIdentifiers && anonCredsTags.anonCredsUnqualifiedCredentialDefinitionId
+      ? anonCredsTags.anonCredsUnqualifiedCredentialDefinitionId
+      : anonCredsTags.anonCredsCredentialDefinitionId
+
+  const schemaId =
+    useUnqualifiedIdentifiers && anonCredsTags.anonCredsUnqualifiedSchemaId
+      ? anonCredsTags.anonCredsUnqualifiedSchemaId
+      : anonCredsTags.anonCredsSchemaId
+
+  const revocationRegistryId =
+    useUnqualifiedIdentifiers && anonCredsTags.anonCredsUnqualifiedRevocationRegistryId
+      ? anonCredsTags.anonCredsUnqualifiedRevocationRegistryId
+      : anonCredsTags.anonCredsRevocationRegistryId ?? null
+
   return {
     attributes: (w3cCredentialRecord.credential.credentialSubject.claims as AnonCredsClaimRecord) ?? {},
     credentialId: w3cCredentialRecord.id,
-    credentialDefinitionId: anonCredsTags.anonCredsCredentialDefinitionId,
-    schemaId: anonCredsTags.anonCredsSchemaId,
+    credentialDefinitionId,
+    schemaId,
+    revocationRegistryId,
     credentialRevocationId: anonCredsCredentialMetadata.credentialRevocationId ?? null,
-    revocationRegistryId: anonCredsTags.anonCredsRevocationRegistryId ?? null,
     methodName: anonCredsCredentialMetadata.methodName,
     linkSecretId: anonCredsCredentialMetadata.linkSecretId,
+    createdAt: w3cCredentialRecord.createdAt,
+    updatedAt: w3cCredentialRecord.updatedAt ?? w3cCredentialRecord.createdAt,
   }
 }
 
@@ -89,14 +110,17 @@ function anonCredsCredentialInfoFromAnonCredsRecord(
     revocationRegistryId: anonCredsCredentialRecord.credential.rev_reg_id ?? null,
     methodName: anonCredsCredentialRecord.methodName,
     linkSecretId: anonCredsCredentialRecord.linkSecretId,
+    createdAt: anonCredsCredentialRecord.createdAt,
+    updatedAt: anonCredsCredentialRecord.updatedAt ?? anonCredsCredentialRecord.createdAt,
   }
 }
 
 export function getAnoncredsCredentialInfoFromRecord(
-  credentialRecord: W3cCredentialRecord | AnonCredsCredentialRecord
+  credentialRecord: W3cCredentialRecord | AnonCredsCredentialRecord,
+  useUnqualifiedIdentifiersIfPresent?: boolean
 ): AnonCredsCredentialInfo {
   if (credentialRecord instanceof W3cCredentialRecord) {
-    return anonCredsCredentialInfoFromW3cRecord(credentialRecord)
+    return anonCredsCredentialInfoFromW3cRecord(credentialRecord, useUnqualifiedIdentifiersIfPresent)
   } else {
     return anonCredsCredentialInfoFromAnonCredsRecord(credentialRecord)
   }
@@ -163,7 +187,8 @@ export function getStoreCredentialOptions(
 }
 
 export function getW3cRecordAnonCredsTags(options: {
-  w3cCredentialRecord: W3cCredentialRecord
+  credentialSubject: W3cCredentialSubject
+  issuerId: string
   schemaId: string
   schema: Omit<AnonCredsSchema, 'attrNames'>
   credentialDefinitionId: string
@@ -173,7 +198,8 @@ export function getW3cRecordAnonCredsTags(options: {
   methodName: string
 }) {
   const {
-    w3cCredentialRecord,
+    credentialSubject,
+    issuerId,
     schema,
     schemaId,
     credentialDefinitionId,
@@ -182,8 +208,6 @@ export function getW3cRecordAnonCredsTags(options: {
     linkSecretId,
     methodName,
   } = options
-
-  const issuerId = w3cCredentialRecord.credential.issuerId
 
   const anonCredsCredentialRecordTags: AnonCredsCredentialTags = {
     anonCredsLinkSecretId: linkSecretId,
@@ -195,7 +219,7 @@ export function getW3cRecordAnonCredsTags(options: {
     anonCredsMethodName: methodName,
     anonCredsRevocationRegistryId: revocationRegistryId,
     anonCredsCredentialRevocationId: credentialRevocationId,
-    ...(isIndyDid(issuerId) && {
+    ...((isIndyDid(issuerId) || isUnqualifiedIndyDid(issuerId)) && {
       anonCredsUnqualifiedIssuerId: getUnQualifiedDidIndyDid(issuerId),
       anonCredsUnqualifiedCredentialDefinitionId: getUnQualifiedDidIndyDid(credentialDefinitionId),
       anonCredsUnqualifiedSchemaId: getUnQualifiedDidIndyDid(schemaId),
@@ -206,12 +230,8 @@ export function getW3cRecordAnonCredsTags(options: {
     }),
   }
 
-  if (Array.isArray(w3cCredentialRecord.credential.credentialSubject)) {
-    throw new CredoError('Credential subject must be an object, not an array.')
-  }
-
   const values = mapAttributeRawValuesToAnonCredsCredentialValues(
-    (w3cCredentialRecord.credential.credentialSubject.claims as AnonCredsClaimRecord) ?? {}
+    (credentialSubject.claims as AnonCredsClaimRecord) ?? {}
   )
 
   for (const [key, value] of Object.entries(values)) {

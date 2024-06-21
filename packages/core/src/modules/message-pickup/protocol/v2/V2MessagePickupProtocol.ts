@@ -118,6 +118,7 @@ export class V2MessagePickupProtocol extends BaseMessagePickupProtocol {
       (msg) =>
         new Attachment({
           id: msg.id,
+          lastmodTime: msg.receivedAt,
           data: {
             json: msg.encryptedMessage,
           },
@@ -190,6 +191,7 @@ export class V2MessagePickupProtocol extends BaseMessagePickupProtocol {
       (msg) =>
         new Attachment({
           id: msg.id,
+          lastmodTime: msg.receivedAt,
           data: {
             json: msg.encryptedMessage,
           },
@@ -323,6 +325,7 @@ export class V2MessagePickupProtocol extends BaseMessagePickupProtocol {
         payload: {
           message: attachment.getDataAsJson<EncryptedMessage>(),
           contextCorrelationId: messageContext.agentContext.contextCorrelationId,
+          receivedAt: attachment.lastmodTime,
         },
       })
     }

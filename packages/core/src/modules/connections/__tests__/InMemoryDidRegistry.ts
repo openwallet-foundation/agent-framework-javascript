@@ -40,11 +40,6 @@ export class InMemoryDidRegistry implements DidRegistrar, DidResolver {
       did: didDocument.id,
       role: DidDocumentRole.Created,
       didDocument,
-      tags: {
-        // We need to save the recipientKeys, so we can find the associated did
-        // of a key when we receive a message from another connection.
-        recipientKeyFingerprints: didDocument.recipientKeys.map((key) => key.fingerprint),
-      },
     })
     const didRepository = agentContext.dependencyManager.resolve(DidRepository)
     await didRepository.save(agentContext, didRecord)

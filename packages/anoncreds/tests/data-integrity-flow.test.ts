@@ -1,4 +1,5 @@
 import type { CreateDidKidVerificationMethodReturn } from '../../core/tests'
+import type { DidRepository } from '@credo-ts/core'
 
 import {
   AgentContext,
@@ -80,7 +81,7 @@ const agentContext = getAgentContext({
     [AnonCredsVerifierServiceSymbol, anonCredsVerifierService],
     [InjectionSymbols.Logger, testLogger],
     [DidsModuleConfig, didsModuleConfig],
-    [DidResolverService, new DidResolverService(testLogger, didsModuleConfig)],
+    [DidResolverService, new DidResolverService(testLogger, didsModuleConfig, {} as unknown as DidRepository)],
     [AnonCredsRegistryService, new AnonCredsRegistryService()],
     [AnonCredsModuleConfig, anonCredsModuleConfig],
     [W3cCredentialsModuleConfig, new W3cCredentialsModuleConfig()],

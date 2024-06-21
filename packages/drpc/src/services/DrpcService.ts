@@ -1,7 +1,7 @@
 import type { DrpcRequestStateChangedEvent } from '../DrpcRequestEvents'
 import type { DrpcResponseStateChangedEvent } from '../DrpcResponseEvents'
 import type { DrpcRequest, DrpcResponse } from '../messages'
-import type { AgentContext, InboundMessageContext, Query } from '@credo-ts/core'
+import type { AgentContext, InboundMessageContext, Query, QueryOptions } from '@credo-ts/core'
 
 import { EventEmitter, injectable } from '@credo-ts/core'
 
@@ -173,8 +173,8 @@ export class DrpcService {
     })
   }
 
-  public async findAllByQuery(agentContext: AgentContext, query: Query<DrpcRecord>) {
-    return this.drpcMessageRepository.findByQuery(agentContext, query)
+  public async findAllByQuery(agentContext: AgentContext, query: Query<DrpcRecord>, queryOptions?: QueryOptions) {
+    return this.drpcMessageRepository.findByQuery(agentContext, query, queryOptions)
   }
 
   public async getById(agentContext: AgentContext, drpcMessageRecordId: string) {

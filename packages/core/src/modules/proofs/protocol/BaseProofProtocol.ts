@@ -21,7 +21,7 @@ import type { FeatureRegistry } from '../../../agent/FeatureRegistry'
 import type { AgentContext } from '../../../agent/context/AgentContext'
 import type { InboundMessageContext } from '../../../agent/models/InboundMessageContext'
 import type { DependencyManager } from '../../../plugins'
-import type { Query } from '../../../storage/StorageService'
+import type { Query, QueryOptions } from '../../../storage/StorageService'
 import type { ProblemReportMessage } from '../../problem-reports'
 import type { ProofStateChangedEvent } from '../ProofEvents'
 import type { ExtractProofFormats, ProofFormatService } from '../formats'
@@ -30,6 +30,7 @@ import type { ProofExchangeRecord } from '../repository'
 
 import { EventEmitter } from '../../../agent/EventEmitter'
 import { DidCommMessageRepository } from '../../../storage/didcomm'
+import { ConnectionService } from '../../connections'
 import { ProofEventTypes } from '../ProofEvents'
 import { ProofState } from '../models/ProofState'
 import { ProofRepository } from '../repository'
@@ -112,12 +113,27 @@ export abstract class BaseProofProtocol<PFs extends ProofFormatService[] = Proof
   ): Promise<ProofExchangeRecord> {
     const { message: proofProblemReportMessage, agentContext, connection } = messageContext
 
+    const connectionService = agentContext.dependencyManager.resolve(ConnectionService)
+
     agentContext.config.logger.debug(`Processing problem report with message id ${proofProblemReportMessage.id}`)
 
     const proofRecord = await this.getByProperties(agentContext, {
       threadId: proofProblemReportMessage.threadId,
-      connectionId: connection?.id,
     })
+
+    // Assert
+    await connectionService.assertConnectionOrOutOfBandExchange(messageContext, {
+      expectedConnectionId: proofRecord.connectionId,
+    })
+
+    //  This makes sure that the sender of the incoming message is authorized to do so.
+    if (!proofRecord?.connectionId) {
+      await connectionService.matchIncomingMessageToRequestMessageInOutOfBandExchange(messageContext, {
+        expectedConnectionId: proofRecord?.connectionId,
+      })
+
+      proofRecord.connectionId = connection?.id
+    }
 
     // Update record
     proofRecord.errorMessage = `${proofProblemReportMessage.description.code}: ${proofProblemReportMessage.description.en}`
@@ -190,11 +206,12 @@ export abstract class BaseProofProtocol<PFs extends ProofFormatService[] = Proof
 
   public async findAllByQuery(
     agentContext: AgentContext,
-    query: Query<ProofExchangeRecord>
+    query: Query<ProofExchangeRecord>,
+    queryOptions?: QueryOptions
   ): Promise<ProofExchangeRecord[]> {
     const proofRepository = agentContext.dependencyManager.resolve(ProofRepository)
 
-    return proofRepository.findByQuery(agentContext, query)
+    return proofRepository.findByQuery(agentContext, query, queryOptions)
   }
 
   /**

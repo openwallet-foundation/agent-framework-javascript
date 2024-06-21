@@ -1,7 +1,7 @@
 import type { AgentContext } from '../../../agent'
 import type { AgentMessage } from '../../../agent/AgentMessage'
 import type { InboundMessageContext } from '../../../agent/models/InboundMessageContext'
-import type { Query } from '../../../storage/StorageService'
+import type { Query, QueryOptions } from '../../../storage/StorageService'
 import type { AckMessage } from '../../common'
 import type { OutOfBandDidCommService } from '../../oob/domain/OutOfBandDidCommService'
 import type { OutOfBandRecord } from '../../oob/repository'
@@ -51,7 +51,7 @@ import {
 import { ConnectionRecord } from '../repository/ConnectionRecord'
 import { ConnectionRepository } from '../repository/ConnectionRepository'
 
-import { convertToNewDidDocument } from './helpers'
+import { assertNoCreatedDidExistsForKeys, convertToNewDidDocument } from './helpers'
 
 export interface ConnectionRequestParams {
   label?: string
@@ -209,9 +209,17 @@ export class ConnectionService {
     connectionRecord.assertState(DidExchangeState.RequestReceived)
     connectionRecord.assertRole(DidExchangeRole.Responder)
 
-    const didDoc = routing
-      ? this.createDidDoc(routing)
-      : this.createDidDocFromOutOfBandDidCommServices(outOfBandRecord.outOfBandInvitation.getInlineServices())
+    let didDoc: DidDoc
+    if (routing) {
+      didDoc = this.createDidDoc(routing)
+    } else if (outOfBandRecord.outOfBandInvitation.getInlineServices().length > 0) {
+      didDoc = this.createDidDocFromOutOfBandDidCommServices(outOfBandRecord.outOfBandInvitation.getInlineServices())
+    } else {
+      // We don't support using a did from the OOB invitation services currently, in this case we always pass routing to this method
+      throw new CredoError(
+        'No routing provided, and no inline services found in out of band invitation. When using did services in out of band invitation, make sure to provide routing information for rotation.'
+      )
+    }
 
     const { did: peerDid } = await this.createDid(agentContext, {
       role: DidDocumentRole.Created,
@@ -451,12 +459,25 @@ export class ConnectionService {
     {
       lastSentMessage,
       lastReceivedMessage,
+      expectedConnectionId,
     }: {
       lastSentMessage?: AgentMessage | null
       lastReceivedMessage?: AgentMessage | null
+      expectedConnectionId?: string
     } = {}
   ) {
     const { connection, message } = messageContext
+
+    if (expectedConnectionId && !connection) {
+      throw new CredoError(
+        `Expected incoming message to be from connection ${expectedConnectionId} but no connection found.`
+      )
+    }
+    if (expectedConnectionId && connection?.id !== expectedConnectionId) {
+      throw new CredoError(
+        `Expected incoming message to be from connection ${expectedConnectionId} but connection is ${connection?.id}.`
+      )
+    }
 
     // Check if we have a ready connection. Verification is already done somewhere else. Return
     if (connection) {
@@ -551,7 +572,7 @@ export class ConnectionService {
     messageContext: InboundMessageContext,
     { expectedConnectionId }: { expectedConnectionId?: string }
   ) {
-    if (expectedConnectionId && messageContext.connection?.id === expectedConnectionId) {
+    if (expectedConnectionId && messageContext.connection?.id !== expectedConnectionId) {
       throw new CredoError(
         `Expecting incoming message to have connection ${expectedConnectionId}, but incoming connection is ${
           messageContext.connection?.id ?? 'undefined'
@@ -749,8 +770,12 @@ export class ConnectionService {
     return null
   }
 
-  public async findAllByQuery(agentContext: AgentContext, query: Query<ConnectionRecord>): Promise<ConnectionRecord[]> {
-    return this.connectionRepository.findByQuery(agentContext, query)
+  public async findAllByQuery(
+    agentContext: AgentContext,
+    query: Query<ConnectionRecord>,
+    queryOptions?: QueryOptions
+  ): Promise<ConnectionRecord[]> {
+    return this.connectionRepository.findByQuery(agentContext, query, queryOptions)
   }
 
   public async createConnection(agentContext: AgentContext, options: ConnectionRecordProps): Promise<ConnectionRecord> {
@@ -778,17 +803,17 @@ export class ConnectionService {
     // Convert the legacy did doc to a new did document
     const didDocument = convertToNewDidDocument(didDoc)
 
+    // Assert that the keys we are going to use for creating a did document haven't already been used in another did document
+    if (role === DidDocumentRole.Created) {
+      await assertNoCreatedDidExistsForKeys(agentContext, didDocument.recipientKeys)
+    }
+
     const peerDid = didDocumentJsonToNumAlgo1Did(didDocument.toJSON())
     didDocument.id = peerDid
     const didRecord = new DidRecord({
       did: peerDid,
       role,
       didDocument,
-      tags: {
-        // We need to save the recipientKeys, so we can find the associated did
-        // of a key when we receive a message from another connection.
-        recipientKeyFingerprints: didDocument.recipientKeys.map((key) => key.fingerprint),
-      },
     })
 
     // Store the unqualified did with the legacy did document in the metadata

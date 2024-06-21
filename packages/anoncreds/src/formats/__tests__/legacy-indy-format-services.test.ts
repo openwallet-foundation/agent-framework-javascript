@@ -1,4 +1,5 @@
 import type { AnonCredsCredentialRequest } from '../../models'
+import type { DidRepository } from '@credo-ts/core'
 
 import {
   CredentialState,
@@ -91,7 +92,7 @@ const agentContext = getAgentContext({
     [AnonCredsIssuerServiceSymbol, anonCredsIssuerService],
     [AnonCredsHolderServiceSymbol, anonCredsHolderService],
     [AnonCredsVerifierServiceSymbol, anonCredsVerifierService],
-    [DidResolverService, new DidResolverService(testLogger, new DidsModuleConfig())],
+    [DidResolverService, new DidResolverService(testLogger, new DidsModuleConfig(), {} as unknown as DidRepository)],
     [AnonCredsRegistryService, new AnonCredsRegistryService()],
     [AnonCredsModuleConfig, anonCredsModuleConfig],
     [AnonCredsLinkSecretRepository, anonCredsLinkSecretRepository],
@@ -314,6 +315,8 @@ describe('Legacy indy format services', () => {
       revocationRegistryId: null,
       credentialRevocationId: null,
       methodName: 'inMemory',
+      createdAt: expect.any(Date),
+      updatedAt: expect.any(Date),
     })
 
     expect(holderCredentialRecord.metadata.data).toEqual({

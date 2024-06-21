@@ -80,7 +80,7 @@ export class DiscoverFeaturesApi<
       throw new CredoError(`No discover features service registered for protocol version ${protocolVersion}`)
     }
 
-    return this.serviceMap[protocolVersion] as DiscoverFeaturesService
+    return this.serviceMap[protocolVersion] as unknown as DiscoverFeaturesService
   }
 
   /**

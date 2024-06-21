@@ -22,7 +22,7 @@ import type { CredentialProtocol } from './protocol/CredentialProtocol'
 import type { CredentialFormatsFromProtocols } from './protocol/CredentialProtocolOptions'
 import type { CredentialExchangeRecord } from './repository/CredentialExchangeRecord'
 import type { AgentMessage } from '../../agent/AgentMessage'
-import type { Query } from '../../storage/StorageService'
+import type { Query, QueryOptions } from '../../storage/StorageService'
 
 import { AgentContext } from '../../agent'
 import { MessageSender } from '../../agent/MessageSender'
@@ -75,7 +75,10 @@ export interface CredentialsApi<CPs extends CredentialProtocol[]> {
 
   // Record Methods
   getAll(): Promise<CredentialExchangeRecord[]>
-  findAllByQuery(query: Query<CredentialExchangeRecord>): Promise<CredentialExchangeRecord[]>
+  findAllByQuery(
+    query: Query<CredentialExchangeRecord>,
+    queryOptions?: QueryOptions
+  ): Promise<CredentialExchangeRecord[]>
   getById(credentialRecordId: string): Promise<CredentialExchangeRecord>
   findById(credentialRecordId: string): Promise<CredentialExchangeRecord | null>
   deleteById(credentialRecordId: string, options?: DeleteCredentialOptions): Promise<void>
@@ -159,6 +162,8 @@ export class CredentialsApi<CPs extends CredentialProtocol[]> implements Credent
       credentialFormats: options.credentialFormats,
       comment: options.comment,
       autoAcceptCredential: options.autoAcceptCredential,
+      goalCode: options.goalCode,
+      goal: options.goal,
     })
 
     const outboundMessageContext = await getOutboundMessageContext(this.agentContext, {
@@ -201,6 +206,8 @@ export class CredentialsApi<CPs extends CredentialProtocol[]> implements Credent
       credentialFormats: options.credentialFormats,
       comment: options.comment,
       autoAcceptCredential: options.autoAcceptCredential,
+      goalCode: options.goalCode,
+      goal: options.goal,
     })
 
     // send the message
@@ -239,6 +246,8 @@ export class CredentialsApi<CPs extends CredentialProtocol[]> implements Credent
       credentialFormats: options.credentialFormats,
       comment: options.comment,
       autoAcceptCredential: options.autoAcceptCredential,
+      goalCode: options.goalCode,
+      goal: options.goal,
     })
 
     const connectionRecord = await this.connectionService.getById(this.agentContext, credentialRecord.connectionId)
@@ -270,6 +279,8 @@ export class CredentialsApi<CPs extends CredentialProtocol[]> implements Credent
       autoAcceptCredential: options.autoAcceptCredential,
       comment: options.comment,
       connectionRecord,
+      goalCode: options.goalCode,
+      goal: options.goal,
     })
 
     this.logger.debug('Offer Message successfully created; message= ', message)
@@ -312,6 +323,8 @@ export class CredentialsApi<CPs extends CredentialProtocol[]> implements Credent
       credentialFormats: options.credentialFormats,
       comment: options.comment,
       autoAcceptCredential: options.autoAcceptCredential,
+      goalCode: options.goalCode,
+      goal: options.goal,
     })
 
     const outboundMessageContext = await getOutboundMessageContext(this.agentContext, {
@@ -366,6 +379,8 @@ export class CredentialsApi<CPs extends CredentialProtocol[]> implements Credent
       credentialRecord,
       comment: options.comment,
       autoAcceptCredential: options.autoAcceptCredential,
+      goalCode: options.goalCode,
+      goal: options.goal,
     })
 
     const outboundMessageContext = await getOutboundMessageContext(this.agentContext, {
@@ -395,6 +410,8 @@ export class CredentialsApi<CPs extends CredentialProtocol[]> implements Credent
       credentialFormats: options.credentialFormats,
       comment: options.comment,
       autoAcceptCredential: options.autoAcceptCredential,
+      goalCode: options.goalCode,
+      goal: options.goal,
     })
 
     this.logger.debug('Offer Message successfully created', { message })

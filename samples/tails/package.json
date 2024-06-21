@@ -15,8 +15,8 @@
     "ts-node": "^10.4.0"
   },
   "dependencies": {
-    "@credo-ts/anoncreds": "^0.5.0",
-    "@credo-ts/core": "^0.5.0",
+    "@credo-ts/anoncreds": "workspace:*",
+    "@credo-ts/core": "workspace:*",
     "@types/express": "^4.17.13",
     "@types/multer": "^1.4.7",
     "@types/uuid": "^9.0.1",

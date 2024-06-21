@@ -1,7 +1,8 @@
 import type { AbstractCheqdSDKModule, CheqdSDK, DidStdFee, DIDDocument } from '@cheqd/sdk'
-import type { SignInfo } from '@cheqd/ts-proto/cheqd/did/v2'
+import type { QueryAllDidDocVersionsMetadataResponse, SignInfo } from '@cheqd/ts-proto/cheqd/did/v2'
 import type { MsgCreateResourcePayload } from '@cheqd/ts-proto/cheqd/resource/v2'
 import type { DirectSecp256k1HdWallet, DirectSecp256k1Wallet } from '@cosmjs/proto-signing'
+import type { DidDocumentMetadata } from '@credo-ts/core'
 
 import { createCheqdSDK, DIDModule, ResourceModule, CheqdNetwork } from '@cheqd/sdk'
 import { CredoError, inject, injectable, InjectionSymbols, Logger } from '@credo-ts/core'
@@ -133,7 +134,10 @@ export class CheqdLedgerService {
     return version ? sdk.queryDidDocVersion(did, version) : sdk.queryDidDoc(did)
   }
 
-  public async resolveMetadata(did: string) {
+  public async resolveMetadata(did: string): Promise<{
+    didDocumentVersionsMetadata: DidDocumentMetadata[]
+    pagination: QueryAllDidDocVersionsMetadataResponse['pagination']
+  }> {
     const sdk = await this.getSdk(did)
     return sdk.queryAllDidDocVersionsMetadata(did)
   }

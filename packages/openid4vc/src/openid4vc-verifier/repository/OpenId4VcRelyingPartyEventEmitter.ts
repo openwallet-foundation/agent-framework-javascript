@@ -142,7 +142,10 @@ export class OpenId4VcRelyingPartyEventHandler {
     await this.withSession(context.contextCorrelationId, async (agentContext, verificationSessionRepository) => {
       const verificationSession = await verificationSessionRepository.getById(agentContext, event.correlationId)
 
-      if (verificationSession.state === OpenId4VcVerificationSessionState.RequestUriRetrieved) {
+      if (
+        verificationSession.state !== OpenId4VcVerificationSessionState.Error &&
+        verificationSession.state !== OpenId4VcVerificationSessionState.ResponseVerified
+      ) {
         const previousState = verificationSession.state
         verificationSession.authorizationResponsePayload = event.subject.payload
         verificationSession.state = OpenId4VcVerificationSessionState.ResponseVerified

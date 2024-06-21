@@ -2,7 +2,7 @@ import type { GetRoutingOptions, RemoveRoutingOptions } from './RoutingService'
 import type { AgentContext } from '../../../agent'
 import type { AgentMessage } from '../../../agent/AgentMessage'
 import type { InboundMessageContext } from '../../../agent/models/InboundMessageContext'
-import type { Query } from '../../../storage/StorageService'
+import type { Query, QueryOptions } from '../../../storage/StorageService'
 import type { ConnectionRecord } from '../../connections'
 import type { Routing } from '../../connections/services/ConnectionService'
 import type { MediationStateChangedEvent, KeylistUpdatedEvent } from '../RoutingEvents'
@@ -328,9 +328,10 @@ export class MediationRecipientService {
 
   public async findAllMediatorsByQuery(
     agentContext: AgentContext,
-    query: Query<MediationRecord>
+    query: Query<MediationRecord>,
+    queryOptions?: QueryOptions
   ): Promise<MediationRecord[]> {
-    return await this.mediationRepository.findByQuery(agentContext, query)
+    return await this.mediationRepository.findByQuery(agentContext, query, queryOptions)
   }
 
   public async findDefaultMediator(agentContext: AgentContext): Promise<MediationRecord | null> {

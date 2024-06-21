@@ -1,4 +1,4 @@
-import type { DifPresentationExchangeDefinitionV2 } from '@credo-ts/core/src'
+import type { DifPresentationExchangeDefinitionV2 } from '@credo-ts/core'
 import type { OpenId4VcVerifierRecord } from '@credo-ts/openid4vc'
 
 import { AskarModule } from '@credo-ts/askar'

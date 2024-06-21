@@ -30,9 +30,14 @@ describe('TenantRoutingRepository', () => {
       mockFunction(storageServiceMock.findByQuery).mockResolvedValue([tenantRoutingRecord])
       const returnedRecord = await tenantRoutingRepository.findByRecipientKey(agentContext, key)
 
-      expect(storageServiceMock.findByQuery).toHaveBeenCalledWith(agentContext, TenantRoutingRecord, {
-        recipientKeyFingerprint: 'z6Mkk7yqnGF3YwTrLpqrW6PGsKci7dNqh1CjnvMbzrMerSeL',
-      })
+      expect(storageServiceMock.findByQuery).toHaveBeenCalledWith(
+        agentContext,
+        TenantRoutingRecord,
+        {
+          recipientKeyFingerprint: 'z6Mkk7yqnGF3YwTrLpqrW6PGsKci7dNqh1CjnvMbzrMerSeL',
+        },
+        undefined
+      )
       expect(returnedRecord).toBe(tenantRoutingRecord)
     })
   })

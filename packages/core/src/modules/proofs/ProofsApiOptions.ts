@@ -24,6 +24,16 @@ export type ProofsProtocolVersionType<PPs extends ProofProtocol[]> = PPs[number]
 interface BaseOptions {
   autoAcceptProof?: AutoAcceptProof
   comment?: string
+
+  /**
+   * Will be ignored for v1 protocol as it is not supported
+   */
+  goalCode?: string
+
+  /**
+   * Will be ignored for v1 protocol as it is not supported
+   */
+  goal?: string
 }
 
 /**
@@ -34,7 +44,6 @@ export interface ProposeProofOptions<PPs extends ProofProtocol[] = ProofProtocol
   protocolVersion: ProofsProtocolVersionType<PPs>
   proofFormats: ProofFormatPayload<ProofFormatsFromProtocols<PPs>, 'createProposal'>
 
-  goalCode?: string
   parentThreadId?: string
 }
 
@@ -47,8 +56,6 @@ export interface AcceptProofProposalOptions<PPs extends ProofProtocol[] = ProofP
   proofRecordId: string
   proofFormats?: ProofFormatPayload<ProofFormatsFromProtocols<PPs>, 'acceptProposal'>
 
-  goalCode?: string
-
   /** @default true */
   willConfirm?: boolean
 }
@@ -59,8 +66,6 @@ export interface AcceptProofProposalOptions<PPs extends ProofProtocol[] = ProofP
 export interface NegotiateProofProposalOptions<PPs extends ProofProtocol[] = ProofProtocol[]> extends BaseOptions {
   proofRecordId: string
   proofFormats: ProofFormatPayload<ProofFormatsFromProtocols<PPs>, 'createRequest'>
-
-  goalCode?: string
 
   /** @default true */
   willConfirm?: boolean
@@ -73,7 +78,6 @@ export interface CreateProofRequestOptions<PPs extends ProofProtocol[] = ProofPr
   protocolVersion: ProofsProtocolVersionType<PPs>
   proofFormats: ProofFormatPayload<ProofFormatsFromProtocols<PPs>, 'createRequest'>
 
-  goalCode?: string
   parentThreadId?: string
 
   /** @default true */
@@ -102,8 +106,6 @@ export interface AcceptProofRequestOptions<PPs extends ProofProtocol[] = ProofPr
   useReturnRoute?: boolean
   proofFormats?: ProofFormatPayload<ProofFormatsFromProtocols<PPs>, 'acceptRequest'>
 
-  goalCode?: string
-
   /** @default true */
   willConfirm?: boolean
 }
@@ -114,8 +116,6 @@ export interface AcceptProofRequestOptions<PPs extends ProofProtocol[] = ProofPr
 export interface NegotiateProofRequestOptions<PPs extends ProofProtocol[] = ProofProtocol[]> extends BaseOptions {
   proofRecordId: string
   proofFormats: ProofFormatPayload<ProofFormatsFromProtocols<PPs>, 'createProposal'>
-
-  goalCode?: string
 }
 
 /**

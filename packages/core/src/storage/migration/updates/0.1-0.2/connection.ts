@@ -2,6 +2,7 @@ import type { BaseAgent } from '../../../../agent/BaseAgent'
 import type { ConnectionRecord } from '../../../../modules/connections'
 import type { JsonObject } from '../../../../types'
 
+import { outOfBandServiceToInlineKeysNumAlgo2Did } from '../../../..//modules/dids/methods/peer/peerDidNumAlgo2'
 import {
   DidExchangeState,
   ConnectionState,
@@ -42,7 +43,6 @@ export async function migrateConnectionRecordToV0_2<Agent extends BaseAgent>(age
   agent.config.logger.debug(`Found a total of ${allConnections.length} connection records to update.`)
   for (const connectionRecord of allConnections) {
     agent.config.logger.debug(`Migrating connection record with id ${connectionRecord.id} to storage version 0.2`)
-
     await updateConnectionRoleAndState(agent, connectionRecord)
     await extractDidDocument(agent, connectionRecord)
 
@@ -179,9 +179,6 @@ export async function extractDidDocument<Agent extends BaseAgent>(agent: Agent, 
         role: DidDocumentRole.Created,
         didDocument: newOurDidDocument,
         createdAt: connectionRecord.createdAt,
-        tags: {
-          recipientKeyFingerprints: newOurDidDocument.recipientKeys.map((key) => key.fingerprint),
-        },
       })
 
       ourDidRecord.metadata.set(DidRecordMetadataKeys.LegacyDid, {
@@ -231,9 +228,6 @@ export async function extractDidDocument<Agent extends BaseAgent>(agent: Agent, 
         role: DidDocumentRole.Received,
         didDocument: newTheirDidDocument,
         createdAt: connectionRecord.createdAt,
-        tags: {
-          recipientKeyFingerprints: newTheirDidDocument.recipientKeys.map((key) => key.fingerprint),
-        },
       })
 
       theirDidRecord.metadata.set(DidRecordMetadataKeys.LegacyDid, {
@@ -386,7 +380,11 @@ export async function migrateToOobRecord<Agent extends BaseAgent>(
     agent.config.logger.debug(`Setting invitationDid and outOfBand Id, and removing invitation from connection record`)
     // All connections have been made using the connection protocol, which means we can be certain
     // that there was only one service, thus we can use the first oob message service
-    const [invitationDid] = oobRecord.outOfBandInvitation.invitationDids
+    // Note: since this is an update from 0.1 to 0.2, we use former way of calculating numAlgo2Dids
+    const [invitationDid] = [
+      ...oobRecord.outOfBandInvitation.getDidServices(),
+      ...oobRecord.outOfBandInvitation.getInlineServices().map(outOfBandServiceToInlineKeysNumAlgo2Did),
+    ]
     connectionRecord.invitationDid = invitationDid
 
     // Remove invitation and assign the oob id to the connection record

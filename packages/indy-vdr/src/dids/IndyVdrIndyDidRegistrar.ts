@@ -196,9 +196,7 @@ export class IndyVdrIndyDidRegistrar implements DidRegistrar {
     const didRecord = new DidRecord({
       did,
       role: DidDocumentRole.Created,
-      tags: {
-        recipientKeyFingerprints: didDocument.recipientKeys.map((key: Key) => key.fingerprint),
-      },
+      didDocument,
     })
 
     const didRepository = agentContext.dependencyManager.resolve(DidRepository)

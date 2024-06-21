@@ -5,7 +5,7 @@ import type {
   WithTenantAgentCallback,
 } from './TenantsApiOptions'
 import type { TenantRecord } from './repository'
-import type { DefaultAgentModules, ModulesMap, Query } from '@credo-ts/core'
+import type { DefaultAgentModules, ModulesMap, Query, QueryOptions } from '@credo-ts/core'
 
 import {
   isStorageUpToDate,
@@ -52,16 +52,17 @@ export class TenantsApi<AgentModules extends ModulesMap = DefaultAgentModules> {
     return tenantAgent
   }
 
-  public async withTenantAgent(
+  public async withTenantAgent<ReturnValue>(
     options: GetTenantAgentOptions,
-    withTenantAgentCallback: WithTenantAgentCallback<AgentModules>
-  ): Promise<void> {
+    withTenantAgentCallback: WithTenantAgentCallback<AgentModules, ReturnValue>
+  ): Promise<ReturnValue> {
     this.logger.debug(`Getting tenant agent for tenant '${options.tenantId}' in with tenant agent callback`)
     const tenantAgent = await this.getTenantAgent(options)
 
     try {
       this.logger.debug(`Calling tenant agent callback for tenant '${options.tenantId}'`)
-      await withTenantAgentCallback(tenantAgent)
+      const result = await withTenantAgentCallback(tenantAgent)
+      return result
     } catch (error) {
       this.logger.error(`Error in tenant agent callback for tenant '${options.tenantId}'`, { error })
       throw error
@@ -111,8 +112,8 @@ export class TenantsApi<AgentModules extends ModulesMap = DefaultAgentModules> {
     await this.tenantRecordService.updateTenant(this.rootAgentContext, tenant)
   }
 
-  public async findTenantsByQuery(query: Query<TenantRecord>) {
-    return this.tenantRecordService.findTenantsByQuery(this.rootAgentContext, query)
+  public async findTenantsByQuery(query: Query<TenantRecord>, queryOptions?: QueryOptions) {
+    return this.tenantRecordService.findTenantsByQuery(this.rootAgentContext, query, queryOptions)
   }
 
   public async getAllTenants() {

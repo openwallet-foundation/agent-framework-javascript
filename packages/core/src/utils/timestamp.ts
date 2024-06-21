@@ -10,3 +10,10 @@ export default function timestamp(): Uint8Array {
   }
   return Uint8Array.from(bytes).reverse()
 }
+
+/**
+ * Returns the current time in seconds
+ */
+export function nowInSeconds() {
+  return Math.floor(new Date().getTime() / 1000)
+}

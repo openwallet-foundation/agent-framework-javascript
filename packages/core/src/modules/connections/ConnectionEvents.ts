@@ -4,6 +4,7 @@ import type { BaseEvent } from '../../agent/Events'
 
 export enum ConnectionEventTypes {
   ConnectionStateChanged = 'ConnectionStateChanged',
+  ConnectionDidRotated = 'ConnectionDidRotated',
 }
 
 export interface ConnectionStateChangedEvent extends BaseEvent {
@@ -11,5 +12,21 @@ export interface ConnectionStateChangedEvent extends BaseEvent {
   payload: {
     connectionRecord: ConnectionRecord
     previousState: DidExchangeState | null
+  }
+}
+
+export interface ConnectionDidRotatedEvent extends BaseEvent {
+  type: typeof ConnectionEventTypes.ConnectionDidRotated
+  payload: {
+    connectionRecord: ConnectionRecord
+
+    ourDid?: {
+      from: string
+      to: string
+    }
+    theirDid?: {
+      from: string
+      to: string
+    }
   }
 }

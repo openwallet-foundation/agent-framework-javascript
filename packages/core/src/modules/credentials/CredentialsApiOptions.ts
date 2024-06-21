@@ -32,6 +32,16 @@ export type CredentialProtocolVersionType<CPs extends CredentialProtocol[] = Cre
 interface BaseOptions {
   autoAcceptCredential?: AutoAcceptCredential
   comment?: string
+
+  /**
+   * Will be ignored for v1 protocol as it is not supported
+   */
+  goalCode?: string
+
+  /**
+   * Will be ignored for v1 protocol as it is not supported
+   */
+  goal?: string
 }
 
 /**

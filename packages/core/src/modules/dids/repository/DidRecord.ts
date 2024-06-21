@@ -30,6 +30,11 @@ export interface CustomDidTags extends TagsBase {
 }
 
 type DefaultDidTags = {
+  // We set the recipientKeyFingeprints as a default tag, if the did record has a did document
+  // If the did record does not have a did document, we can't calculate it, and it needs to be
+  // handled by the creator of the did record
+  recipientKeyFingerprints?: string[]
+
   role: DidDocumentRole
   method: string
   legacyUnqualifiedDid?: string
@@ -75,6 +80,11 @@ export class DidRecord extends BaseRecord<DefaultDidTags, CustomDidTags, DidReco
       legacyUnqualifiedDid: legacyDid?.unqualifiedDid,
       did: this.did,
       methodSpecificIdentifier: did.id,
+
+      // Calculate if we have a did document, otherwise use the already present recipient keys
+      recipientKeyFingerprints: this.didDocument
+        ? this.didDocument.recipientKeys.map((recipientKey) => recipientKey.fingerprint)
+        : this._tags.recipientKeyFingerprints,
     }
   }
 }

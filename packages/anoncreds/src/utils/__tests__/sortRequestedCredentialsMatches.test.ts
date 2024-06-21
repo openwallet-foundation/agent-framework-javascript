@@ -2,26 +2,29 @@ import type { AnonCredsCredentialInfo, AnonCredsRequestedAttributeMatch } from '
 
 import { sortRequestedCredentialsMatches } from '../sortRequestedCredentialsMatches'
 
-const credentialInfo = {} as unknown as AnonCredsCredentialInfo
+const credentialInfo = {
+  updatedAt: new Date('2024-01-01T00:00:00Z'),
+  createdAt: new Date('2024-01-01T00:00:00Z'),
+} as unknown as AnonCredsCredentialInfo
 
 const credentials: AnonCredsRequestedAttributeMatch[] = [
   {
     credentialId: '1',
     revealed: true,
     revoked: true,
-    credentialInfo,
+    credentialInfo: { ...credentialInfo, updatedAt: new Date('2024-01-01T00:00:01Z') },
   },
   {
     credentialId: '2',
     revealed: true,
     revoked: undefined,
-    credentialInfo,
+    credentialInfo: { ...credentialInfo, updatedAt: new Date('2024-01-01T00:00:01Z') },
   },
   {
     credentialId: '3',
     revealed: true,
     revoked: false,
-    credentialInfo,
+    credentialInfo: { ...credentialInfo, updatedAt: new Date('2024-01-01T00:00:01Z') },
   },
   {
     credentialId: '4',

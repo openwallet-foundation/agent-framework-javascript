@@ -1,6 +1,6 @@
 import type { QuestionAnswerStateChangedEvent } from '../QuestionAnswerEvents'
 import type { ValidResponse } from '../models'
-import type { AgentContext, InboundMessageContext, Query } from '@credo-ts/core'
+import type { AgentContext, InboundMessageContext, Query, QueryOptions } from '@credo-ts/core'
 
 import { CredoError, EventEmitter, inject, injectable, InjectionSymbols, Logger } from '@credo-ts/core'
 
@@ -288,7 +288,11 @@ export class QuestionAnswerService {
     return this.questionAnswerRepository.getAll(agentContext)
   }
 
-  public async findAllByQuery(agentContext: AgentContext, query: Query<QuestionAnswerRecord>) {
-    return this.questionAnswerRepository.findByQuery(agentContext, query)
+  public async findAllByQuery(
+    agentContext: AgentContext,
+    query: Query<QuestionAnswerRecord>,
+    queryOptions?: QueryOptions
+  ) {
+    return this.questionAnswerRepository.findByQuery(agentContext, query, queryOptions)
   }
 }

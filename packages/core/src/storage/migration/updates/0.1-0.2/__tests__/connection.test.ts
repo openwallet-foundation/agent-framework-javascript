@@ -234,12 +234,12 @@ describe('0.1-0.2 | Connection', () => {
             didDocumentString: JSON.stringify(legacyDidPeerR1xKJw17sUoXhejEpugMYJ),
           },
         },
-        _tags: {
-          recipientKeyFingerprints: [
-            'z6MksYU4MHtfmNhNm1uGMvANr9j4CBv2FymjiJtRgA36bSVH',
-            'z6MksYU4MHtfmNhNm1uGMvANr9j4CBv2FymjiJtRgA36bSVH',
-          ],
-        },
+      })
+      expect(didRecord.getTags()).toMatchObject({
+        recipientKeyFingerprints: [
+          'z6MksYU4MHtfmNhNm1uGMvANr9j4CBv2FymjiJtRgA36bSVH',
+          'z6MksYU4MHtfmNhNm1uGMvANr9j4CBv2FymjiJtRgA36bSVH',
+        ],
       })
 
       expect(theirDidRecord.toJSON()).toMatchObject({
@@ -253,12 +253,12 @@ describe('0.1-0.2 | Connection', () => {
             didDocumentString: JSON.stringify(legacyDidPeer4kgVt6CidfKgo1MoWMqsQX),
           },
         },
-        _tags: {
-          recipientKeyFingerprints: [
-            'z6MkjKUBV9DDUj7cgW8UbDJZhPcHCH8up26Lrr8YqkAS4wcb',
-            'z6MkjKUBV9DDUj7cgW8UbDJZhPcHCH8up26Lrr8YqkAS4wcb',
-          ],
-        },
+      })
+      expect(theirDidRecord.getTags()).toMatchObject({
+        recipientKeyFingerprints: [
+          'z6MkjKUBV9DDUj7cgW8UbDJZhPcHCH8up26Lrr8YqkAS4wcb',
+          'z6MkjKUBV9DDUj7cgW8UbDJZhPcHCH8up26Lrr8YqkAS4wcb',
+        ],
       })
     })
 

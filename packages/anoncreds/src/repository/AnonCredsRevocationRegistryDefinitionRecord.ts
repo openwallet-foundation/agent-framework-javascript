@@ -8,6 +8,7 @@ export interface AnonCredsRevocationRegistryDefinitionRecordProps {
   id?: string
   revocationRegistryDefinitionId: string
   revocationRegistryDefinition: AnonCredsRevocationRegistryDefinition
+  createdAt?: Date
 }
 
 export type DefaultAnonCredsRevocationRegistryDefinitionTags = {
@@ -33,6 +34,7 @@ export class AnonCredsRevocationRegistryDefinitionRecord extends BaseRecord<
       this.id = props.id ?? utils.uuid()
       this.revocationRegistryDefinitionId = props.revocationRegistryDefinitionId
       this.revocationRegistryDefinition = props.revocationRegistryDefinition
+      this.createdAt = props.createdAt ?? new Date()
     }
   }
 

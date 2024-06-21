@@ -1,5 +1,5 @@
 import type { GenericRecord, SaveGenericRecordOption } from './repository/GenericRecord'
-import type { Query } from '../../storage/StorageService'
+import type { Query, QueryOptions } from '../../storage/StorageService'
 
 import { AgentContext } from '../../agent'
 import { InjectionSymbols } from '../../constants'
@@ -80,8 +80,8 @@ export class GenericRecordsApi {
     return this.genericRecordsService.findById(this.agentContext, id)
   }
 
-  public async findAllByQuery(query: Query<GenericRecord>): Promise<GenericRecord[]> {
-    return this.genericRecordsService.findAllByQuery(this.agentContext, query)
+  public async findAllByQuery(query: Query<GenericRecord>, queryOptions?: QueryOptions): Promise<GenericRecord[]> {
+    return this.genericRecordsService.findAllByQuery(this.agentContext, query, queryOptions)
   }
 
   public async getAll(): Promise<GenericRecord[]> {

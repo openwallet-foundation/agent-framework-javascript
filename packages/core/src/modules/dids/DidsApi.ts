@@ -157,7 +157,6 @@ export class DidsApi {
     if (existingDidRecord) {
       existingDidRecord.didDocument = didDocument
       existingDidRecord.setTags({
-        recipientKeyFingerprints: didDocument.recipientKeys.map((key) => key.fingerprint),
         alternativeDids: isValidPeerDid(didDocument.id) ? getAlternativeDidsForPeerDid(did) : undefined,
       })
 
@@ -170,7 +169,6 @@ export class DidsApi {
       did,
       didDocument,
       tags: {
-        recipientKeyFingerprints: didDocument.recipientKeys.map((key) => key.fingerprint),
         alternativeDids: isValidPeerDid(didDocument.id) ? getAlternativeDidsForPeerDid(did) : undefined,
       },
     })

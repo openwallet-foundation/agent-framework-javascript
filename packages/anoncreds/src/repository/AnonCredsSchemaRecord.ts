@@ -11,6 +11,7 @@ export interface AnonCredsSchemaRecordProps {
   schemaId: string
   schema: AnonCredsSchema
   methodName: string
+  createdAt?: Date
 }
 
 export type DefaultAnonCredsSchemaTags = {
@@ -48,6 +49,7 @@ export class AnonCredsSchemaRecord extends BaseRecord<
 
     if (props) {
       this.id = props.id ?? utils.uuid()
+      this.createdAt = props.createdAt ?? new Date()
       this.schema = props.schema
       this.schemaId = props.schemaId
       this.methodName = props.methodName

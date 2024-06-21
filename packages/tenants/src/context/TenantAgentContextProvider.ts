@@ -179,11 +179,14 @@ export class TenantAgentContextProvider implements AgentContextProvider {
    * to update the storage for a tenant manually
    */
   public async updateTenantStorage(tenantRecord: TenantRecord, updateOptions?: UpdateAssistantUpdateOptions) {
-    await this.tenantSessionCoordinator.getContextForSession(tenantRecord, {
+    const agentContext = await this.tenantSessionCoordinator.getContextForSession(tenantRecord, {
       // runInMutex allows us to run the updateTenantStorage method in a mutex lock
       // prevent other sessions from being started while the update is in progress
       runInMutex: (agentContext) => this._updateTenantStorage(tenantRecord, agentContext, updateOptions),
     })
+
+    // End sesion afterwards
+    await agentContext.endSession()
   }
 
   /**

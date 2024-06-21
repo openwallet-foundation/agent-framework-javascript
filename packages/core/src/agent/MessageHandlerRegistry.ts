@@ -1,5 +1,6 @@
 import type { AgentMessage } from './AgentMessage'
 import type { MessageHandler } from './MessageHandler'
+import type { MessageHandlerMiddleware } from './MessageHandlerMiddleware'
 import type { ParsedDidCommProtocolUri } from '../utils/messageType'
 
 import { injectable } from 'tsyringe'
@@ -9,9 +10,27 @@ import { supportsIncomingDidCommProtocolUri, canHandleMessageType, parseMessageT
 @injectable()
 export class MessageHandlerRegistry {
   private messageHandlers: MessageHandler[] = []
+  public readonly messageHandlerMiddlewares: MessageHandlerMiddleware[] = []
+  private _fallbackMessageHandler?: MessageHandler['handle']
 
   public registerMessageHandler(messageHandler: MessageHandler) {
     this.messageHandlers.push(messageHandler)
+  }
+
+  public registerMessageHandlerMiddleware(messageHandlerMiddleware: MessageHandlerMiddleware) {
+    this.messageHandlerMiddlewares.push(messageHandlerMiddleware)
+  }
+
+  public get fallbackMessageHandler() {
+    return this._fallbackMessageHandler
+  }
+
+  /**
+   * Sets the fallback message handler, the message handler that will be called if no handler
+   * is registered for an incoming message type.
+   */
+  public setFallbackMessageHandler(fallbackMessageHandler: MessageHandler['handle']) {
+    this._fallbackMessageHandler = fallbackMessageHandler
   }
 
   public getHandlerForMessageType(messageType: string): MessageHandler | undefined {

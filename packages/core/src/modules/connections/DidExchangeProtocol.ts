@@ -257,7 +257,7 @@ export class DidExchangeProtocol {
     let services: ResolvedDidCommService[] = []
     if (routing) {
       services = routingToServices(routing)
-    } else if (outOfBandRecord) {
+    } else if (outOfBandRecord.outOfBandInvitation.getInlineServices().length > 0) {
       const inlineServices = outOfBandRecord.outOfBandInvitation.getInlineServices()
       services = inlineServices.map((service) => ({
         id: service.id,
@@ -265,6 +265,11 @@ export class DidExchangeProtocol {
         recipientKeys: service.recipientKeys.map(didKeyToInstanceOfKey),
         routingKeys: service.routingKeys?.map(didKeyToInstanceOfKey) ?? [],
       }))
+    } else {
+      // We don't support using a did from the OOB invitation services currently, in this case we always pass routing to this method
+      throw new CredoError(
+        'No routing provided, and no inline services found in out of band invitation. When using did services in out of band invitation, make sure to provide routing information for rotation.'
+      )
     }
 
     // Use the same num algo for response as received in request

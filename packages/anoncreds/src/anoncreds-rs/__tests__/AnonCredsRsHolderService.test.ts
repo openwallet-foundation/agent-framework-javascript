@@ -7,6 +7,7 @@ import type {
   AnonCredsSchema,
   AnonCredsSelectedCredentials,
 } from '@credo-ts/anoncreds'
+import type { DidRepository } from '@credo-ts/core'
 import type { JsonObject } from '@hyperledger/anoncreds-shared'
 
 import {
@@ -90,7 +91,7 @@ const agentContext = getAgentContext({
       }),
     ],
     [InjectionSymbols.Logger, testLogger],
-    [DidResolverService, new DidResolverService(testLogger, new DidsModuleConfig())],
+    [DidResolverService, new DidResolverService(testLogger, new DidsModuleConfig(), {} as unknown as DidRepository)],
     [W3cCredentialsModuleConfig, new W3cCredentialsModuleConfig()],
     [SignatureSuiteToken, 'default'],
   ],
@@ -156,9 +157,6 @@ describe('AnonCredsRsHolderService', () => {
         },
         attr2_referent: {
           name: 'phoneNumber',
-        },
-        attr3_referent: {
-          name: 'age',
         },
         attr4_referent: {
           names: ['name', 'height'],
@@ -268,11 +266,6 @@ describe('AnonCredsRsHolderService', () => {
           credentialInfo: { ...phoneCredentialInfo, credentialId: phoneRecord.id },
           revealed: true,
         },
-        attr3_referent: {
-          credentialId: personRecord.id,
-          credentialInfo: { ...personCredentialInfo, credentialId: personRecord.id },
-          revealed: true,
-        },
         attr4_referent: {
           credentialId: personRecord.id,
           credentialInfo: { ...personCredentialInfo, credentialId: personRecord.id },
@@ -342,13 +335,9 @@ describe('AnonCredsRsHolderService', () => {
         attr2_referent: {
           name: 'phoneNumber',
         },
-        attr3_referent: {
-          name: 'age',
-          restrictions: [{ schema_id: 'schemaid:uri', schema_name: 'schemaName' }, { schema_version: '1.0' }],
-        },
         attr4_referent: {
           names: ['name', 'height'],
-          restrictions: [{ cred_def_id: 'crededefid:uri', issuer_id: 'issuerid:uri' }],
+          restrictions: [{ cred_def_id: 'crededefid:uri', issuer_id: 'issuerid:uri' }, { schema_version: '1.0' }],
         },
         attr5_referent: {
           name: 'name',
@@ -391,7 +380,7 @@ describe('AnonCredsRsHolderService', () => {
             'anonCredsAttr::name::marker': true,
           },
           {
-            anonCredsIssuerId: 'issuer:uri',
+            issuerId: 'issuer:uri',
           },
         ],
       })
@@ -412,27 +401,6 @@ describe('AnonCredsRsHolderService', () => {
       })
     })
 
-    test('referent with multiple, complex restrictions', async () => {
-      await anonCredsHolderService.getCredentialsForProofRequest(agentContext, {
-        proofRequest,
-        attributeReferent: 'attr3_referent',
-      })
-
-      expect(findByQueryMock).toHaveBeenCalledWith(agentContext, {
-        $and: [
-          {
-            'anonCredsAttr::age::marker': true,
-          },
-          {
-            $or: [
-              { anonCredsSchemaId: 'schemaid:uri', anonCredsSchemaName: 'schemaName' },
-              { anonCredsSchemaVersion: '1.0' },
-            ],
-          },
-        ],
-      })
-    })
-
     test('referent with multiple names and restrictions', async () => {
       await anonCredsHolderService.getCredentialsForProofRequest(agentContext, {
         proofRequest,
@@ -446,8 +414,15 @@ describe('AnonCredsRsHolderService', () => {
             'anonCredsAttr::height::marker': true,
           },
           {
-            anonCredsCredentialDefinitionId: 'crededefid:uri',
-            anonCredsIssuerId: 'issuerid:uri',
+            $or: [
+              {
+                anonCredsCredentialDefinitionId: 'crededefid:uri',
+                issuerId: 'issuerid:uri',
+              },
+              {
+                anonCredsSchemaVersion: '1.0',
+              },
+            ],
           },
         ],
       })
@@ -611,7 +586,7 @@ describe('AnonCredsRsHolderService', () => {
       anonCredsCredentialDefinitionId: 'credDefId',
       anonCredsSchemaId: 'schemaId',
       anonCredsSchemaIssuerId: 'schemaIssuerDid',
-      anonCredsIssuerId: 'issuerDid',
+      issuerId: 'issuerDid',
       anonCredsSchemaName: 'schemaName',
       anonCredsSchemaVersion: 'schemaVersion',
       anonCredsMethodName: 'inMemory',

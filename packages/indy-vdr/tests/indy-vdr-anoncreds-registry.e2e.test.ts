@@ -58,15 +58,20 @@ const indyVdrPoolService = endorser.dependencyManager.resolve(IndyVdrPoolService
 // FIXME: this test is very slow, probably due to the sleeps. Can we speed it up?
 describe('IndyVdrAnonCredsRegistry', () => {
   let endorserDid: string
+  let agentDid: string
   beforeAll(async () => {
     await endorser.initialize()
+    await agent.initialize()
     const unqualifiedSubmitterDid = await importExistingIndyDidFromPrivateKey(
       endorser,
       TypedArrayEncoder.fromString('00000000000000000000000Endorser9')
     )
     endorserDid = `did:indy:pool:localtest:${unqualifiedSubmitterDid}`
-
-    await agent.initialize()
+    const agentUnqualifiedSubmitterDid = await importExistingIndyDidFromPrivateKey(
+      agent,
+      TypedArrayEncoder.fromString('00000000000000000000000Endorser9')
+    )
+    agentDid = `did:indy:pool:localtest:${agentUnqualifiedSubmitterDid}`
   })
 
   afterAll(async () => {
@@ -1151,6 +1156,174 @@ describe('IndyVdrAnonCredsRegistry', () => {
       revocationStatusListMetadata: {
         didIndyNamespace: 'pool:localtest',
       },
+    })
+  })
+
+  test('register and resolve a credential definition (internal,credDefDid != schemaDid)', async () => {
+    const didCreateResult = (await endorser.dids.create<IndyVdrDidCreateOptions>({
+      method: 'indy',
+      options: {
+        endorserMode: 'internal',
+        endorserDid: endorserDid,
+      },
+    })) as IndyVdrDidCreateResult
+
+    if (didCreateResult.didState.state !== 'finished') throw Error('did was not successfully created')
+    endorser.config.logger.debug(`didIndyIssuerId:: ${didCreateResult.didState.did}`)
+    const didIndyIssuerId = didCreateResult.didState.did
+    const { namespaceIdentifier: legacyIssuerId } = parseIndyDid(didIndyIssuerId)
+    const dynamicVersion = `1.${Math.random() * 100}`
+    const legacySchemaId = `${legacyIssuerId}:2:test:${dynamicVersion}`
+    const didIndySchemaId = `did:indy:pool:localtest:${legacyIssuerId}/anoncreds/v0/SCHEMA/test/${dynamicVersion}`
+
+    const schemaResult = await indyVdrAnonCredsRegistry.registerSchema(endorser.context, {
+      options: {
+        endorserMode: 'internal',
+        endorserDid,
+      },
+      schema: {
+        attrNames: ['age'],
+        issuerId: didIndyIssuerId,
+        name: 'test',
+        version: dynamicVersion,
+      },
+    })
+    const schemaSeqNo = schemaResult.schemaMetadata.indyLedgerSeqNo as number
+    expect(schemaResult).toMatchObject({
+      schemaState: {
+        state: 'finished',
+        schema: {
+          attrNames: ['age'],
+          issuerId: didIndyIssuerId,
+          name: 'test',
+          version: dynamicVersion,
+        },
+        schemaId: didIndySchemaId,
+      },
+      registrationMetadata: {},
+      schemaMetadata: {
+        indyLedgerSeqNo: expect.any(Number),
+      },
+    })
+    // Wait some time before resolving credential definition object
+    await new Promise((res) => setTimeout(res, 1000))
+    const legacySchema = await indyVdrAnonCredsRegistry.getSchema(endorser.context, legacySchemaId)
+    expect(legacySchema).toMatchObject({
+      schema: {
+        attrNames: ['age'],
+        name: 'test',
+        version: dynamicVersion,
+        issuerId: legacyIssuerId,
+      },
+      schemaId: legacySchemaId,
+      resolutionMetadata: {},
+      schemaMetadata: {
+        didIndyNamespace: 'pool:localtest',
+        indyLedgerSeqNo: expect.any(Number),
+      },
+    })
+    // Resolve using did indy schema id
+    const didIndySchema = await indyVdrAnonCredsRegistry.getSchema(endorser.context, didIndySchemaId)
+    expect(didIndySchema).toMatchObject({
+      schema: {
+        attrNames: ['age'],
+        name: 'test',
+        version: dynamicVersion,
+        issuerId: didIndyIssuerId,
+      },
+      schemaId: didIndySchemaId,
+      resolutionMetadata: {},
+      schemaMetadata: {
+        didIndyNamespace: 'pool:localtest',
+        indyLedgerSeqNo: expect.any(Number),
+      },
+    })
+
+    const agentDidCreateResult = (await agent.dids.create<IndyVdrDidCreateOptions>({
+      method: 'indy',
+      options: {
+        endorserDid: agentDid,
+        endorserMode: 'internal',
+      },
+    })) as IndyVdrDidCreateResult
+
+    if (agentDidCreateResult.didState.state !== 'finished') throw Error('did was not successfully created')
+    const didIndyAgentIssuerId = agentDidCreateResult.didState.did
+    const { namespaceIdentifier: agentLegacyIssuerId } = parseIndyDid(didIndyAgentIssuerId)
+
+    const legacyCredentialDefinitionId = `${agentLegacyIssuerId}:3:CL:${schemaSeqNo}:TAG`
+    const didIndyCredentialDefinitionId = `did:indy:pool:localtest:${agentLegacyIssuerId}/anoncreds/v0/CLAIM_DEF/${schemaSeqNo}/TAG`
+
+    const credentialDefinitionResult = await indyVdrAnonCredsRegistry.registerCredentialDefinition(agent.context, {
+      credentialDefinition: {
+        issuerId: didIndyAgentIssuerId,
+        tag: 'TAG',
+        schemaId: didIndySchemaId,
+        type: 'CL',
+        value: credentialDefinitionValue,
+      },
+      options: {
+        endorserMode: 'internal',
+        endorserDid: agentDid,
+      },
+    })
+
+    expect(credentialDefinitionResult).toMatchObject({
+      credentialDefinitionMetadata: {},
+      credentialDefinitionState: {
+        credentialDefinition: {
+          issuerId: didIndyAgentIssuerId,
+          tag: 'TAG',
+          schemaId: didIndySchemaId,
+          type: 'CL',
+          value: credentialDefinitionValue,
+        },
+        credentialDefinitionId: didIndyCredentialDefinitionId,
+        state: 'finished',
+      },
+      registrationMetadata: {},
+    })
+
+    // // Wait some time before resolving credential definition object
+    await new Promise((res) => setTimeout(res, 1000))
+    const legacyCredentialDefinition = await indyVdrAnonCredsRegistry.getCredentialDefinition(
+      agent.context,
+      legacyCredentialDefinitionId
+    )
+
+    expect(legacyCredentialDefinition).toMatchObject({
+      credentialDefinitionId: legacyCredentialDefinitionId,
+      credentialDefinition: {
+        issuerId: agentLegacyIssuerId,
+        schemaId: legacySchemaId,
+        tag: 'TAG',
+        type: 'CL',
+        value: credentialDefinitionValue,
+      },
+      credentialDefinitionMetadata: {
+        didIndyNamespace: 'pool:localtest',
+      },
+      resolutionMetadata: {},
+    })
+    // resolve using did indy credential definition id
+    const didIndyCredentialDefinition = await indyVdrAnonCredsRegistry.getCredentialDefinition(
+      agent.context,
+      didIndyCredentialDefinitionId
+    )
+
+    expect(didIndyCredentialDefinition).toMatchObject({
+      credentialDefinitionId: didIndyCredentialDefinitionId,
+      credentialDefinition: {
+        issuerId: didIndyAgentIssuerId,
+        schemaId: didIndySchemaId,
+        tag: 'TAG',
+        type: 'CL',
+        value: credentialDefinitionValue,
+      },
+      credentialDefinitionMetadata: {
+        didIndyNamespace: 'pool:localtest',
+      },
+      resolutionMetadata: {},
     })
   })
 })

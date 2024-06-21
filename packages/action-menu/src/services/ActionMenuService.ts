@@ -7,7 +7,7 @@ import type {
 } from './ActionMenuServiceOptions'
 import type { ActionMenuStateChangedEvent } from '../ActionMenuEvents'
 import type { ActionMenuProblemReportMessage } from '../messages'
-import type { AgentContext, InboundMessageContext, Logger, Query } from '@credo-ts/core'
+import type { AgentContext, InboundMessageContext, Logger, Query, QueryOptions } from '@credo-ts/core'
 
 import { AgentConfig, EventEmitter, CredoError, injectable } from '@credo-ts/core'
 
@@ -343,8 +343,12 @@ export class ActionMenuService {
     })
   }
 
-  public async findAllByQuery(agentContext: AgentContext, options: Query<ActionMenuRecord>) {
-    return await this.actionMenuRepository.findByQuery(agentContext, options)
+  public async findAllByQuery(
+    agentContext: AgentContext,
+    options: Query<ActionMenuRecord>,
+    queryOptions?: QueryOptions
+  ) {
+    return await this.actionMenuRepository.findByQuery(agentContext, options, queryOptions)
   }
 
   private emitStateChangedEvent(

@@ -1,7 +1,6 @@
 node_modules
 build
 .vscode
-yarn-error.log
 .idea
 credo-*.tgz
 # Keeping this one in for now to prevent accidental
@@ -11,4 +10,3 @@ coverage
 .DS_Store
 logs.txt
 logs/
-lerna-debug.log

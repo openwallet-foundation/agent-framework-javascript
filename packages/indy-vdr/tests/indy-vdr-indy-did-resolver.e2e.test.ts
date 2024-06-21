@@ -76,7 +76,9 @@ describe('indy-vdr DID Resolver E2E', () => {
     const { did } = await createDidOnLedger(agent, `did:indy:pool:localtest:${unqualifiedSubmitterDid}`)
 
     // DID created. Now resolve it
-    const didResult = await agent.dids.resolve(did)
+    const didResult = await agent.dids.resolve(did, {
+      useLocalCreatedDidRecord: false,
+    })
     expect(JsonTransformer.toJSON(didResult)).toMatchObject({
       didDocument: {
         '@context': [

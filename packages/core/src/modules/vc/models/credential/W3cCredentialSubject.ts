@@ -4,7 +4,6 @@ import { Transform, TransformationType } from 'class-transformer'
 import { IsOptional, ValidateBy, buildMessage, isInstance } from 'class-validator'
 
 import { CredoError } from '../../../../error'
-import { IsUri, isUri } from '../../../../utils/validators'
 
 /**
  * @see https://www.w3.org/TR/vc-data-model/#credential-subject

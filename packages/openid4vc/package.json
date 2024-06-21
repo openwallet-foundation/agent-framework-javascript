@@ -2,7 +2,7 @@
   "name": "@credo-ts/openid4vc",
   "main": "build/index",
   "types": "build/index",
-  "version": "0.5.1",
+  "version": "0.5.4",
   "files": [
     "build"
   ],
@@ -17,27 +17,28 @@
     "directory": "packages/openid4vc"
   },
   "scripts": {
-    "build": "yarn run clean && yarn run compile",
+    "build": "pnpm run clean && pnpm run compile",
     "clean": "rimraf ./build",
     "compile": "tsc -p tsconfig.build.json",
-    "prepublishOnly": "yarn run build",
+    "prepublishOnly": "pnpm run build",
     "test": "jest"
   },
   "dependencies": {
-    "@credo-ts/core": "0.5.1",
-    "@sphereon/did-auth-siop": "0.6.2",
-    "@sphereon/oid4vci-client": "^0.10.2",
-    "@sphereon/oid4vci-common": "^0.10.1",
-    "@sphereon/oid4vci-issuer": "^0.10.2",
-    "@sphereon/ssi-types": "^0.18.1",
+    "@credo-ts/core": "workspace:*",
+    "@sphereon/did-auth-siop": "^0.6.4",
+    "@sphereon/oid4vci-client": "^0.10.3",
+    "@sphereon/oid4vci-common": "^0.10.3",
+    "@sphereon/oid4vci-issuer": "^0.10.3",
+    "@sphereon/ssi-types": "^0.23.0",
+    "class-transformer": "^0.5.1",
     "rxjs": "^7.8.0"
   },
   "devDependencies": {
-    "@credo-ts/tenants": "0.5.1",
+    "@credo-ts/tenants": "workspace:*",
     "@types/express": "^4.17.21",
     "express": "^4.18.2",
     "nock": "^13.3.0",
     "rimraf": "^4.4.0",
-    "typescript": "~4.9.5"
+    "typescript": "~5.5.0-beta"
   }
 }

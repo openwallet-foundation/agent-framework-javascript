@@ -6,6 +6,7 @@ import { IsValidDrpcRequest } from '../models'
 export interface DrpcRequestObject {
   jsonrpc: string
   method: string
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   params?: any[] | object
   id: string | number | null
 }

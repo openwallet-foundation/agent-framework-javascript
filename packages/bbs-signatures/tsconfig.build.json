@@ -2,7 +2,11 @@
   "extends": "../../tsconfig.build.json",
 
   "compilerOptions": {
-    "outDir": "./build"
+    "outDir": "./build",
+    "baseUrl": ".",
+    "paths": {
+      "@credo-ts/*": ["../*/src"]
+    }
   },
 
   "include": ["src/**/*"]

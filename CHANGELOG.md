@@ -1,7 +1,39 @@
-# Change Log
+# Changelog
 
-All notable changes to this project will be documented in this file.
-See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
+## [0.5.3](https://github.com/openwallet-foundation/credo-ts/compare/v0.5.2...v0.5.3) (2024-05-01)
+
+### Bug Fixes
+
+- allow did document for didcomm without authentication or keyAgreement ([#1848](https://github.com/openwallet-foundation/credo-ts/issues/1848)) ([5d986f0](https://github.com/openwallet-foundation/credo-ts/commit/5d986f0da67de78b4df2ad7ab92eeb2bdf9f2c83))
+- **anoncreds:** migration script credential id ([#1849](https://github.com/openwallet-foundation/credo-ts/issues/1849)) ([e58ec5b](https://github.com/openwallet-foundation/credo-ts/commit/e58ec5bd97043d57fcc3c5a4aee926943e6c5326))
+- cheqd create from did document ([#1850](https://github.com/openwallet-foundation/credo-ts/issues/1850)) ([dcd028e](https://github.com/openwallet-foundation/credo-ts/commit/dcd028ea04863bf9bc93e6bd2f73c6d2a70f274b))
+- store recipient keys by default ([#1847](https://github.com/openwallet-foundation/credo-ts/issues/1847)) ([e9238cf](https://github.com/openwallet-foundation/credo-ts/commit/e9238cfde4d76c5b927f6f76b3529d4c80808a3a))
+
+## [0.5.2](https://github.com/openwallet-foundation/credo-ts/compare/v0.5.1...v0.5.2) (2024-04-26)
+
+### Bug Fixes
+
+- access token can only be used for offer ([#1828](https://github.com/openwallet-foundation/credo-ts/issues/1828)) ([f54b90b](https://github.com/openwallet-foundation/credo-ts/commit/f54b90b0530b43a04df6299a39414a142d73276e))
+- **anoncreds:** credential exchange record migration ([#1844](https://github.com/openwallet-foundation/credo-ts/issues/1844)) ([93b3986](https://github.com/openwallet-foundation/credo-ts/commit/93b3986348a86365c3a2faf8023a51390528df93))
+- **anoncreds:** unqualified revocation registry processing ([#1833](https://github.com/openwallet-foundation/credo-ts/issues/1833)) ([edc5735](https://github.com/openwallet-foundation/credo-ts/commit/edc5735ccb663acabe8b8480f36cc3a72a1cf63d))
+- close tenant session after migration ([#1835](https://github.com/openwallet-foundation/credo-ts/issues/1835)) ([eb2c513](https://github.com/openwallet-foundation/credo-ts/commit/eb2c51384c077038e6cd38c1ab737d0d47c1b81e))
+- node-ffi-napi compatibility ([#1821](https://github.com/openwallet-foundation/credo-ts/issues/1821)) ([81d351b](https://github.com/openwallet-foundation/credo-ts/commit/81d351bc9d4d508ebfac9e7f2b2f10276ab1404a))
+- oid4vp can be used separate from idtoken ([#1827](https://github.com/openwallet-foundation/credo-ts/issues/1827)) ([ca383c2](https://github.com/openwallet-foundation/credo-ts/commit/ca383c284e2073992a1fd280fca99bee1c2e19f8))
+- **openid4vc:** update verified state for more states ([#1831](https://github.com/openwallet-foundation/credo-ts/issues/1831)) ([958bf64](https://github.com/openwallet-foundation/credo-ts/commit/958bf647c086a2ca240e9ad140defc39b7f20f43))
+- remove mediation keys after hangup ([#1843](https://github.com/openwallet-foundation/credo-ts/issues/1843)) ([9c3b950](https://github.com/openwallet-foundation/credo-ts/commit/9c3b9507ec5e33d155cebf9fab97703267b549bd))
+- udpate cheqd deps ([#1830](https://github.com/openwallet-foundation/credo-ts/issues/1830)) ([6b4b71b](https://github.com/openwallet-foundation/credo-ts/commit/6b4b71bf365262e8c2c9718547b60c44f2afc920))
+- update cheqd to 2.4.2 ([#1817](https://github.com/openwallet-foundation/credo-ts/issues/1817)) ([8154df4](https://github.com/openwallet-foundation/credo-ts/commit/8154df45f45bd9da0c60abe3792ff0f081e81818))
+
+### Features
+
+- add disclosures so you know which fields are disclosed ([#1834](https://github.com/openwallet-foundation/credo-ts/issues/1834)) ([6ec43eb](https://github.com/openwallet-foundation/credo-ts/commit/6ec43eb1f539bd8d864d5bbd2ab35459809255ec))
+- apply new version of SD JWT package ([#1787](https://github.com/openwallet-foundation/credo-ts/issues/1787)) ([b41e158](https://github.com/openwallet-foundation/credo-ts/commit/b41e158098773d2f59b5b5cfb82cc6be06a57acd))
+- did rotate event ([#1840](https://github.com/openwallet-foundation/credo-ts/issues/1840)) ([d16bebb](https://github.com/openwallet-foundation/credo-ts/commit/d16bebb7d63bfbad90cedea3c6b4fb3ec20a4be1))
+- openid4vc issued state per credential ([#1829](https://github.com/openwallet-foundation/credo-ts/issues/1829)) ([229c621](https://github.com/openwallet-foundation/credo-ts/commit/229c62177c04060c7ca4c19dfd35bab328035067))
+- queued messages reception time ([#1824](https://github.com/openwallet-foundation/credo-ts/issues/1824)) ([0b4b8dd](https://github.com/openwallet-foundation/credo-ts/commit/0b4b8dd42117eb8e92fcc4be695ff149b49a06c7))
+- sort requested credentials ([#1839](https://github.com/openwallet-foundation/credo-ts/issues/1839)) ([b46c7fa](https://github.com/openwallet-foundation/credo-ts/commit/b46c7fa459d7e1a81744353bf595c754fad1b3a1))
+- support invitationDid when creating an invitation ([#1811](https://github.com/openwallet-foundation/credo-ts/issues/1811)) ([e5c6698](https://github.com/openwallet-foundation/credo-ts/commit/e5c66988e75fd9a5f047fd96774c0bf494061cbc))
+- **tenants:** return value from withTenatnAgent ([#1832](https://github.com/openwallet-foundation/credo-ts/issues/1832)) ([8371d87](https://github.com/openwallet-foundation/credo-ts/commit/8371d8728685295a1f648ca677cc6de2cb873c09))
 
 ## [0.5.1](https://github.com/openwallet-foundation/credo-ts/compare/v0.5.0...v0.5.1) (2024-03-28)
 

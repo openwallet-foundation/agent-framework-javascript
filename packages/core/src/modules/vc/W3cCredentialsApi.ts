@@ -8,7 +8,7 @@ import type {
 } from './W3cCredentialServiceOptions'
 import type { W3cVerifiableCredential, ClaimFormat } from './models'
 import type { W3cCredentialRecord } from './repository'
-import type { Query } from '../../storage/StorageService'
+import type { Query, QueryOptions } from '../../storage/StorageService'
 
 import { AgentContext } from '../../agent'
 import { injectable } from '../../plugins'
@@ -44,8 +44,11 @@ export class W3cCredentialsApi {
     return this.w3cCredentialService.getCredentialRecordById(this.agentContext, id)
   }
 
-  public async findCredentialRecordsByQuery(query: Query<W3cCredentialRecord>): Promise<W3cVerifiableCredential[]> {
-    return this.w3cCredentialService.findCredentialsByQuery(this.agentContext, query)
+  public async findCredentialRecordsByQuery(
+    query: Query<W3cCredentialRecord>,
+    queryOptions?: QueryOptions
+  ): Promise<W3cVerifiableCredential[]> {
+    return this.w3cCredentialService.findCredentialsByQuery(this.agentContext, query, queryOptions)
   }
 
   public async signCredential<Format extends ClaimFormat.JwtVc | ClaimFormat.LdpVc>(

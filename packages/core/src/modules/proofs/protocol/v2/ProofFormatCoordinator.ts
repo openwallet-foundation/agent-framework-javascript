@@ -408,7 +408,11 @@ export class ProofFormatCoordinator<PFs extends ProofFormatService[]> {
       credentialsForRequest[formatService.formatKey] = credentialsForFormat
     }
 
-    return credentialsForRequest
+    return credentialsForRequest as ProofFormatCredentialForRequestPayload<
+      ExtractProofFormats<PFs>,
+      'getCredentialsForRequest',
+      'output'
+    >
   }
 
   public async selectCredentialsForRequest(
@@ -466,7 +470,11 @@ export class ProofFormatCoordinator<PFs extends ProofFormatService[]> {
       credentialsForRequest[formatService.formatKey] = credentialsForFormat
     }
 
-    return credentialsForRequest
+    return credentialsForRequest as ProofFormatCredentialForRequestPayload<
+      ExtractProofFormats<PFs>,
+      'selectCredentialsForRequest',
+      'output'
+    >
   }
 
   public async processPresentation(

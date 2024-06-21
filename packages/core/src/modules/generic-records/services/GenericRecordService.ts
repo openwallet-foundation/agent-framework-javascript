@@ -1,5 +1,5 @@
 import type { AgentContext } from '../../../agent'
-import type { Query } from '../../../storage/StorageService'
+import type { Query, QueryOptions } from '../../../storage/StorageService'
 import type { SaveGenericRecordOption } from '../repository/GenericRecord'
 
 import { CredoError } from '../../../error'
@@ -50,8 +50,8 @@ export class GenericRecordService {
     }
   }
 
-  public async findAllByQuery(agentContext: AgentContext, query: Query<GenericRecord>) {
-    return this.genericRecordsRepository.findByQuery(agentContext, query)
+  public async findAllByQuery(agentContext: AgentContext, query: Query<GenericRecord>, queryOptions?: QueryOptions) {
+    return this.genericRecordsRepository.findByQuery(agentContext, query, queryOptions)
   }
 
   public async findById(agentContext: AgentContext, id: string): Promise<GenericRecord | null> {

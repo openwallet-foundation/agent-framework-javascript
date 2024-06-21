@@ -14,6 +14,7 @@ import path from 'path'
 import { AskarModule, AskarMultiWalletDatabaseScheme } from '../../askar/src'
 import { ariesAskar } from '../../askar/tests/helpers'
 import { testLogger } from '../../core/tests'
+import { TenantSessionCoordinator } from '../src/context/TenantSessionCoordinator'
 
 import { TenantsModule } from '@credo-ts/tenants'
 
@@ -193,6 +194,9 @@ describe('Tenants Storage Update', () => {
       agent.modules.tenants.getTenantAgent({ tenantId: '1d45d3c2-3480-4375-ac6f-47c322f091b0' })
     ).rejects.toThrow(/Current agent storage for tenant 1d45d3c2-3480-4375-ac6f-47c322f091b0 is not up to date/)
 
+    const tenantSessionCoordinator = agent.dependencyManager.resolve(TenantSessionCoordinator)
+    expect(tenantSessionCoordinator.getSessionCountForTenant(tenant.id)).toBe(0)
+
     // Update tenant
     await agent.modules.tenants.updateTenantStorage({
       tenantId: tenant.id,
@@ -200,6 +204,9 @@ describe('Tenants Storage Update', () => {
         backupBeforeStorageUpdate: false,
       },
     })
+
+    // Should have closed session after upgrade
+    expect(tenantSessionCoordinator.getSessionCountForTenant(tenant.id)).toBe(0)
 
     // Expect tenant storage version to be 0.5
     const updatedTenant = await agent.modules.tenants.getTenantById('1d45d3c2-3480-4375-ac6f-47c322f091b0')

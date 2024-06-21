@@ -1,7 +1,7 @@
 import type { DidDocument, VerificationMethod } from '../../dids'
 
 import { Key, KeyType } from '../../../crypto'
-import { keyReferenceToKey } from '../../dids'
+import { getKeyFromVerificationMethod } from '../../dids'
 import { convertPublicKeyToX25519 } from '../../dids/domain/key-type/ed25519'
 
 /**
@@ -23,7 +23,7 @@ export function findMatchingEd25519Key(x25519Key: Key, didDocument: DidDocument)
   ]
 
   return allKeyReferences
-    .map((keyReference) => keyReferenceToKey(didDocument, keyReference.id))
+    .map((keyReference) => getKeyFromVerificationMethod(didDocument.dereferenceKey(keyReference.id)))
     .filter((key) => key?.keyType === KeyType.Ed25519)
     .find((keyEd25519) => {
       const keyX25519 = Key.fromPublicKey(convertPublicKeyToX25519(keyEd25519.publicKey), KeyType.X25519)

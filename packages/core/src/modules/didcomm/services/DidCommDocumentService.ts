@@ -1,10 +1,11 @@
 import type { AgentContext } from '../../../agent'
+import type { Key } from '../../../crypto'
 import type { ResolvedDidCommService } from '../types'
 
 import { KeyType } from '../../../crypto'
 import { injectable } from '../../../plugins'
 import { DidResolverService } from '../../dids'
-import { DidCommV1Service, IndyAgentService, keyReferenceToKey, parseDid } from '../../dids/domain'
+import { DidCommV1Service, getKeyFromVerificationMethod, IndyAgentService, parseDid } from '../../dids/domain'
 import { verkeyToInstanceOfKey } from '../../dids/helpers'
 import { findMatchingEd25519Key } from '../util/matchingEd25519Key'
 
@@ -39,19 +40,30 @@ export class DidCommDocumentService {
         })
       } else if (didCommService.type === DidCommV1Service.type) {
         // Resolve dids to DIDDocs to retrieve routingKeys
-        const routingKeys = []
+        const routingKeys: Key[] = []
         for (const routingKey of didCommService.routingKeys ?? []) {
           const routingDidDocument = await this.didResolverService.resolveDidDocument(agentContext, routingKey)
-          routingKeys.push(keyReferenceToKey(routingDidDocument, routingKey))
+          routingKeys.push(
+            getKeyFromVerificationMethod(
+              routingDidDocument.dereferenceKey(routingKey, ['authentication', 'keyAgreement'])
+            )
+          )
         }
 
         // DidCommV1Service has keys encoded as key references
 
         // Dereference recipientKeys
         const recipientKeys = didCommService.recipientKeys.map((recipientKeyReference) => {
-          const key = keyReferenceToKey(didDocument, recipientKeyReference)
+          // FIXME: we allow authentication keys as historically ed25519 keys have been used in did documents
+          // for didcomm. In the future we should update this to only be allowed for IndyAgent and DidCommV1 services
+          // as didcomm v2 doesn't have this issue anymore
+          const key = getKeyFromVerificationMethod(
+            didDocument.dereferenceKey(recipientKeyReference, ['authentication', 'keyAgreement'])
+          )
 
           // try to find a matching Ed25519 key (https://sovrin-foundation.github.io/sovrin/spec/did-method-spec-template.html#did-document-notes)
+          // FIXME: Now that indy-sdk is deprecated, we should look into the possiblty of using the X25519 key directly
+          // removing the need to also include the Ed25519 key in the did document.
           if (key.keyType === KeyType.X25519) {
             const matchingEd25519Key = findMatchingEd25519Key(key, didDocument)
             if (matchingEd25519Key) return matchingEd25519Key

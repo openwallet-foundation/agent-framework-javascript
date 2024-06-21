@@ -102,11 +102,14 @@ export type OpenId4VciCredentialRequestToCredentialMapper = (options: {
 }) => Promise<OpenId4VciSignCredential> | OpenId4VciSignCredential
 
 export type OpenId4VciSignCredential = OpenId4VciSignSdJwtCredential | OpenId4VciSignW3cCredential
+
 export interface OpenId4VciSignSdJwtCredential extends SdJwtVcSignOptions {
+  credentialSupportedId: string
   format: ClaimFormat.SdJwtVc | `${ClaimFormat.SdJwtVc}`
 }
 
 export interface OpenId4VciSignW3cCredential {
+  credentialSupportedId: string
   format: ClaimFormat.JwtVc | `${ClaimFormat.JwtVc}` | ClaimFormat.LdpVc | `${ClaimFormat.LdpVc}`
   verificationMethod: string
   credential: W3cCredential

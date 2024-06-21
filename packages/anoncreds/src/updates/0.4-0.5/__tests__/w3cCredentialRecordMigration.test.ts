@@ -1,8 +1,11 @@
-import type { Wallet } from '@credo-ts/core'
+import type { DidRepository, Wallet } from '@credo-ts/core'
 
 import {
+  CredentialState,
   Agent,
   CacheModuleConfig,
+  CredentialExchangeRecord,
+  CredentialRole,
   CredoError,
   DidResolverService,
   DidsModuleConfig,
@@ -11,6 +14,7 @@ import {
   SignatureSuiteToken,
   W3cCredentialRepository,
   W3cCredentialsModuleConfig,
+  CredentialRepository,
 } from '@credo-ts/core'
 import { Subject } from 'rxjs'
 
@@ -43,6 +47,11 @@ const w3cRepo = {
   update: jest.fn(),
 }
 
+const credentialExchangeRepo = {
+  findByQuery: jest.fn(),
+  update: jest.fn(),
+}
+
 const inMemoryLruCache = {
   get: jest.fn(),
   set: jest.fn(),
@@ -61,12 +70,13 @@ const agentContext = getAgentContext({
     [CacheModuleConfig, cacheModuleConfig],
     [EventEmitter, eventEmitter],
     [W3cCredentialRepository, w3cRepo],
+    [CredentialRepository, credentialExchangeRepo],
     [InjectionSymbols.Stop$, new Subject<boolean>()],
     [InjectionSymbols.AgentDependencies, agentDependencies],
     [InjectionSymbols.FileSystem, new agentDependencies.FileSystem()],
     [InjectionSymbols.StorageService, inMemoryStorageService],
     [AnonCredsRegistryService, new AnonCredsRegistryService()],
-    [DidResolverService, new DidResolverService(testLogger, new DidsModuleConfig())],
+    [DidResolverService, new DidResolverService(testLogger, new DidsModuleConfig(), {} as unknown as DidRepository)],
     [InjectionSymbols.Logger, testLogger],
     [W3cCredentialsModuleConfig, new W3cCredentialsModuleConfig()],
     [AnonCredsModuleConfig, anonCredsModuleConfig],
@@ -110,6 +120,8 @@ describe('0.4-0.5 | AnonCredsRecord', () => {
     beforeEach(() => {
       anonCredsRepo.delete.mockClear()
       anonCredsRepo.getAll.mockClear()
+      credentialExchangeRepo.findByQuery.mockClear()
+      credentialExchangeRepo.update.mockClear()
       w3cRepo.save.mockClear()
       w3cRepo.update.mockClear()
       inMemoryLruCache.clear.mockClear()
@@ -137,6 +149,16 @@ describe('0.4-0.5 | AnonCredsRecord', () => {
       })
     })
 
+    it('revocable credential with did:indy (sovrin) identifier', async () => {
+      await testMigration(agent, {
+        issuerId: 'did:indy:sovrin:7Tqg6BwSSWapxgUDm9KKgg',
+        schemaIssuerId: 'did:indy:sovrin:7Tqg6BwSSWapxgUDm9KKgf',
+        schemaId: 'did:indy:sovrin:LjgpST2rjsoxYegQDRm7EL/anoncreds/v0/SCHEMA/Employee Credential/1.0.0',
+        indyNamespace: 'sovrin',
+        revocable: true,
+      })
+    })
+
     it('credential with unqualified did:indy (bcovrin:test) identifiers', async () => {
       await testMigration(agent, {
         issuerId: getUnQualifiedDidIndyDid('did:indy:bcovrin:test:SDqTzbVuCowusqGBNbNDjH'),
@@ -145,6 +167,18 @@ describe('0.4-0.5 | AnonCredsRecord', () => {
           'did:indy:bcovrin:test:SDqTzbVuCowusqGBNbNDjG/anoncreds/v0/SCHEMA/Employee Credential/1.0.0'
         ),
         indyNamespace: 'bcovrin:test',
+      })
+    })
+
+    it('revocable credential with unqualified did:indy (bcovrin:test) identifiers', async () => {
+      await testMigration(agent, {
+        issuerId: getUnQualifiedDidIndyDid('did:indy:bcovrin:test:SDqTzbVuCowusqGBNbNDjH'),
+        schemaIssuerId: getUnQualifiedDidIndyDid('did:indy:bcovrin:test:SDqTzbVuCowusqGBNbNDjG'),
+        schemaId: getUnQualifiedDidIndyDid(
+          'did:indy:bcovrin:test:SDqTzbVuCowusqGBNbNDjG/anoncreds/v0/SCHEMA/Employee Credential/1.0.0'
+        ),
+        indyNamespace: 'bcovrin:test',
+        revocable: true,
       })
     })
 
@@ -184,15 +218,16 @@ async function testMigration(
     schemaId: string
     indyNamespace?: string
     shouldBeInCache?: 'indy' | 'sov'
+    revocable?: boolean
   }
 ) {
-  const { issuerId, schemaIssuerId, schemaId, indyNamespace } = options
+  const { issuerId, schemaIssuerId, schemaId, indyNamespace, revocable } = options
 
-  const registry = await agentContext.dependencyManager
+  const registry = agentContext.dependencyManager
     .resolve(AnonCredsRegistryService)
     .getRegistryForIdentifier(agentContext, issuerId)
 
-  const registerCredentialDefinitionReturn = await registry.registerCredentialDefinition(agentContext, {
+  const { credentialDefinitionState } = await registry.registerCredentialDefinition(agentContext, {
     credentialDefinition: {
       schemaId: indyNamespace ? getQualifiedDidIndyDid(schemaId, indyNamespace) : schemaId,
       type: 'CL',
@@ -217,13 +252,49 @@ async function testMigration(
     options: {},
   })
 
-  if (!registerCredentialDefinitionReturn.credentialDefinitionState.credentialDefinitionId)
+  if (!credentialDefinitionState.credentialDefinitionId)
     throw new CredoError('Registering Credential Definition Failed')
+
+  // We'll use unqualified form in case the inputs are unqualified as well
+  const credentialDefinitionId =
+    indyNamespace && isUnqualifiedIndyDid(issuerId)
+      ? getUnQualifiedDidIndyDid(credentialDefinitionState.credentialDefinitionId)
+      : credentialDefinitionState.credentialDefinitionId
+  let revocationRegistryDefinitionId: string | undefined
+
+  if (revocable) {
+    const { revocationRegistryDefinitionState } = await registry.registerRevocationRegistryDefinition(agentContext, {
+      revocationRegistryDefinition: {
+        credDefId: credentialDefinitionState.credentialDefinitionId,
+        issuerId: indyNamespace ? getQualifiedDidIndyDid(issuerId, indyNamespace) : issuerId,
+        revocDefType: 'CL_ACCUM',
+        value: {
+          publicKeys: {
+            accumKey: {
+              z: 'ab81257c-be63-4051-9e21-c7d384412f64',
+            },
+          },
+          maxCredNum: 100,
+          tailsHash: 'ab81257c-be63-4051-9e21-c7d384412f64',
+          tailsLocation: 'http://localhost:7200/tails',
+        },
+        tag: 'TAG',
+      },
+      options: {},
+    })
+    if (!revocationRegistryDefinitionState.revocationRegistryDefinitionId)
+      throw new CredoError('Registering Revocation Registry Definition Failed')
+
+    revocationRegistryDefinitionId =
+      indyNamespace && isUnqualifiedIndyDid(issuerId)
+        ? getUnQualifiedDidIndyDid(revocationRegistryDefinitionState.revocationRegistryDefinitionId)
+        : revocationRegistryDefinitionState.revocationRegistryDefinitionId
+  }
 
   const anonCredsRecord = new AnonCredsCredentialRecord({
     credential: {
       schema_id: schemaId,
-      cred_def_id: registerCredentialDefinitionReturn.credentialDefinitionState.credentialDefinitionId,
+      cred_def_id: credentialDefinitionId,
       values: {
         name: {
           raw: 'John',
@@ -244,10 +315,23 @@ async function testMigration(
         se: '22707379000451320101568757017184696744124237924783723059712360528872398590682272715197914336834321599243107036831239336605987281577690130807752876870302232265860540101807563741012022740942625464987934377354684266599492895835685698819662114798915664525092894122648542269399563759087759048742378622062870244156257780544523627249100818371255142174054148531811440128609220992508274170196108004985441276737673328642493312249112077836369109453214857237693701603680205115444482751700483514317558743227403858290707747986550689265796031162549838465391957776237071049436590886476581821857234951536091662216488995258175202055258',
         c: '86499530658088050169174214946559930902913340880816576251403968391737698128027',
       },
-      rev_reg_id: undefined,
+      rev_reg: revocable
+        ? {
+            accum:
+              '2 1ECC5AB3496DF286013468F9DC94FA57D2E0CB65809130F49493884DA849D88A 2 20F3F79A24E29B3DF958FA5471B68CAF2FBBAF8E3D3A1F8F17BC5E410242A1BE 2 071C3E27F50B72EB048E530E0A07AC87B5578A63678803D009A9D40E5D3E41B8 2 0E9330E77B1A56DE5C70C8D9B02658CF571F4465EA489A7CEA12CFDA1A311AF5 2 095E45DDF417D05FB10933FFC63D474548B7FFFF7888802F07FFFFFF7D07A8A8 1 0000000000000000000000000000000000000000000000000000000000000000',
+          }
+        : undefined,
+      witness: revocable
+        ? {
+            omega:
+              '2 024D139F10D86B41FDFE98064B5794D0AFEE6183192A7CC2007803532F38CDB9 2 0AC11C34FDEDCA60FFD23E4FC37C9FAFB29737990D6B7E81190AA8C1BF654034 2 04CCBF871DA8BAB94769B08CBE777E83994F121F8BE1F64D3DE90EC6E2401EA9 2 1539F896A2C98798624E2AE12A0D2941EE898570BE3F0F40E59928008F95C969 2 095E45DDF417D05FB10933FFC63D474548B7FFFF7888802F07FFFFFF7D07A8A8 1 0000000000000000000000000000000000000000000000000000000000000000',
+          }
+        : undefined,
+
+      rev_reg_id: revocable ? revocationRegistryDefinitionId : undefined,
     },
     credentialId: 'myCredentialId',
-    credentialRevocationId: undefined,
+    credentialRevocationId: revocable ? '1' : undefined,
     linkSecretId: 'linkSecretId',
     issuerId,
     schemaIssuerId,
@@ -262,6 +346,28 @@ async function testMigration(
   const records = [anonCredsRecord]
 
   mockFunction(anonCredsRepo.getAll).mockResolvedValue(records)
+
+  const initialCredentialExchangeRecord = new CredentialExchangeRecord({
+    protocolVersion: 'v2',
+    role: CredentialRole.Holder,
+    state: CredentialState.Done,
+    threadId: 'threadId',
+    credentials: [
+      {
+        credentialRecordId: anonCredsRecord.credentialId,
+        credentialRecordType: 'anoncreds',
+      },
+    ],
+    tags: {
+      credentialDefinitionId,
+      issuerId,
+      revocationRegistryId: revocationRegistryDefinitionId,
+      schemaId,
+      schemaIssuerId,
+    },
+  })
+
+  mockFunction(credentialExchangeRepo.findByQuery).mockResolvedValue([initialCredentialExchangeRecord])
 
   await testModule.storeAnonCredsInW3cFormatV0_5(agent)
 
@@ -283,18 +389,39 @@ async function testMigration(
   expect(anonCredsRepo.getAll).toHaveBeenCalledTimes(1)
   expect(anonCredsRepo.getAll).toHaveBeenCalledWith(agent.context)
   expect(w3cRepo.save).toHaveBeenCalledTimes(1)
-  expect(w3cRepo.save).toHaveBeenCalledWith(
-    agent.context,
-    expect.objectContaining({
-      metadata: expect.objectContaining({
-        data: expect.objectContaining({
-          custom: { key: 'value' },
-        }),
+  const [context, w3cCredentialRecord] = mockFunction(w3cRepo.save).mock.calls[0]
+  expect(context).toMatchObject(agent.context)
+  expect(w3cCredentialRecord).toMatchObject({
+    metadata: expect.objectContaining({
+      data: expect.objectContaining({
+        custom: { key: 'value' },
       }),
-    })
-  )
+    }),
+  })
+
   expect(w3cRepo.update).toHaveBeenCalledTimes(1)
   expect(anonCredsRepo.delete).toHaveBeenCalledTimes(1)
+  expect(credentialExchangeRepo.findByQuery).toHaveBeenCalledTimes(1)
+  expect(credentialExchangeRepo.findByQuery).toHaveBeenCalledWith(agent.context, {
+    credentialIds: [anonCredsRecord.credentialId],
+  })
+  expect(credentialExchangeRepo.update).toHaveBeenCalledTimes(1)
+  expect(credentialExchangeRepo.update).toHaveBeenCalledWith(
+    agent.context,
+    expect.objectContaining({
+      credentials: [{ credentialRecordType: 'w3c', credentialRecordId: w3cCredentialRecord.id }],
+    })
+  )
+
+  if (revocable) {
+    // TODO
+    expect(credentialExchangeRepo.update).toHaveBeenCalledWith(
+      agent.context,
+      expect.objectContaining({
+        credentials: [{ credentialRecordType: 'w3c', credentialRecordId: w3cCredentialRecord.id }],
+      })
+    )
+  }
 
   if (unqualifiedDidIndyDid && options.shouldBeInCache) {
     expect(inMemoryLruCache.get).toHaveReturnedWith({ indyNamespace })

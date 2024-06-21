@@ -345,12 +345,7 @@ describe('Present Proof', () => {
       presentation: {
         indy: {
           proof: {
-            // FIXME: Indy SDK only had one proof: https://github.com/hyperledger/anoncreds-rs/issues/292
             proofs: [
-              {
-                primary_proof: expect.any(Object),
-                non_revoc_proof: null,
-              },
               {
                 primary_proof: expect.any(Object),
                 non_revoc_proof: null,

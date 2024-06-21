@@ -2,7 +2,7 @@
   "name": "@credo-ts/react-native",
   "main": "build/index",
   "types": "build/index",
-  "version": "0.5.1",
+  "version": "0.5.4",
   "files": [
     "build"
   ],
@@ -17,15 +17,15 @@
     "directory": "packages/react-native"
   },
   "scripts": {
-    "build": "yarn run clean && yarn run compile",
+    "build": "pnpm run clean && pnpm run compile",
     "clean": "rimraf ./build",
     "compile": "tsc -p tsconfig.build.json",
-    "prepublishOnly": "yarn run build",
+    "prepublishOnly": "pnpm run build",
     "test": "jest"
   },
   "dependencies": {
     "@azure/core-asynciterator-polyfill": "^1.0.2",
-    "@credo-ts/core": "0.5.1",
+    "@credo-ts/core": "workspace:*",
     "events": "^3.3.0"
   },
   "devDependencies": {
@@ -33,7 +33,7 @@
     "react-native-fs": "^2.20.0",
     "react-native-get-random-values": "^1.8.0",
     "rimraf": "^4.4.0",
-    "typescript": "~4.9.5"
+    "typescript": "~5.5.0-beta"
   },
   "peerDependencies": {
     "react-native": ">=0.71.4",

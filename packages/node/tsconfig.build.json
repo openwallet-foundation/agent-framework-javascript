@@ -3,6 +3,10 @@
 
   "compilerOptions": {
     "outDir": "./build",
+    "baseUrl": ".",
+    "paths": {
+      "@credo-ts/*": ["../*/src"]
+    },
     "types": ["node"]
   },
 

@@ -75,19 +75,19 @@ cd credo-ts/samples/extension-module
 Install the project in one of the terminals:
 
 ```sh
-yarn install
+pnpm install
 ```
 
 In that terminal run the responder:
 
 ```sh
-yarn responder
+pnpm responder
 ```
 
 Wait for it to finish the startup process (i.e. logger showing 'Responder listening to port ...') and run requester in another terminal:
 
 ```sh
-yarn requester
+pnpm requester
 ```
 
 If everything goes right, requester will connect to responder and, as soon as connection protocol is finished, it will send a Dummy request. Responder will answer with a Dummy response and requester will happily exit.

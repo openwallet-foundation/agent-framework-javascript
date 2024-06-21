@@ -4,6 +4,7 @@ export enum OpenId4VcIssuanceSessionState {
   AccessTokenRequested = 'AccessTokenRequested',
   AccessTokenCreated = 'AccessTokenCreated',
   CredentialRequestReceived = 'CredentialRequestReceived',
-  CredentialIssued = 'CredentialIssued',
+  CredentialsPartiallyIssued = 'CredentialsPartiallyIssued',
+  Completed = 'Completed',
   Error = 'Error',
 }

@@ -715,6 +715,36 @@ describe('out of band', () => {
         new CredoError('There is no message in requests~attach supported by agent.')
       )
     })
+
+    test(`make two connections with ${HandshakeProtocol.DidExchange} by reusing the did from the first connection as the 'invitationDid' in oob invitation for the second connection`, async () => {
+      const outOfBandRecord1 = await faberAgent.oob.createInvitation({})
+
+      let { connectionRecord: aliceFaberConnection } = await aliceAgent.oob.receiveInvitation(
+        outOfBandRecord1.outOfBandInvitation
+      )
+
+      aliceFaberConnection = await aliceAgent.connections.returnWhenIsConnected(aliceFaberConnection!.id)
+      expect(aliceFaberConnection.state).toBe(DidExchangeState.Completed)
+
+      let [faberAliceConnection] = await faberAgent.connections.findAllByOutOfBandId(outOfBandRecord1!.id)
+      faberAliceConnection = await faberAgent.connections.returnWhenIsConnected(faberAliceConnection!.id)
+      expect(faberAliceConnection?.state).toBe(DidExchangeState.Completed)
+
+      // Use the invitation did from the first connection to create the second connection
+      const outOfBandRecord2 = await faberAgent.oob.createInvitation({
+        invitationDid: outOfBandRecord1.outOfBandInvitation.invitationDids[0],
+      })
+
+      let { connectionRecord: aliceFaberConnection2 } = await aliceAgent.oob.receiveInvitation(
+        outOfBandRecord2.outOfBandInvitation
+      )
+      aliceFaberConnection2 = await aliceAgent.connections.returnWhenIsConnected(aliceFaberConnection2!.id)
+      expect(aliceFaberConnection2.state).toBe(DidExchangeState.Completed)
+
+      let [faberAliceConnection2] = await faberAgent.connections.findAllByOutOfBandId(outOfBandRecord2!.id)
+      faberAliceConnection2 = await faberAgent.connections.returnWhenIsConnected(faberAliceConnection2!.id)
+      expect(faberAliceConnection2?.state).toBe(DidExchangeState.Completed)
+    })
   })
 
   describe('messages and connection exchange', () => {

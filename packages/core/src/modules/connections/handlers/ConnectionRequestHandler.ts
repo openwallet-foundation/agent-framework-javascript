@@ -75,8 +75,16 @@ export class ConnectionRequestHandler implements MessageHandler {
     }
 
     if (connectionRecord?.autoAcceptConnection ?? this.connectionsModuleConfig.autoAcceptConnections) {
-      // TODO: Allow rotation of keys used in the invitation for new ones not only when out-of-band is reusable
-      const routing = outOfBandRecord.reusable ? await this.routingService.getRouting(agentContext) : undefined
+      // TODO: Allow rotation of keys used in the invitation for new ones not only when out-of-band is reusable or
+      // when there are no inline services in the invitation
+
+      // We generate routing in two scenarios:
+      // 1. When the out-of-band invitation is reusable, as otherwise all connections use the same keys
+      // 2. When the out-of-band invitation has no inline services, as we don't want to generate a legacy did doc from a service did
+      const routing =
+        outOfBandRecord.reusable || outOfBandRecord.outOfBandInvitation.getInlineServices().length === 0
+          ? await this.routingService.getRouting(agentContext)
+          : undefined
 
       const { message } = await this.connectionService.createResponse(
         agentContext,

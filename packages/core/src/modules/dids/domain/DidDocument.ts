@@ -123,13 +123,14 @@ export class DidDocument {
     return verificationMethod
   }
 
-  public dereferenceKey(keyId: string, allowedPurposes?: DidPurpose[]) {
-    const allPurposes: DidPurpose[] = [
+  public dereferenceKey(keyId: string, allowedPurposes?: DidVerificationMethods[]) {
+    const allPurposes: DidVerificationMethods[] = [
       'authentication',
       'keyAgreement',
       'assertionMethod',
       'capabilityInvocation',
       'capabilityDelegation',
+      'verificationMethod',
     ]
 
     const purposes = allowedPurposes ?? allPurposes
@@ -194,7 +195,9 @@ export class DidDocument {
       } else if (service.type === DidCommV1Service.type) {
         recipientKeys = [
           ...recipientKeys,
-          ...service.recipientKeys.map((recipientKey) => keyReferenceToKey(this, recipientKey)),
+          ...service.recipientKeys.map((recipientKey) =>
+            getKeyFromVerificationMethod(this.dereferenceKey(recipientKey, ['authentication', 'keyAgreement']))
+          ),
         ]
       }
     }
@@ -205,16 +208,6 @@ export class DidDocument {
   public toJSON() {
     return JsonTransformer.toJSON(this)
   }
-}
-
-export function keyReferenceToKey(didDocument: DidDocument, keyId: string) {
-  // FIXME: we allow authentication keys as historically ed25519 keys have been used in did documents
-  // for didcomm. In the future we should update this to only be allowed for IndyAgent and DidCommV1 services
-  // as didcomm v2 doesn't have this issue anymore
-  const verificationMethod = didDocument.dereferenceKey(keyId, ['authentication', 'keyAgreement'])
-  const key = getKeyFromVerificationMethod(verificationMethod)
-
-  return key
 }
 
 /**

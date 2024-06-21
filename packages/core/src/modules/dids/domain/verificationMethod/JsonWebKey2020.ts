@@ -17,17 +17,15 @@ type GetJsonWebKey2020Options = {
 /**
  * Get a JsonWebKey2020 verification method.
  */
-export function getJsonWebKey2020({ did, key, jwk, verificationMethodId }: GetJsonWebKey2020Options) {
-  if (!verificationMethodId) {
-    const k = key ?? getJwkFromJson(jwk).key
-    verificationMethodId = `${did}#${k.fingerprint}`
-  }
+export function getJsonWebKey2020(options: GetJsonWebKey2020Options) {
+  const jwk = options.jwk ? getJwkFromJson(options.jwk) : getJwkFromKey(options.key)
+  const verificationMethodId = options.verificationMethodId ?? `${options.did}#${jwk.key.fingerprint}`
 
   return {
     id: verificationMethodId,
     type: VERIFICATION_METHOD_TYPE_JSON_WEB_KEY_2020,
-    controller: did,
-    publicKeyJwk: jwk ?? getJwkFromKey(key).toJson(),
+    controller: options.did,
+    publicKeyJwk: options.jwk ?? jwk.toJson(),
   }
 }
 

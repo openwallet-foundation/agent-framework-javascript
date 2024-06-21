@@ -1,6 +1,6 @@
 import type { AgentContext } from '../../../agent'
 import type { InboundMessageContext } from '../../../agent/models/InboundMessageContext'
-import type { Query } from '../../../storage/StorageService'
+import type { Query, QueryOptions } from '../../../storage/StorageService'
 import type { ConnectionRecord } from '../../connections/repository/ConnectionRecord'
 import type { BasicMessageStateChangedEvent } from '../BasicMessageEvents'
 
@@ -77,8 +77,12 @@ export class BasicMessageService {
     })
   }
 
-  public async findAllByQuery(agentContext: AgentContext, query: Query<BasicMessageRecord>) {
-    return this.basicMessageRepository.findByQuery(agentContext, query)
+  public async findAllByQuery(
+    agentContext: AgentContext,
+    query: Query<BasicMessageRecord>,
+    queryOptions?: QueryOptions
+  ) {
+    return this.basicMessageRepository.findByQuery(agentContext, query, queryOptions)
   }
 
   public async getById(agentContext: AgentContext, basicMessageRecordId: string) {

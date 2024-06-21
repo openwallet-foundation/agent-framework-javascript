@@ -19,7 +19,7 @@ import type { AgentMessage } from '../../../agent/AgentMessage'
 import type { FeatureRegistry } from '../../../agent/FeatureRegistry'
 import type { InboundMessageContext } from '../../../agent/models/InboundMessageContext'
 import type { DependencyManager } from '../../../plugins'
-import type { Query } from '../../../storage/StorageService'
+import type { Query, QueryOptions } from '../../../storage/StorageService'
 import type { ProblemReportMessage } from '../../problem-reports'
 import type { CredentialStateChangedEvent } from '../CredentialEvents'
 import type { CredentialFormatService, ExtractCredentialFormats } from '../formats'
@@ -28,6 +28,7 @@ import type { CredentialExchangeRecord } from '../repository'
 
 import { EventEmitter } from '../../../agent/EventEmitter'
 import { DidCommMessageRepository } from '../../../storage/didcomm'
+import { ConnectionService } from '../../connections'
 import { CredentialEventTypes } from '../CredentialEvents'
 import { CredentialState } from '../models/CredentialState'
 import { CredentialRepository } from '../repository'
@@ -136,16 +137,29 @@ export abstract class BaseCredentialProtocol<CFs extends CredentialFormatService
   public async processProblemReport(
     messageContext: InboundMessageContext<ProblemReportMessage>
   ): Promise<CredentialExchangeRecord> {
-    const { message: credentialProblemReportMessage, agentContext } = messageContext
+    const { message: credentialProblemReportMessage, agentContext, connection } = messageContext
 
-    const connection = messageContext.assertReadyConnection()
+    const connectionService = agentContext.dependencyManager.resolve(ConnectionService)
 
     agentContext.config.logger.debug(`Processing problem report with message id ${credentialProblemReportMessage.id}`)
 
     const credentialRecord = await this.getByProperties(agentContext, {
       threadId: credentialProblemReportMessage.threadId,
-      connectionId: connection.id,
     })
+
+    // Assert
+    await connectionService.assertConnectionOrOutOfBandExchange(messageContext, {
+      expectedConnectionId: credentialRecord.connectionId,
+    })
+
+    //  This makes sure that the sender of the incoming message is authorized to do so.
+    if (!credentialRecord?.connectionId) {
+      await connectionService.matchIncomingMessageToRequestMessageInOutOfBandExchange(messageContext, {
+        expectedConnectionId: credentialRecord?.connectionId,
+      })
+
+      credentialRecord.connectionId = connection?.id
+    }
 
     // Update record
     credentialRecord.errorMessage = `${credentialProblemReportMessage.description.code}: ${credentialProblemReportMessage.description.en}`
@@ -222,11 +236,12 @@ export abstract class BaseCredentialProtocol<CFs extends CredentialFormatService
 
   public async findAllByQuery(
     agentContext: AgentContext,
-    query: Query<CredentialExchangeRecord>
+    query: Query<CredentialExchangeRecord>,
+    queryOptions?: QueryOptions
   ): Promise<CredentialExchangeRecord[]> {
     const credentialRepository = agentContext.dependencyManager.resolve(CredentialRepository)
 
-    return credentialRepository.findByQuery(agentContext, query)
+    return credentialRepository.findByQuery(agentContext, query, queryOptions)
   }
 
   /**

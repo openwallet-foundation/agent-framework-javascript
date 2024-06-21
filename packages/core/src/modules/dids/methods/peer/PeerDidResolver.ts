@@ -19,6 +19,12 @@ export class PeerDidResolver implements DidResolver {
    */
   public readonly allowsCaching = false
 
+  /**
+   * Did peer records are often server from local did doucment, but it's easier to handle it in
+   * the peer did resolver.
+   */
+  public readonly allowsLocalDidRecord = false
+
   public async resolve(agentContext: AgentContext, did: string): Promise<DidResolutionResult> {
     const didRepository = agentContext.dependencyManager.resolve(DidRepository)
 

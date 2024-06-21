@@ -54,6 +54,10 @@ export class TenantSessionCoordinator {
     )
   }
 
+  public getSessionCountForTenant(tenantId: string) {
+    return this.tenantAgentContextMapping[tenantId]?.sessionCount ?? 0
+  }
+
   /**
    * Get agent context to use for a session. If an agent context for this tenant does not exist yet
    * it will create it and store it for later use. If the agent context does already exist it will
@@ -94,7 +98,23 @@ export class TenantSessionCoordinator {
         )
 
         if (runInMutex) {
-          await runInMutex(tenantSessions.agentContext)
+          try {
+            await runInMutex(tenantSessions.agentContext)
+          } catch (error) {
+            // If the runInMutex failed we should release the session again
+            tenantSessions.sessionCount--
+            this.logger.debug(
+              `Decreased agent context session count for tenant '${tenantSessions.agentContext.contextCorrelationId}' to ${tenantSessions.sessionCount} due to failure in mutex script`,
+              error
+            )
+
+            if (tenantSessions.sessionCount <= 0 && tenantSessions.agentContext) {
+              await this.closeAgentContext(tenantSessions.agentContext)
+              delete this.tenantAgentContextMapping[tenantSessions.agentContext.contextCorrelationId]
+            }
+
+            throw error
+          }
         }
 
         return tenantSessions.agentContext

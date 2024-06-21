@@ -231,9 +231,14 @@ describe('Repository', () => {
       const record2 = getRecord({ id: 'test-id2' })
       mockFunction(storageMock.findByQuery).mockReturnValue(Promise.resolve([record, record2]))
 
-      const returnValue = await repository.findByQuery(agentContext, { something: 'interesting' })
+      const returnValue = await repository.findByQuery(agentContext, { something: 'interesting' }, { limit: 10 })
 
-      expect(storageMock.findByQuery).toBeCalledWith(agentContext, TestRecord, { something: 'interesting' })
+      expect(storageMock.findByQuery).toBeCalledWith(
+        agentContext,
+        TestRecord,
+        { something: 'interesting' },
+        { limit: 10 }
+      )
       expect(returnValue).toEqual(expect.arrayContaining([record, record2]))
     })
   })
@@ -245,7 +250,7 @@ describe('Repository', () => {
 
       const returnValue = await repository.findSingleByQuery(agentContext, { something: 'interesting' })
 
-      expect(storageMock.findByQuery).toBeCalledWith(agentContext, TestRecord, { something: 'interesting' })
+      expect(storageMock.findByQuery).toBeCalledWith(agentContext, TestRecord, { something: 'interesting' }, undefined)
       expect(returnValue).toBe(record)
     })
 
@@ -254,7 +259,7 @@ describe('Repository', () => {
 
       const returnValue = await repository.findSingleByQuery(agentContext, { something: 'interesting' })
 
-      expect(storageMock.findByQuery).toBeCalledWith(agentContext, TestRecord, { something: 'interesting' })
+      expect(storageMock.findByQuery).toBeCalledWith(agentContext, TestRecord, { something: 'interesting' }, undefined)
       expect(returnValue).toBeNull()
     })
 
@@ -266,7 +271,7 @@ describe('Repository', () => {
       expect(repository.findSingleByQuery(agentContext, { something: 'interesting' })).rejects.toThrowError(
         RecordDuplicateError
       )
-      expect(storageMock.findByQuery).toBeCalledWith(agentContext, TestRecord, { something: 'interesting' })
+      expect(storageMock.findByQuery).toBeCalledWith(agentContext, TestRecord, { something: 'interesting' }, undefined)
     })
   })
 
@@ -277,7 +282,7 @@ describe('Repository', () => {
 
       const returnValue = await repository.getSingleByQuery(agentContext, { something: 'interesting' })
 
-      expect(storageMock.findByQuery).toBeCalledWith(agentContext, TestRecord, { something: 'interesting' })
+      expect(storageMock.findByQuery).toBeCalledWith(agentContext, TestRecord, { something: 'interesting' }, undefined)
       expect(returnValue).toBe(record)
     })
 
@@ -287,7 +292,7 @@ describe('Repository', () => {
       expect(repository.getSingleByQuery(agentContext, { something: 'interesting' })).rejects.toThrowError(
         RecordNotFoundError
       )
-      expect(storageMock.findByQuery).toBeCalledWith(agentContext, TestRecord, { something: 'interesting' })
+      expect(storageMock.findByQuery).toBeCalledWith(agentContext, TestRecord, { something: 'interesting' }, undefined)
     })
 
     it('should throw RecordDuplicateError if more than one record is returned by the storage service', async () => {
@@ -298,7 +303,7 @@ describe('Repository', () => {
       expect(repository.getSingleByQuery(agentContext, { something: 'interesting' })).rejects.toThrowError(
         RecordDuplicateError
       )
-      expect(storageMock.findByQuery).toBeCalledWith(agentContext, TestRecord, { something: 'interesting' })
+      expect(storageMock.findByQuery).toBeCalledWith(agentContext, TestRecord, { something: 'interesting' }, undefined)
     })
   })
 })

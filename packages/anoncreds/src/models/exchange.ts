@@ -52,6 +52,8 @@ export interface AnonCredsCredential {
   values: Record<string, AnonCredsCredentialValue>
   signature: unknown
   signature_correctness_proof: unknown
+  rev_reg?: unknown
+  witness?: unknown
 }
 
 export interface AnonCredsProof {

@@ -18,7 +18,7 @@ import type { AgentMessage } from '../../../agent/AgentMessage'
 import type { FeatureRegistry } from '../../../agent/FeatureRegistry'
 import type { InboundMessageContext } from '../../../agent/models/InboundMessageContext'
 import type { DependencyManager } from '../../../plugins'
-import type { Query } from '../../../storage/StorageService'
+import type { Query, QueryOptions } from '../../../storage/StorageService'
 import type { ProblemReportMessage } from '../../problem-reports'
 import type { CredentialFormatService, ExtractCredentialFormats } from '../formats'
 import type { CredentialRole } from '../models'
@@ -105,7 +105,8 @@ export interface CredentialProtocol<CFs extends CredentialFormatService[] = Cred
   getAll(agentContext: AgentContext): Promise<CredentialExchangeRecord[]>
   findAllByQuery(
     agentContext: AgentContext,
-    query: Query<CredentialExchangeRecord>
+    query: Query<CredentialExchangeRecord>,
+    queryOptions?: QueryOptions
   ): Promise<CredentialExchangeRecord[]>
   findById(agentContext: AgentContext, credentialExchangeId: string): Promise<CredentialExchangeRecord | null>
   delete(

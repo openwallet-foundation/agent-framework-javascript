@@ -1,6 +1,11 @@
 import type { AgentContext } from '../packages/core/src/agent'
 import type { BaseRecord, TagsBase } from '../packages/core/src/storage/BaseRecord'
-import type { StorageService, BaseRecordConstructor, Query } from '../packages/core/src/storage/StorageService'
+import type {
+  StorageService,
+  BaseRecordConstructor,
+  Query,
+  QueryOptions,
+} from '../packages/core/src/storage/StorageService'
 
 import { InMemoryWallet } from './InMemoryWallet'
 
@@ -155,14 +160,18 @@ export class InMemoryStorageService<T extends BaseRecord<any, any, any> = BaseRe
   public async findByQuery(
     agentContext: AgentContext,
     recordClass: BaseRecordConstructor<T>,
-    query: Query<T>
+    query: Query<T>,
+    queryOptions?: QueryOptions
   ): Promise<T[]> {
-    const records = Object.values(this.getRecordsForContext(agentContext))
+    const { offset = 0, limit } = queryOptions || {}
+
+    const allRecords = Object.values(this.getRecordsForContext(agentContext))
       .filter((record) => record.type === recordClass.type)
       .filter((record) => filterByQuery(record, query))
-      .map((record) => this.recordToInstance(record, recordClass))
 
-    return records
+    const slicedRecords = limit !== undefined ? allRecords.slice(offset, offset + limit) : allRecords.slice(offset)
+
+    return slicedRecords.map((record) => this.recordToInstance(record, recordClass))
   }
 }
 

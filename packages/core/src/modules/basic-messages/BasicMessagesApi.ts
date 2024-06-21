@@ -1,5 +1,5 @@
 import type { BasicMessageRecord } from './repository/BasicMessageRecord'
-import type { Query } from '../../storage/StorageService'
+import type { Query, QueryOptions } from '../../storage/StorageService'
 
 import { AgentContext } from '../../agent'
 import { MessageHandlerRegistry } from '../../agent/MessageHandlerRegistry'
@@ -64,10 +64,11 @@ export class BasicMessagesApi {
    * Retrieve all basic messages matching a given query
    *
    * @param query The query
+   * @param queryOptions The query options
    * @returns array containing all matching records
    */
-  public async findAllByQuery(query: Query<BasicMessageRecord>) {
-    return this.basicMessageService.findAllByQuery(this.agentContext, query)
+  public async findAllByQuery(query: Query<BasicMessageRecord>, queryOptions?: QueryOptions) {
+    return this.basicMessageService.findAllByQuery(this.agentContext, query, queryOptions)
   }
 
   /**

@@ -31,6 +31,7 @@ export interface CreateProofOptions {
   schemas: AnonCredsSchemas
   credentialDefinitions: AnonCredsCredentialDefinitions
   revocationRegistries: AnonCredsRevocationRegistries
+  useUnqualifiedIdentifiers?: boolean
 }
 
 export interface StoreCredentialOptions {
@@ -48,6 +49,7 @@ export interface StoreCredentialOptions {
 
 export interface GetCredentialOptions {
   id: string
+  useUnqualifiedIdentifiersIfPresent?: boolean
 }
 
 export interface GetCredentialsOptions {

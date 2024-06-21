@@ -13,6 +13,18 @@ export interface DidResolutionOptions extends DIDResolutionOptions {
   useCache?: boolean
 
   /**
+   * Whether to resolve the did from a local created did document in a DidRecord.
+   * Cache has precendence over local records, as they're often fater. Records
+   * served from DidRecords will not be added to the cache.
+   *
+   * The resolver must have enabled `allowsLocalDidRecord` (default false) to use this
+   * feature.
+   *
+   * @default true
+   */
+  useLocalCreatedDidRecord?: boolean
+
+  /**
    * Whether to persist the did document in the cache.
    *
    * @default true
@@ -29,7 +41,16 @@ export interface DidResolutionOptions extends DIDResolutionOptions {
 
 export interface DidResolutionMetadata extends DIDResolutionMetadata {
   message?: string
+
+  /**
+   * Whether the did document was served from the cache
+   */
   servedFromCache?: boolean
+
+  /**
+   * Whether the did document was served from a local did record
+   */
+  servedFromDidRecord?: boolean
 }
 
 export interface DidResolutionResult {

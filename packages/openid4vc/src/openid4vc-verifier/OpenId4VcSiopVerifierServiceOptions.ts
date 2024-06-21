@@ -19,6 +19,12 @@ export interface OpenId4VcSiopCreateAuthorizationRequestOptions {
   requestSigner: OpenId4VcJwtIssuer
 
   /**
+   * Whether to reuqest an ID Token. Enabled by defualt when `presentationExchange` is not provided,
+   * disabled by default when `presentationExchange` is provided.
+   */
+  idToken?: boolean
+
+  /**
    * A DIF Presentation Definition (v2) can be provided to request a Verifiable Presentation using OpenID4VP.
    */
   presentationExchange?: {
@@ -39,7 +45,7 @@ export interface OpenId4VcSiopCreateAuthorizationRequestReturn {
 }
 
 /**
- * Either `idToken` and/or `presentationExchange` will be present, but not none.
+ * Either `idToken` and/or `presentationExchange` will be present.
  */
 export interface OpenId4VcSiopVerifiedAuthorizationResponse {
   idToken?: {

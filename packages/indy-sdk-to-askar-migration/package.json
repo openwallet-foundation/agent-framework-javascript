@@ -2,7 +2,7 @@
   "name": "@credo-ts/indy-sdk-to-askar-migration",
   "main": "build/index",
   "types": "build/index",
-  "version": "0.5.1",
+  "version": "0.5.4",
   "files": [
     "build"
   ],
@@ -17,25 +17,25 @@
     "directory": "packages/indy-sdk-to-askar-migration"
   },
   "scripts": {
-    "build": "yarn run clean && yarn run compile",
+    "build": "pnpm run clean && pnpm run compile",
     "clean": "rimraf ./build",
     "compile": "tsc -p tsconfig.build.json",
-    "prepublishOnly": "yarn run build",
+    "prepublishOnly": "pnpm run build",
     "test": "jest"
   },
   "dependencies": {
-    "@credo-ts/anoncreds": "0.5.1",
-    "@credo-ts/askar": "0.5.1",
-    "@credo-ts/core": "0.5.1",
-    "@credo-ts/node": "0.5.1"
+    "@credo-ts/anoncreds": "workspace:*",
+    "@credo-ts/askar": "workspace:*",
+    "@credo-ts/core": "workspace:*",
+    "@credo-ts/node": "workspace:*"
   },
   "devDependencies": {
-    "@hyperledger/aries-askar-nodejs": "^0.2.0",
-    "@hyperledger/aries-askar-shared": "^0.2.0",
+    "@hyperledger/aries-askar-nodejs": "^0.2.1",
+    "@hyperledger/aries-askar-shared": "^0.2.1",
     "rimraf": "^4.4.0",
-    "typescript": "~4.9.5"
+    "typescript": "~5.5.0-beta"
   },
   "peerDependencies": {
-    "@hyperledger/aries-askar-shared": "^0.2.0"
+    "@hyperledger/aries-askar-shared": "^0.2.1"
   }
 }

@@ -2,7 +2,7 @@
   "name": "@credo-ts/core",
   "main": "build/index",
   "types": "build/index",
-  "version": "0.5.1",
+  "version": "0.5.4",
   "files": [
     "build"
   ],
@@ -17,21 +17,25 @@
     "directory": "packages/core"
   },
   "scripts": {
-    "build": "yarn run clean && yarn run compile",
+    "build": "pnpm run clean && pnpm run compile",
     "clean": "rimraf ./build",
     "compile": "tsc -p tsconfig.build.json",
-    "prepublishOnly": "yarn run build"
+    "prepublishOnly": "pnpm run build"
   },
   "dependencies": {
     "@digitalcredentials/jsonld": "^6.0.0",
     "@digitalcredentials/jsonld-signatures": "^9.4.0",
     "@digitalcredentials/vc": "^6.0.1",
     "@multiformats/base-x": "^4.0.1",
-    "@sd-jwt/core": "^0.2.1",
-    "@sd-jwt/decode": "^0.2.1",
-    "@sphereon/pex": "3.3.0",
-    "@sphereon/pex-models": "^2.2.2",
-    "@sphereon/ssi-types": "^0.18.1",
+    "@sd-jwt/core": "^0.7.0",
+    "@sd-jwt/decode": "^0.7.0",
+    "@sd-jwt/jwt-status-list": "^0.7.0",
+    "@sd-jwt/sd-jwt-vc": "^0.7.0",
+    "@sd-jwt/types": "^0.7.0",
+    "@sd-jwt/utils": "^0.7.0",
+    "@sphereon/pex": "^3.3.2",
+    "@sphereon/pex-models": "^2.2.4",
+    "@sphereon/ssi-types": "^0.23.0",
     "@stablelib/ed25519": "^1.0.2",
     "@stablelib/sha256": "^1.0.1",
     "@types/ws": "^8.5.4",
@@ -65,6 +69,6 @@
     "nock": "^13.3.0",
     "rimraf": "^4.4.0",
     "tslog": "^4.8.2",
-    "typescript": "~4.9.5"
+    "typescript": "~5.5.0-beta"
   }
 }

@@ -1472,11 +1472,7 @@ exports[`UpdateAssistant | v0.1 - v0.2 should correctly update the connection re
     },
     "type": "DidRecord",
     "value": {
-      "_tags": {
-        "recipientKeyFingerprints": [
-          "z6MktCZAQNGvWb4WHAjwBqPtXhZdDYorbSJkGW9vj1uhw1HD",
-        ],
-      },
+      "_tags": {},
       "createdAt": "2022-04-30T13:02:21.608Z",
       "did": "did:peer:1zQmP96nW6vbNjzwPt19z1NYqhnAfgnAFqfLHcktkmdUFzhT",
       "didDocument": {
@@ -1546,11 +1542,7 @@ exports[`UpdateAssistant | v0.1 - v0.2 should correctly update the connection re
     },
     "type": "DidRecord",
     "value": {
-      "_tags": {
-        "recipientKeyFingerprints": [
-          "z6Mko31DNE3gqMRZj1JNhv2BHb1caQshcd9njgKkEQXsgFRp",
-        ],
-      },
+      "_tags": {},
       "createdAt": "2022-04-30T13:02:21.646Z",
       "did": "did:peer:1zQmPbGa8KDwyjcw9UgwCCgJMV7jU5kKCyvBuwFVc88WxA56",
       "didDocument": {
@@ -1620,11 +1612,7 @@ exports[`UpdateAssistant | v0.1 - v0.2 should correctly update the connection re
     },
     "type": "DidRecord",
     "value": {
-      "_tags": {
-        "recipientKeyFingerprints": [
-          "z6Mkw81EsWQioXYC9YJ7uKHCRh6LTN7sfD9sJbSPBGXmUpzC",
-        ],
-      },
+      "_tags": {},
       "createdAt": "2022-04-30T13:02:21.577Z",
       "did": "did:peer:1zQmRAfQ6J5qk4qcbHyoStFVkhusazLT9xQcFhdC9dhhQ1cJ",
       "didDocument": {
@@ -1694,11 +1682,7 @@ exports[`UpdateAssistant | v0.1 - v0.2 should correctly update the connection re
     },
     "type": "DidRecord",
     "value": {
-      "_tags": {
-        "recipientKeyFingerprints": [
-          "z6Mkt1tsp15cnDD7wBCFgehiR2SxHX1aPxt4sueE24twH9Bd",
-        ],
-      },
+      "_tags": {},
       "createdAt": "2022-04-30T13:02:21.628Z",
       "did": "did:peer:1zQmSMBVNMDrh7fyE8bkAmk1ZatshjinpsEqPA3nx8JYjuKb",
       "didDocument": {
@@ -1768,11 +1752,7 @@ exports[`UpdateAssistant | v0.1 - v0.2 should correctly update the connection re
     },
     "type": "DidRecord",
     "value": {
-      "_tags": {
-        "recipientKeyFingerprints": [
-          "z6Mkwc6efk75y4Y1agRx4NGpvtrpKxtKvMfgBEdQkHBwU8Xu",
-        ],
-      },
+      "_tags": {},
       "createdAt": "2022-04-30T13:02:21.608Z",
       "did": "did:peer:1zQmXYj3nNwsF37WXXdb8XkCAtsTCBpJJbsLKPPGfi2PWCTU",
       "didDocument": {
@@ -1842,11 +1822,7 @@ exports[`UpdateAssistant | v0.1 - v0.2 should correctly update the connection re
     },
     "type": "DidRecord",
     "value": {
-      "_tags": {
-        "recipientKeyFingerprints": [
-          "z6MkvW9GxjjUdL9qpaj2qQW6YBhCjZY7Zkzrks3cgpJaRjxR",
-        ],
-      },
+      "_tags": {},
       "createdAt": "2022-04-20T13:02:21.646Z",
       "did": "did:peer:1zQmZ2tdw35SaLncSHhf9zBv3e9QmJmLErZRSLsDdYowPHXy",
       "didDocument": {
@@ -1916,11 +1892,7 @@ exports[`UpdateAssistant | v0.1 - v0.2 should correctly update the connection re
     },
     "type": "DidRecord",
     "value": {
-      "_tags": {
-        "recipientKeyFingerprints": [
-          "z6MktpVtPC5j91aycGPT5pceiu8EGKDzM5RLwqAZBuCgxw4V",
-        ],
-      },
+      "_tags": {},
       "createdAt": "2022-04-30T13:02:21.641Z",
       "did": "did:peer:1zQma8LpnJ22GxQdyASV5jP6psacAGtJ6ytk4pVayYp4erRf",
       "didDocument": {
@@ -1990,11 +1962,7 @@ exports[`UpdateAssistant | v0.1 - v0.2 should correctly update the connection re
     },
     "type": "DidRecord",
     "value": {
-      "_tags": {
-        "recipientKeyFingerprints": [
-          "z6MkwXNXTehVH7YijDmN1PtaXaSaCniTyaVepmY1EJgS15xq",
-        ],
-      },
+      "_tags": {},
       "createdAt": "2022-04-30T13:02:21.646Z",
       "did": "did:peer:1zQmadmBfngrYSWhYYxZ24fpW29iwhKhQ6CB6euLabbSK6ga",
       "didDocument": {
@@ -2064,11 +2032,7 @@ exports[`UpdateAssistant | v0.1 - v0.2 should correctly update the connection re
     },
     "type": "DidRecord",
     "value": {
-      "_tags": {
-        "recipientKeyFingerprints": [
-          "z6MkjmCrDWJVf8H2pCHcu11UDs4jb6FVu8nn5yQW24rrgez6",
-        ],
-      },
+      "_tags": {},
       "createdAt": "2022-04-30T13:02:21.628Z",
       "did": "did:peer:1zQmc3BZoTinpVaG3oZ4PmRVN4JMdNZGCmPkS6smmTNLnvEZ",
       "didDocument": {
@@ -2138,11 +2102,7 @@ exports[`UpdateAssistant | v0.1 - v0.2 should correctly update the connection re
     },
     "type": "DidRecord",
     "value": {
-      "_tags": {
-        "recipientKeyFingerprints": [
-          "z6MkjDJL4X7YGoH6gjamhZR2NzowPZqtJfX5kPuNuWiVdjMr",
-        ],
-      },
+      "_tags": {},
       "createdAt": "2022-04-30T13:02:21.641Z",
       "did": "did:peer:1zQmcXZepLE55VGCMELEFjMd4nKrzp3GGyRR3r3MYermagui",
       "didDocument": {
@@ -2212,11 +2172,7 @@ exports[`UpdateAssistant | v0.1 - v0.2 should correctly update the connection re
     },
     "type": "DidRecord",
     "value": {
-      "_tags": {
-        "recipientKeyFingerprints": [
-          "z6MkvcgxQSsX5WA8vcBokLZ46znnhRBH6aKAGYnonEUfUnQV",
-        ],
-      },
+      "_tags": {},
       "createdAt": "2022-04-30T13:02:21.635Z",
       "did": "did:peer:1zQmduuYkxRKJuVyvDqttdd9eDfBwDnF1DAU5FFQo4whx7Uw",
       "didDocument": {
@@ -2286,11 +2242,7 @@ exports[`UpdateAssistant | v0.1 - v0.2 should correctly update the connection re
     },
     "type": "DidRecord",
     "value": {
-      "_tags": {
-        "recipientKeyFingerprints": [
-          "z6MkfiPMPxCQeSDZGMkCvm1Y2rBoPsmw4ZHMv71jXtcWRRiM",
-        ],
-      },
+      "_tags": {},
       "createdAt": "2022-04-30T13:02:21.577Z",
       "did": "did:peer:1zQmeHpGaZ48DnAP2k3KntXB1vmd8MgLEdcb4EQzqWJDHcbX",
       "didDocument": {
@@ -2360,11 +2312,7 @@ exports[`UpdateAssistant | v0.1 - v0.2 should correctly update the connection re
     },
     "type": "DidRecord",
     "value": {
-      "_tags": {
-        "recipientKeyFingerprints": [
-          "z6MkuWTEmH1mUo6W96zSWyH612hFHowRzNEscPYBL2CCMyC2",
-        ],
-      },
+      "_tags": {},
       "createdAt": "2022-04-30T13:02:21.653Z",
       "did": "did:peer:1zQmfDAtfDZcK4trJBsvVTXrBx9uaLCHSUZH9X2LFaAd3JKv",
       "didDocument": {

@@ -1,6 +1,6 @@
 import type { AnonCredsTestsAgent } from '../../anoncreds/tests/anoncredsSetup'
 import type { EventReplaySubject } from '../../core/tests'
-import type { InputDescriptorV2 } from '@sphereon/pex-models'
+import type { DifPresentationExchangeDefinitionV2 } from '@credo-ts/core'
 
 import {
   AutoAcceptCredential,
@@ -8,7 +8,6 @@ import {
   CredentialState,
   ProofState,
   W3cCredential,
-  W3cCredentialService,
   W3cCredentialSubject,
 } from '@credo-ts/core'
 
@@ -167,19 +166,13 @@ describe('anoncreds w3c data integrity e2e tests', () => {
     const tags = holderRecord.getTags()
     expect(tags.credentialIds).toHaveLength(1)
 
-    await expect(
-      holderAgent.dependencyManager
-        .resolve(W3cCredentialService)
-        .getCredentialRecordById(holderAgent.context, tags.credentialIds[0])
-    ).resolves
-
     let issuerProofExchangeRecordPromise = waitForProofExchangeRecord(issuerAgent, {
       state: ProofState.ProposalReceived,
     })
 
     const pdCopy = JSON.parse(JSON.stringify(presentationDefinition))
-    pdCopy.input_descriptors.forEach((ide: InputDescriptorV2) => delete ide.constraints?.statuses)
-    pdCopy.input_descriptors.forEach((ide: InputDescriptorV2) => {
+    pdCopy.input_descriptors.forEach((ide: DifPresentationExchangeDefinitionV2['input_descriptors'][number]) => {
+      delete ide.constraints?.statuses
       if (ide.constraints.fields && ide.constraints.fields[0].filter?.const) {
         ide.constraints.fields[0].filter.const = issuerId
       }

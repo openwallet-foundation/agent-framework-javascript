@@ -41,19 +41,19 @@ docker compose -f docker-compose.arm.yml up -d
 You can run all unit tests (which **do not** require the docker services to be running) using the following command.
 
 ```sh
-yarn test:unit
+pnpm test:unit
 ```
 
 To run the e2e tests:
 
 ```sh
-yarn test:e2e
+pnpm test:e2e
 ```
 
 You can also run **all** tests:
 
 ```sh
-yarn test
+pnpm test
 ```
 
 ### Setting environment variables

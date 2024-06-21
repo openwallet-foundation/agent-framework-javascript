@@ -33,6 +33,7 @@ export interface AgentMessageReceivedEvent extends BaseEvent {
     message: unknown
     connection?: ConnectionRecord
     contextCorrelationId?: string
+    receivedAt?: Date
   }
 }
 
@@ -41,6 +42,7 @@ export interface AgentMessageProcessedEvent extends BaseEvent {
   payload: {
     message: AgentMessage
     connection?: ConnectionRecord
+    receivedAt?: Date
   }
 }
 

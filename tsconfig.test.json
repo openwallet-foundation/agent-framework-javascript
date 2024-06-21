@@ -4,9 +4,6 @@
     "require": ["tsconfig-paths/register"]
   },
   "compilerOptions": {
-    // Needed because of type-issued in sphereon siop-oid4vp lib
-    // https://github.com/Sphereon-Opensource/SIOP-OID4VP/pull/71#issuecomment-1913552869
-    "skipLibCheck": true,
     "baseUrl": ".",
     "paths": {
       "@credo-ts/*": ["packages/*/src"]

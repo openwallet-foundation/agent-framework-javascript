@@ -1,19 +1,33 @@
 import type { DidResolver } from '../../domain'
+import type { DidRepository } from '../../repository'
 
 import { getAgentConfig, getAgentContext, mockFunction } from '../../../../../tests/helpers'
 import { JsonTransformer } from '../../../../utils/JsonTransformer'
 import { CacheModuleConfig, InMemoryLruCache } from '../../../cache'
 import { DidsModuleConfig } from '../../DidsModuleConfig'
 import didKeyEd25519Fixture from '../../__tests__/__fixtures__/didKeyEd25519.json'
-import { DidDocument } from '../../domain'
+import { DidDocumentRole, DidDocument } from '../../domain'
 import { parseDid } from '../../domain/parse'
+import { DidRecord } from '../../repository'
 import { DidResolverService } from '../DidResolverService'
 
 const didResolverMock = {
   allowsCaching: true,
+  allowsLocalDidRecord: false,
   supportedMethods: ['key'],
   resolve: jest.fn(),
 } as DidResolver
+
+const recordResolverMock = {
+  allowsCaching: false,
+  allowsLocalDidRecord: true,
+  supportedMethods: ['record'],
+  resolve: jest.fn(),
+} as DidResolver
+
+const didRepositoryMock = {
+  getCreatedDids: jest.fn(),
+} as unknown as DidRepository
 
 const cache = new InMemoryLruCache({ limit: 10 })
 const agentConfig = getAgentConfig('DidResolverService')
@@ -24,7 +38,8 @@ const agentContext = getAgentContext({
 describe('DidResolverService', () => {
   const didResolverService = new DidResolverService(
     agentConfig.logger,
-    new DidsModuleConfig({ resolvers: [didResolverMock] })
+    new DidsModuleConfig({ resolvers: [didResolverMock, recordResolverMock] }),
+    didRepositoryMock
   )
 
   afterEach(() => {
@@ -106,6 +121,36 @@ describe('DidResolverService', () => {
 
     // Still called once because served from cache
     expect(didResolverMock.resolve).toHaveBeenCalledTimes(1)
+  })
+
+  it('should return local did document from did record when enabled on resolver and present in storage', async () => {
+    const didDocument = new DidDocument({
+      id: 'did:record:stored',
+    })
+
+    mockFunction(didRepositoryMock.getCreatedDids).mockResolvedValue([
+      new DidRecord({
+        did: 'did:record:stored',
+        didDocument,
+        role: DidDocumentRole.Created,
+      }),
+    ])
+
+    const result = await didResolverService.resolve(agentContext, 'did:record:stored', { someKey: 'string' })
+
+    expect(result).toEqual({
+      didDocument,
+      didDocumentMetadata: {},
+      didResolutionMetadata: {
+        servedFromCache: false,
+        servedFromDidRecord: true,
+      },
+    })
+
+    expect(didRepositoryMock.getCreatedDids).toHaveBeenCalledTimes(1)
+    expect(didRepositoryMock.getCreatedDids).toHaveBeenCalledWith(agentContext, {
+      did: 'did:record:stored',
+    })
   })
 
   it("should return an error with 'invalidDid' if the did string couldn't be parsed", async () => {

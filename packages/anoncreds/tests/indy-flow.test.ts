@@ -1,5 +1,5 @@
 import type { AnonCredsCredentialRequest } from '@credo-ts/anoncreds'
-import type { Wallet } from '@credo-ts/core'
+import type { DidRepository, Wallet } from '@credo-ts/core'
 
 import {
   CredentialRole,
@@ -71,7 +71,7 @@ const agentContext = getAgentContext({
     [AnonCredsHolderServiceSymbol, anonCredsHolderService],
     [AnonCredsVerifierServiceSymbol, anonCredsVerifierService],
     [AnonCredsRegistryService, new AnonCredsRegistryService()],
-    [DidResolverService, new DidResolverService(testLogger, new DidsModuleConfig())],
+    [DidResolverService, new DidResolverService(testLogger, new DidsModuleConfig(), {} as unknown as DidRepository)],
     [InjectionSymbols.Logger, testLogger],
     [W3cCredentialsModuleConfig, new W3cCredentialsModuleConfig()],
     [AnonCredsModuleConfig, anonCredsModuleConfig],
@@ -303,6 +303,8 @@ describe('Legacy indy format services using anoncreds-rs', () => {
       credentialRevocationId: null,
       methodName: 'inMemory',
       linkSecretId: 'linkSecretId',
+      createdAt: expect.any(Date),
+      updatedAt: expect.any(Date),
     })
 
     expect(holderCredentialRecord.metadata.data).toEqual({

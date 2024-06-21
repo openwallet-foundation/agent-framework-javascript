@@ -8,6 +8,8 @@ export interface AnonCredsCredentialInfo {
   revocationRegistryId: string | null
   credentialRevocationId: string | null
   methodName: string
+  createdAt: Date
+  updatedAt: Date
   linkSecretId: string
 }
 

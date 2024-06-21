@@ -7,6 +7,7 @@ import type {
   DidCreateResult,
   DidDeactivateResult,
   DidUpdateResult,
+  DidUpdateOptions,
 } from '@credo-ts/core'
 
 import { MethodSpecificIdAlgo, createDidVerificationMethod } from '@cheqd/sdk'
@@ -26,6 +27,7 @@ import {
   VerificationMethod,
 } from '@credo-ts/core'
 
+import { parseCheqdDid } from '../anoncreds/utils/identifiers'
 import { CheqdLedgerService } from '../ledger'
 
 import {
@@ -42,14 +44,28 @@ export class CheqdDidRegistrar implements DidRegistrar {
     const didRepository = agentContext.dependencyManager.resolve(DidRepository)
     const cheqdLedgerService = agentContext.dependencyManager.resolve(CheqdLedgerService)
 
-    const { methodSpecificIdAlgo, network, versionId = utils.uuid() } = options.options
-    const verificationMethod = options.secret?.verificationMethod
     let didDocument: DidDocument
+    const versionId = options.options?.versionId ?? utils.uuid()
 
     try {
       if (options.didDocument && validateSpecCompliantPayload(options.didDocument)) {
         didDocument = options.didDocument
-      } else if (verificationMethod) {
+
+        const cheqdDid = parseCheqdDid(options.didDocument.id)
+        if (!cheqdDid) {
+          return {
+            didDocumentMetadata: {},
+            didRegistrationMetadata: {},
+            didState: {
+              state: 'failed',
+              reason: `Unable to parse cheqd did ${options.didDocument.id}`,
+            },
+          }
+        }
+      } else if (options.secret?.verificationMethod) {
+        const withoutDidDocumentOptions = options as CheqdDidCreateWithoutDidDocumentOptions
+        const verificationMethod = withoutDidDocumentOptions.secret.verificationMethod
+        const methodSpecificIdAlgo = withoutDidDocumentOptions.options.methodSpecificIdAlgo
         const privateKey = verificationMethod.privateKey
         if (privateKey && !isValidPrivateKey(privateKey, KeyType.Ed25519)) {
           return {
@@ -71,7 +87,7 @@ export class CheqdDidRegistrar implements DidRegistrar {
           verificationMethod: verificationMethod.type as VerificationMethods,
           verificationMethodId: verificationMethod.id || 'key-1',
           methodSpecificIdAlgo: (methodSpecificIdAlgo as MethodSpecificIdAlgo) || MethodSpecificIdAlgo.Uuid,
-          network: network as CheqdNetwork,
+          network: withoutDidDocumentOptions.options.network as CheqdNetwork,
           publicKey: TypedArrayEncoder.toHex(key.publicKey),
         })
 
@@ -383,8 +399,10 @@ export class CheqdDidRegistrar implements DidRegistrar {
   }
 }
 
-export interface CheqdDidCreateOptions extends DidCreateOptions {
+export interface CheqdDidCreateWithoutDidDocumentOptions extends DidCreateOptions {
   method: 'cheqd'
+  did?: undefined
+  didDocument?: undefined
   options: {
     network: `${CheqdNetwork}`
     fee?: DidStdFee
@@ -392,12 +410,23 @@ export interface CheqdDidCreateOptions extends DidCreateOptions {
     methodSpecificIdAlgo?: `${MethodSpecificIdAlgo}`
   }
   secret: {
-    verificationMethod?: IVerificationMethod
+    verificationMethod: IVerificationMethod
   }
 }
 
-export interface CheqdDidUpdateOptions extends DidCreateOptions {
+export interface CheqdDidCreateFromDidDocumentOptions extends DidCreateOptions {
   method: 'cheqd'
+  did?: undefined
+  didDocument: DidDocument
+  options?: {
+    fee?: DidStdFee
+    versionId?: string
+  }
+}
+
+export type CheqdDidCreateOptions = CheqdDidCreateFromDidDocumentOptions | CheqdDidCreateWithoutDidDocumentOptions
+
+export interface CheqdDidUpdateOptions extends DidUpdateOptions {
   did: string
   didDocument: DidDocument
   options: {

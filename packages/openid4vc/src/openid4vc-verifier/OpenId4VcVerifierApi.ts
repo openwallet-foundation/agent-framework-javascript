@@ -6,7 +6,7 @@ import type {
 } from './OpenId4VcSiopVerifierServiceOptions'
 import type { OpenId4VcVerificationSessionRecord } from './repository'
 import type { OpenId4VcSiopAuthorizationResponsePayload } from '../shared'
-import type { Query } from '@credo-ts/core'
+import type { Query, QueryOptions } from '@credo-ts/core'
 
 import { injectable, AgentContext } from '@credo-ts/core'
 
@@ -45,8 +45,11 @@ export class OpenId4VcVerifierApi {
     return this.openId4VcSiopVerifierService.createVerifier(this.agentContext, options)
   }
 
-  public async findVerificationSessionsByQuery(query: Query<OpenId4VcVerificationSessionRecord>) {
-    return this.openId4VcSiopVerifierService.findVerificationSessionsByQuery(this.agentContext, query)
+  public async findVerificationSessionsByQuery(
+    query: Query<OpenId4VcVerificationSessionRecord>,
+    queryOptions?: QueryOptions
+  ) {
+    return this.openId4VcSiopVerifierService.findVerificationSessionsByQuery(this.agentContext, query, queryOptions)
   }
 
   public async getVerificationSessionById(verificationSessionId: string) {

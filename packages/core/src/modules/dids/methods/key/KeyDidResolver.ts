@@ -12,6 +12,12 @@ export class KeyDidResolver implements DidResolver {
    */
   public readonly allowsCaching = false
 
+  /**
+   * Easier to calculate for resolving than serving the local did document. Record also doesn't
+   * have a did document
+   */
+  public readonly allowsLocalDidRecord = false
+
   public async resolve(agentContext: AgentContext, did: string): Promise<DidResolutionResult> {
     const didDocumentMetadata = {}
 

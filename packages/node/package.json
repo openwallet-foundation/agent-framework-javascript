@@ -2,7 +2,7 @@
   "name": "@credo-ts/node",
   "main": "build/index",
   "types": "build/index",
-  "version": "0.5.1",
+  "version": "0.5.4",
   "files": [
     "build"
   ],
@@ -17,16 +17,16 @@
     "directory": "packages/node"
   },
   "scripts": {
-    "build": "yarn run clean && yarn run compile",
+    "build": "pnpm run clean && pnpm run compile",
     "clean": "rimraf ./build",
     "compile": "tsc -p tsconfig.build.json",
-    "prepublishOnly": "yarn run build",
+    "prepublishOnly": "pnpm run build",
     "test": "jest"
   },
   "dependencies": {
-    "@2060.io/ffi-napi": "^4.0.8",
+    "@2060.io/ffi-napi": "^4.0.9",
     "@2060.io/ref-napi": "^3.0.6",
-    "@credo-ts/core": "0.5.1",
+    "@credo-ts/core": "workspace:*",
     "@types/express": "^4.17.15",
     "express": "^4.17.1",
     "ws": "^8.13.0"
@@ -36,6 +36,6 @@
     "@types/ws": "^8.5.4",
     "nock": "^13.3.0",
     "rimraf": "^4.4.0",
-    "typescript": "~4.9.5"
+    "typescript": "~5.5.0-beta"
   }
 }

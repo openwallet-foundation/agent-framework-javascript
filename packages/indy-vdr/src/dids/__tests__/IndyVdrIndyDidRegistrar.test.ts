@@ -730,13 +730,13 @@ describe('IndyVdrIndyDidRegistrar', () => {
     expect(saveCalled).toHaveBeenCalledTimes(1)
     const [saveEvent] = saveCalled.mock.calls[0]
 
+    expect(saveEvent.payload.record.getTags()).toMatchObject({
+      recipientKeyFingerprints: ['z6LSrH6AdsQeZuKKmG6Ehx7abEQZsVg2psR2VU536gigUoAe'],
+    })
     expect(saveEvent.payload.record).toMatchObject({
       did: 'did:indy:pool1:B6xaJg1c2xU3D9ppCtt1CZ',
       role: DidDocumentRole.Created,
-      _tags: {
-        recipientKeyFingerprints: ['z6LSrH6AdsQeZuKKmG6Ehx7abEQZsVg2psR2VU536gigUoAe'],
-      },
-      didDocument: undefined,
+      didDocument: expect.any(DidDocument),
     })
   })
 

@@ -6,9 +6,9 @@ export interface GetTenantAgentOptions {
   tenantId: string
 }
 
-export type WithTenantAgentCallback<AgentModules extends ModulesMap> = (
+export type WithTenantAgentCallback<AgentModules extends ModulesMap, Return> = (
   tenantAgent: TenantAgent<AgentModules>
-) => Promise<void>
+) => Promise<Return>
 
 export interface CreateTenantOptions {
   config: Omit<TenantConfig, 'walletConfig'>

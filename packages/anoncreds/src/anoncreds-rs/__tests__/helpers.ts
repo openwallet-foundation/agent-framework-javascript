@@ -174,6 +174,8 @@ export async function createCredentialForHolder(options: {
     methodName: 'inMemory',
     credentialRevocationId: null,
     revocationRegistryId: null,
+    createdAt: new Date('2024-01-01T00:00:00Z'),
+    updatedAt: new Date('2024-01-01T00:00:00Z'),
   }
   const returnObj = {
     credential: w3cJsonLdCredential,

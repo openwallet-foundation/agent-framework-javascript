@@ -1,3 +1,4 @@
+import type { CheqdNetwork } from '@cheqd/sdk'
 import type { ParsedDid } from '@credo-ts/core'
 
 import { TypedArrayEncoder, utils } from '@credo-ts/core'
@@ -28,7 +29,7 @@ export const cheqdResourceMetadataRegex = new RegExp(
   `^did:cheqd:${NETWORK}:${IDENTIFIER}/resources/${IDENTIFIER}/metadata${QUERY}${FRAGMENT}`
 )
 
-export type ParsedCheqdDid = ParsedDid & { network: string }
+export type ParsedCheqdDid = ParsedDid & { network: `${CheqdNetwork}` }
 export function parseCheqdDid(didUrl: string): ParsedCheqdDid | null {
   if (didUrl === '' || !didUrl) return null
   const sections = didUrl.match(cheqdSdkAnonCredsRegistryIdentifierRegex)
@@ -44,7 +45,7 @@ export function parseCheqdDid(didUrl: string): ParsedCheqdDid | null {
     const parts: ParsedCheqdDid = {
       did: `did:cheqd:${sections[1]}:${sections[2]}`,
       method: 'cheqd',
-      network: sections[1],
+      network: sections[1] as `${CheqdNetwork}`,
       id: sections[2],
       didUrl,
     }

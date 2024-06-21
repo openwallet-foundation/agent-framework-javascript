@@ -1,5 +1,5 @@
 import type { SdJwtVcRecord } from '../../sd-jwt-vc'
-import type { W3cCredentialRecord } from '../../vc'
+import type { ClaimFormat, W3cCredentialRecord } from '../../vc'
 
 export interface DifPexCredentialsForRequest {
   /**
@@ -111,8 +111,24 @@ export interface DifPexCredentialsForRequestSubmissionEntry {
    * If the value is an empty list, it means the input descriptor could
    * not be satisfied.
    */
-  verifiableCredentials: Array<W3cCredentialRecord | SdJwtVcRecord>
+  verifiableCredentials: SubmissionEntryCredential[]
 }
+
+export type SubmissionEntryCredential =
+  | {
+      type: ClaimFormat.SdJwtVc
+      credentialRecord: SdJwtVcRecord
+
+      /**
+       * The payload that will be disclosed, including always disclosed attributes
+       * and disclosures for the presentation definition
+       */
+      disclosedPayload: Record<string, unknown>
+    }
+  | {
+      type: ClaimFormat.JwtVc | ClaimFormat.LdpVc
+      credentialRecord: W3cCredentialRecord
+    }
 
 /**
  * Mapping of selected credentials for an input descriptor

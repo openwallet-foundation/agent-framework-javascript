@@ -1,6 +1,6 @@
 import type { AgentContext } from '../../../agent'
 import type { InboundMessageContext } from '../../../agent/models/InboundMessageContext'
-import type { Query } from '../../../storage/StorageService'
+import type { Query, QueryOptions } from '../../../storage/StorageService'
 import type { ConnectionRecord } from '../../connections'
 import type { MediationStateChangedEvent } from '../RoutingEvents'
 import type { ForwardMessage, MediationRequestMessage } from '../messages'
@@ -279,8 +279,12 @@ export class MediatorService {
     return routingRecord
   }
 
-  public async findAllByQuery(agentContext: AgentContext, query: Query<MediationRecord>): Promise<MediationRecord[]> {
-    return await this.mediationRepository.findByQuery(agentContext, query)
+  public async findAllByQuery(
+    agentContext: AgentContext,
+    query: Query<MediationRecord>,
+    queryOptions?: QueryOptions
+  ): Promise<MediationRecord[]> {
+    return await this.mediationRepository.findByQuery(agentContext, query, queryOptions)
   }
 
   private async updateState(agentContext: AgentContext, mediationRecord: MediationRecord, newState: MediationState) {

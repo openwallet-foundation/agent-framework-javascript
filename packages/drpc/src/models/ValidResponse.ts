@@ -1,14 +1,16 @@
-import type { ValidationArguments, ValidationOptions } from 'class-validator'
+import type { ValidationOptions } from 'class-validator'
 
 import { ValidateBy, ValidationError, buildMessage } from 'class-validator'
 
 export function IsValidDrpcResponse(validationOptions?: ValidationOptions): PropertyDecorator {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   return function (target: any, propertyKey: string | symbol) {
     ValidateBy(
       {
         name: 'isValidDrpcResponse',
         validator: {
-          validate: (value: any, _: ValidationArguments): boolean => {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          validate: (value: any): boolean => {
             // Check if value is a valid DrpcResponseObject, an array of DrpcResponseObject (possibly mixed with empty objects), or an empty object
             let isValid = false
             if (Array.isArray(value)) {

@@ -1,7 +1,26 @@
-# Change Log
+# Changelog
 
-All notable changes to this project will be documented in this file.
-See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
+## [0.5.3](https://github.com/openwallet-foundation/credo-ts/compare/v0.5.2...v0.5.3) (2024-05-01)
+
+### Bug Fixes
+
+- allow did document for didcomm without authentication or keyAgreement ([#1848](https://github.com/openwallet-foundation/credo-ts/issues/1848)) ([5d986f0](https://github.com/openwallet-foundation/credo-ts/commit/5d986f0da67de78b4df2ad7ab92eeb2bdf9f2c83))
+- store recipient keys by default ([#1847](https://github.com/openwallet-foundation/credo-ts/issues/1847)) ([e9238cf](https://github.com/openwallet-foundation/credo-ts/commit/e9238cfde4d76c5b927f6f76b3529d4c80808a3a))
+
+## [0.5.2](https://github.com/openwallet-foundation/credo-ts/compare/v0.5.1...v0.5.2) (2024-04-26)
+
+### Bug Fixes
+
+- oid4vp can be used separate from idtoken ([#1827](https://github.com/openwallet-foundation/credo-ts/issues/1827)) ([ca383c2](https://github.com/openwallet-foundation/credo-ts/commit/ca383c284e2073992a1fd280fca99bee1c2e19f8))
+- remove mediation keys after hangup ([#1843](https://github.com/openwallet-foundation/credo-ts/issues/1843)) ([9c3b950](https://github.com/openwallet-foundation/credo-ts/commit/9c3b9507ec5e33d155cebf9fab97703267b549bd))
+
+### Features
+
+- add disclosures so you know which fields are disclosed ([#1834](https://github.com/openwallet-foundation/credo-ts/issues/1834)) ([6ec43eb](https://github.com/openwallet-foundation/credo-ts/commit/6ec43eb1f539bd8d864d5bbd2ab35459809255ec))
+- apply new version of SD JWT package ([#1787](https://github.com/openwallet-foundation/credo-ts/issues/1787)) ([b41e158](https://github.com/openwallet-foundation/credo-ts/commit/b41e158098773d2f59b5b5cfb82cc6be06a57acd))
+- did rotate event ([#1840](https://github.com/openwallet-foundation/credo-ts/issues/1840)) ([d16bebb](https://github.com/openwallet-foundation/credo-ts/commit/d16bebb7d63bfbad90cedea3c6b4fb3ec20a4be1))
+- queued messages reception time ([#1824](https://github.com/openwallet-foundation/credo-ts/issues/1824)) ([0b4b8dd](https://github.com/openwallet-foundation/credo-ts/commit/0b4b8dd42117eb8e92fcc4be695ff149b49a06c7))
+- support invitationDid when creating an invitation ([#1811](https://github.com/openwallet-foundation/credo-ts/issues/1811)) ([e5c6698](https://github.com/openwallet-foundation/credo-ts/commit/e5c66988e75fd9a5f047fd96774c0bf494061cbc))
 
 ## [0.5.1](https://github.com/openwallet-foundation/credo-ts/compare/v0.5.0...v0.5.1) (2024-03-28)
 

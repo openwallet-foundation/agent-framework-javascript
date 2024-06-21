@@ -60,6 +60,7 @@ function getCredentialRequestToCredentialMapper({
       assertDidBasedHolderBinding(holderBinding)
 
       return {
+        credentialSupportedId: universityDegreeCredential.id,
         format: ClaimFormat.JwtVc,
         credential: new W3cCredential({
           type: universityDegreeCredential.types,
@@ -80,6 +81,7 @@ function getCredentialRequestToCredentialMapper({
 
       return {
         format: ClaimFormat.JwtVc,
+        credentialSupportedId: openBadgeCredential.id,
         credential: new W3cCredential({
           type: openBadgeCredential.types,
           issuer: new W3cIssuer({
@@ -96,6 +98,7 @@ function getCredentialRequestToCredentialMapper({
 
     if (credentialSupported.id === universityDegreeCredentialSdJwt.id) {
       return {
+        credentialSupportedId: universityDegreeCredentialSdJwt.id,
         format: ClaimFormat.SdJwtVc,
         payload: { vct: universityDegreeCredentialSdJwt.vct, university: 'innsbruck', degree: 'bachelor' },
         holder: holderBinding,
@@ -103,7 +106,7 @@ function getCredentialRequestToCredentialMapper({
           method: 'did',
           didUrl: `${issuerDidKey.did}#${issuerDidKey.key.fingerprint}`,
         },
-        disclosureFrame: { university: true, degree: true },
+        disclosureFrame: { _sd: ['university', 'degree'] },
       }
     }
 

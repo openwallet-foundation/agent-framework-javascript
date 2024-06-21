@@ -10,22 +10,21 @@
   "license": "Apache-2.0",
   "scripts": {
     "alice": "ts-node src/AliceInquirer.ts",
-    "faber": "ts-node src/FaberInquirer.ts",
-    "refresh": "rm -rf ./node_modules ./yarn.lock && yarn"
+    "faber": "ts-node src/FaberInquirer.ts"
   },
   "dependencies": {
-    "@hyperledger/indy-vdr-nodejs": "^0.2.0",
-    "@hyperledger/anoncreds-nodejs": "^0.2.1",
-    "@hyperledger/aries-askar-nodejs": "^0.2.0",
+    "@hyperledger/indy-vdr-nodejs": "^0.2.2",
+    "@hyperledger/anoncreds-nodejs": "^0.2.2",
+    "@hyperledger/aries-askar-nodejs": "^0.2.1",
     "inquirer": "^8.2.5"
   },
   "devDependencies": {
-    "@credo-ts/anoncreds": "*",
-    "@credo-ts/askar": "*",
-    "@credo-ts/core": "*",
-    "@credo-ts/indy-vdr": "*",
-    "@credo-ts/cheqd": "*",
-    "@credo-ts/node": "*",
+    "@credo-ts/anoncreds": "workspace:*",
+    "@credo-ts/askar": "workspace:*",
+    "@credo-ts/core": "workspace:*",
+    "@credo-ts/indy-vdr": "workspace:*",
+    "@credo-ts/cheqd": "workspace:*",
+    "@credo-ts/node": "workspace:*",
     "@types/figlet": "^1.5.4",
     "@types/inquirer": "^8.2.6",
     "clear": "^0.1.0",

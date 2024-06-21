@@ -221,6 +221,8 @@ export function getIndyNamespaceFromIndyDid(identifier: string): string {
 }
 
 export function getUnQualifiedDidIndyDid(identifier: string): string {
+  if (isUnqualifiedIndyDid(identifier)) return identifier
+
   if (isDidIndySchemaId(identifier)) {
     const { schemaName, schemaVersion, namespaceIdentifier } = parseIndySchemaId(identifier)
     return getUnqualifiedSchemaId(namespaceIdentifier, schemaName, schemaVersion)
@@ -262,8 +264,9 @@ export function getQualifiedDidIndyDid(identifier: string, namespace: string): s
     const credentialDefinitionId = `did:indy:${namespace}:${namespaceIdentifier}/anoncreds/v0/CLAIM_DEF/${schemaSeqNo}/${tag}`
     return credentialDefinitionId
   } else if (isUnqualifiedRevocationRegistryId(identifier)) {
-    const { namespaceIdentifier, schemaSeqNo, revocationRegistryTag } = parseIndyRevocationRegistryId(identifier)
-    const revocationRegistryId = `did:indy:${namespace}:${namespaceIdentifier}/anoncreds/v0/REV_REG_DEF/${schemaSeqNo}/${revocationRegistryTag}`
+    const { namespaceIdentifier, schemaSeqNo, credentialDefinitionTag, revocationRegistryTag } =
+      parseIndyRevocationRegistryId(identifier)
+    const revocationRegistryId = `did:indy:${namespace}:${namespaceIdentifier}/anoncreds/v0/REV_REG_DEF/${schemaSeqNo}/${credentialDefinitionTag}/${revocationRegistryTag}`
     return revocationRegistryId
   } else if (isUnqualifiedIndyDid(identifier)) {
     return `did:indy:${namespace}:${identifier}`

@@ -1,4 +1,5 @@
 import type { DidDocument, DidRegistrar } from '../../domain'
+import type { DidResolverService } from '../DidResolverService'
 
 import { getAgentConfig, getAgentContext, mockFunction } from '../../../../../tests/helpers'
 import { DidsModuleConfig } from '../../DidsModuleConfig'
@@ -14,11 +15,16 @@ const didRegistrarMock = {
   deactivate: jest.fn(),
 } as DidRegistrar
 
+const didResolverMock = {
+  invalidateCacheForDid: jest.fn(),
+} as unknown as DidResolverService
+
 const didRegistrarService = new DidRegistrarService(
   agentConfig.logger,
   new DidsModuleConfig({
     registrars: [didRegistrarMock],
-  })
+  }),
+  didResolverMock
 )
 
 describe('DidResolverService', () => {
@@ -119,6 +125,7 @@ describe('DidResolverService', () => {
       const result = await didRegistrarService.update(agentContext, { did: 'did:key:xxxx', didDocument })
       expect(result).toEqual(returnValue)
 
+      expect(didResolverMock.invalidateCacheForDid).toHaveBeenCalledTimes(1)
       expect(didRegistrarMock.update).toHaveBeenCalledTimes(1)
       expect(didRegistrarMock.update).toHaveBeenCalledWith(agentContext, { did: 'did:key:xxxx', didDocument })
     })
@@ -170,6 +177,7 @@ describe('DidResolverService', () => {
       const result = await didRegistrarService.deactivate(agentContext, { did: 'did:key:xxxx' })
       expect(result).toEqual(returnValue)
 
+      expect(didResolverMock.invalidateCacheForDid).toHaveBeenCalledTimes(1)
       expect(didRegistrarMock.deactivate).toHaveBeenCalledTimes(1)
       expect(didRegistrarMock.deactivate).toHaveBeenCalledWith(agentContext, { did: 'did:key:xxxx' })
     })

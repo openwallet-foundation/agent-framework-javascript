@@ -1,6 +1,8 @@
+import type { OutboundMessageContext } from './OutboundMessageContext'
 import type { Key } from '../../crypto'
 import type { ConnectionRecord } from '../../modules/connections'
 import type { AgentMessage } from '../AgentMessage'
+import type { MessageHandler } from '../MessageHandler'
 import type { AgentContext } from '../context'
 
 import { CredoError } from '../../error'
@@ -11,15 +13,21 @@ export interface MessageContextParams {
   senderKey?: Key
   recipientKey?: Key
   agentContext: AgentContext
+  receivedAt?: Date
 }
 
 export class InboundMessageContext<T extends AgentMessage = AgentMessage> {
-  public message: T
   public connection?: ConnectionRecord
   public sessionId?: string
   public senderKey?: Key
   public recipientKey?: Key
+  public receivedAt: Date
+
   public readonly agentContext: AgentContext
+
+  public message: T
+  public messageHandler?: MessageHandler
+  public responseMessage?: OutboundMessageContext
 
   public constructor(message: T, context: MessageContextParams) {
     this.message = message
@@ -28,6 +36,15 @@ export class InboundMessageContext<T extends AgentMessage = AgentMessage> {
     this.connection = context.connection
     this.sessionId = context.sessionId
     this.agentContext = context.agentContext
+    this.receivedAt = context.receivedAt ?? new Date()
+  }
+
+  public setMessageHandler(messageHandler: MessageHandler) {
+    this.messageHandler = messageHandler
+  }
+
+  public setResponseMessage(outboundMessageContext: OutboundMessageContext) {
+    this.responseMessage = outboundMessageContext
   }
 
   /**

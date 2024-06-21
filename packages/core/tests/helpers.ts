@@ -18,6 +18,7 @@ import type {
   AgentMessageProcessedEvent,
   RevocationNotificationReceivedEvent,
   KeyDidCreateOptions,
+  ConnectionDidRotatedEvent,
 } from '../src'
 import type { AgentModulesInput, EmptyModuleMap } from '../src/agent/AgentModules'
 import type { TrustPingReceivedEvent, TrustPingResponseReceivedEvent } from '../src/modules/connections/TrustPingEvents'
@@ -231,6 +232,8 @@ const isCredentialStateChangedEvent = (e: BaseEvent): e is CredentialStateChange
   e.type === CredentialEventTypes.CredentialStateChanged
 const isConnectionStateChangedEvent = (e: BaseEvent): e is ConnectionStateChangedEvent =>
   e.type === ConnectionEventTypes.ConnectionStateChanged
+const isConnectionDidRotatedEvent = (e: BaseEvent): e is ConnectionDidRotatedEvent =>
+  e.type === ConnectionEventTypes.ConnectionDidRotated
 const isTrustPingReceivedEvent = (e: BaseEvent): e is TrustPingReceivedEvent =>
   e.type === TrustPingEventTypes.TrustPingReceivedEvent
 const isTrustPingResponseReceivedEvent = (e: BaseEvent): e is TrustPingResponseReceivedEvent =>
@@ -455,6 +458,38 @@ export async function waitForCredentialRecord(
   return waitForCredentialRecordSubject(observable, options)
 }
 
+export function waitForDidRotateSubject(
+  subject: ReplaySubject<BaseEvent> | Observable<BaseEvent>,
+  {
+    threadId,
+    state,
+    timeoutMs = 15000, // sign and store credential in W3c credential protocols take several seconds
+  }: {
+    threadId?: string
+    state?: DidExchangeState
+    previousState?: DidExchangeState | null
+    timeoutMs?: number
+  }
+) {
+  const observable = subject instanceof ReplaySubject ? subject.asObservable() : subject
+
+  return firstValueFrom(
+    observable.pipe(
+      filter(isConnectionDidRotatedEvent),
+      filter((e) => threadId === undefined || e.payload.connectionRecord.threadId === threadId),
+      filter((e) => state === undefined || e.payload.connectionRecord.state === state),
+      timeout(timeoutMs),
+      catchError(() => {
+        throw new Error(`ConnectionDidRotated event not emitted within specified timeout: {
+  threadId: ${threadId},
+  state: ${state}
+}`)
+      }),
+      map((e) => e.payload)
+    )
+  )
+}
+
 export function waitForConnectionRecordSubject(
   subject: ReplaySubject<BaseEvent> | Observable<BaseEvent>,
   {
@@ -501,6 +536,18 @@ export async function waitForConnectionRecord(
 ) {
   const observable = agent.events.observable<ConnectionStateChangedEvent>(ConnectionEventTypes.ConnectionStateChanged)
   return waitForConnectionRecordSubject(observable, options)
+}
+
+export async function waitForDidRotate(
+  agent: Agent,
+  options: {
+    threadId?: string
+    state?: DidExchangeState
+    timeoutMs?: number
+  }
+) {
+  const observable = agent.events.observable<ConnectionDidRotatedEvent>(ConnectionEventTypes.ConnectionDidRotated)
+  return waitForDidRotateSubject(observable, options)
 }
 
 export async function waitForBasicMessage(

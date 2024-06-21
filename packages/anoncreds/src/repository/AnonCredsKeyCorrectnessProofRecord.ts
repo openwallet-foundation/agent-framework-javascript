@@ -6,6 +6,7 @@ export interface AnonCredsKeyCorrectnessProofRecordProps {
   id?: string
   credentialDefinitionId: string
   value: Record<string, unknown>
+  createdAt?: Date
 }
 
 export type DefaultAnonCredsKeyCorrectnessProofPrivateTags = {
@@ -29,6 +30,7 @@ export class AnonCredsKeyCorrectnessProofRecord extends BaseRecord<
       this.id = props.id ?? utils.uuid()
       this.credentialDefinitionId = props.credentialDefinitionId
       this.value = props.value
+      this.createdAt = props.createdAt ?? new Date()
     }
   }
 

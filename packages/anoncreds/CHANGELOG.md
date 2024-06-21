@@ -1,7 +1,22 @@
-# Change Log
+# Changelog
 
-All notable changes to this project will be documented in this file.
-See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
+## [0.5.3](https://github.com/openwallet-foundation/credo-ts/compare/v0.5.2...v0.5.3) (2024-05-01)
+
+### Bug Fixes
+
+- **anoncreds:** migration script credential id ([#1849](https://github.com/openwallet-foundation/credo-ts/issues/1849)) ([e58ec5b](https://github.com/openwallet-foundation/credo-ts/commit/e58ec5bd97043d57fcc3c5a4aee926943e6c5326))
+
+## [0.5.2](https://github.com/openwallet-foundation/credo-ts/compare/v0.5.1...v0.5.2) (2024-04-26)
+
+### Bug Fixes
+
+- **anoncreds:** credential exchange record migration ([#1844](https://github.com/openwallet-foundation/credo-ts/issues/1844)) ([93b3986](https://github.com/openwallet-foundation/credo-ts/commit/93b3986348a86365c3a2faf8023a51390528df93))
+- **anoncreds:** unqualified revocation registry processing ([#1833](https://github.com/openwallet-foundation/credo-ts/issues/1833)) ([edc5735](https://github.com/openwallet-foundation/credo-ts/commit/edc5735ccb663acabe8b8480f36cc3a72a1cf63d))
+- node-ffi-napi compatibility ([#1821](https://github.com/openwallet-foundation/credo-ts/issues/1821)) ([81d351b](https://github.com/openwallet-foundation/credo-ts/commit/81d351bc9d4d508ebfac9e7f2b2f10276ab1404a))
+
+### Features
+
+- sort requested credentials ([#1839](https://github.com/openwallet-foundation/credo-ts/issues/1839)) ([b46c7fa](https://github.com/openwallet-foundation/credo-ts/commit/b46c7fa459d7e1a81744353bf595c754fad1b3a1))
 
 ## [0.5.1](https://github.com/openwallet-foundation/credo-ts/compare/v0.5.0...v0.5.1) (2024-03-28)
 

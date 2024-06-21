@@ -204,6 +204,7 @@ export class V2CredentialProtocol<CFs extends CredentialFormatService[] = Creden
       await connectionService.assertConnectionOrOutOfBandExchange(messageContext, {
         lastReceivedMessage: proposalCredentialMessage ?? undefined,
         lastSentMessage: offerCredentialMessage ?? undefined,
+        expectedConnectionId: credentialRecord.connectionId,
       })
 
       await this.credentialFormatCoordinator.processProposal(messageContext.agentContext, {
@@ -445,6 +446,7 @@ export class V2CredentialProtocol<CFs extends CredentialFormatService[] = Creden
       await connectionService.assertConnectionOrOutOfBandExchange(messageContext, {
         lastReceivedMessage: offerCredentialMessage ?? undefined,
         lastSentMessage: proposeCredentialMessage ?? undefined,
+        expectedConnectionId: credentialRecord.connectionId,
       })
 
       await this.credentialFormatCoordinator.processOffer(messageContext.agentContext, {
@@ -688,6 +690,7 @@ export class V2CredentialProtocol<CFs extends CredentialFormatService[] = Creden
       await connectionService.assertConnectionOrOutOfBandExchange(messageContext, {
         lastReceivedMessage: proposalMessage ?? undefined,
         lastSentMessage: offerMessage ?? undefined,
+        expectedConnectionId: credentialRecord.connectionId,
       })
 
       // This makes sure that the sender of the incoming message is authorized to do so.
@@ -833,6 +836,7 @@ export class V2CredentialProtocol<CFs extends CredentialFormatService[] = Creden
     await connectionService.assertConnectionOrOutOfBandExchange(messageContext, {
       lastReceivedMessage: offerMessage ?? undefined,
       lastSentMessage: requestMessage,
+      expectedConnectionId: credentialRecord.connectionId,
     })
 
     const formatServices = this.getFormatServicesFromMessage(credentialMessage.formats)
@@ -921,6 +925,7 @@ export class V2CredentialProtocol<CFs extends CredentialFormatService[] = Creden
     await connectionService.assertConnectionOrOutOfBandExchange(messageContext, {
       lastReceivedMessage: requestMessage,
       lastSentMessage: credentialMessage,
+      expectedConnectionId: credentialRecord.connectionId,
     })
 
     // Update record

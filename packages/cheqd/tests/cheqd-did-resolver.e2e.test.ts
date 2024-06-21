@@ -77,7 +77,9 @@ describe('Cheqd DID resolver', () => {
   })
 
   it('should resolve a did:cheqd did from local testnet', async () => {
-    const resolveResult = await resolverAgent.dids.resolve(did)
+    const resolveResult = await resolverAgent.dids.resolve(did, {
+      useLocalCreatedDidRecord: false,
+    })
     expect(JsonTransformer.toJSON(resolveResult)).toMatchObject({
       didDocument: {
         '@context': ['https://www.w3.org/ns/did/v1', 'https://w3id.org/security/suites/ed25519-2020/v1'],
@@ -105,7 +107,9 @@ describe('Cheqd DID resolver', () => {
   })
 
   it('should getClosestResourceVersion', async () => {
-    const didResult = await resolverAgent.dids.resolve(did)
+    const didResult = await resolverAgent.dids.resolve(did, {
+      useLocalCreatedDidRecord: false,
+    })
 
     const inFuture = new Date(Date.now() + 1000 * 60 * 60 * 24 * 365 * 10) // 10 years in future
 

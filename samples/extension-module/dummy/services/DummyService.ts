@@ -1,5 +1,5 @@
 import type { DummyStateChangedEvent } from './DummyEvents'
-import type { Query, AgentContext, ConnectionRecord, InboundMessageContext } from '@credo-ts/core'
+import type { Query, QueryOptions, AgentContext, ConnectionRecord, InboundMessageContext } from '@credo-ts/core'
 
 import { injectable, EventEmitter } from '@credo-ts/core'
 
@@ -133,8 +133,12 @@ export class DummyService {
    *
    * @returns List containing all dummy records matching query
    */
-  public findAllByQuery(agentContext: AgentContext, query: Query<DummyRecord>): Promise<DummyRecord[]> {
-    return this.dummyRepository.findByQuery(agentContext, query)
+  public findAllByQuery(
+    agentContext: AgentContext,
+    query: Query<DummyRecord>,
+    queryOptions?: QueryOptions
+  ): Promise<DummyRecord[]> {
+    return this.dummyRepository.findByQuery(agentContext, query, queryOptions)
   }
 
   /**

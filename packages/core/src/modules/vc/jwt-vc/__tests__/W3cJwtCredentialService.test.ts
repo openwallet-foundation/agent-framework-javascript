@@ -6,7 +6,7 @@ import { JwaSignatureAlgorithm } from '../../../../crypto/jose/jwa'
 import { getJwkFromKey } from '../../../../crypto/jose/jwk'
 import { CredoError, ClassValidationError } from '../../../../error'
 import { JsonTransformer } from '../../../../utils'
-import { DidJwk, DidKey, DidsModuleConfig } from '../../../dids'
+import { DidJwk, DidKey, DidRepository, DidsModuleConfig } from '../../../dids'
 import { CREDENTIALS_CONTEXT_V1_URL } from '../../constants'
 import { ClaimFormat, W3cCredential, W3cPresentation } from '../../models'
 import { W3cJwtCredentialService } from '../W3cJwtCredentialService'
@@ -29,6 +29,7 @@ const agentContext = getAgentContext({
   registerInstances: [
     [InjectionSymbols.Logger, testLogger],
     [DidsModuleConfig, new DidsModuleConfig()],
+    [DidRepository, {} as unknown as DidRepository],
   ],
   agentConfig: config,
 })

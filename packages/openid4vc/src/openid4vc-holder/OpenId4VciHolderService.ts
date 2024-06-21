@@ -526,16 +526,16 @@ export class OpenId4VciHolderService {
         )
 
       const sdJwtVcApi = agentContext.dependencyManager.resolve(SdJwtVcApi)
-      const { verification, sdJwtVc } = await sdJwtVcApi.verify({
+      const verificationResult = await sdJwtVcApi.verify({
         compactSdJwtVc: credentialResponse.successBody.credential,
       })
 
-      if (!verification.isValid) {
-        agentContext.config.logger.error('Failed to validate credential', { verification })
-        throw new CredoError(`Failed to validate sd-jwt-vc credential. Results = ${JSON.stringify(verification)}`)
+      if (!verificationResult.isValid) {
+        agentContext.config.logger.error('Failed to validate credential', { verificationResult })
+        throw new CredoError(`Failed to validate sd-jwt-vc credential. Results = ${JSON.stringify(verificationResult)}`)
       }
 
-      return sdJwtVc
+      return verificationResult.sdJwtVc
     } else if (
       format === OpenId4VciCredentialFormatProfile.JwtVcJson ||
       format === OpenId4VciCredentialFormatProfile.JwtVcJsonLd

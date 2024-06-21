@@ -20,5 +20,4 @@ Contributions are made pursuant to the Developer's Certificate of Origin, availa
   - Non-breaking change PRs are merged earlier into **main**
   - Breaking change PRs will go to a branch named **<release-version>-pre (ie. 0.3.0-pre)** and merged later in the release cycle.
   - Consider separating your PR into a (usually larger) non-breaking PR and a (usually smaller) breaking change PR.
-- Commits and PR titles MUST follow conventional commits (https://www.conventionalcommits.org/en/v1.0.0/). This allows us to automatically determine the next release version and generate changelog files.
-  - Use conventional commits to mark breaking changes. Adding `!` after the scope of a prefix message (e.g. `chore!: a breaking change`) or adding a **BREAKING CHANGE:** note to commit messages marks a commit as breaking. See examples: https://www.conventionalcommits.org/en/v1.0.0/#examples
+- Relevant changes for the changelog must be documented using changesets. See [Changesets](.changeset/README.md) for more info. To add a changelog, run `pnpm changeset` and commit the files afterwards.

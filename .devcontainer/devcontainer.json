@@ -8,5 +8,5 @@
       "extensions": ["esbenp.prettier-vscode"]
     }
   },
-  "postCreateCommand": "yarn install"
+  "postCreateCommand": "pnpm install"
 }

@@ -15,14 +15,22 @@ import { inject, injectable } from '../../../plugins'
 import { DidsModuleConfig } from '../DidsModuleConfig'
 import { tryParseDid } from '../domain/parse'
 
+import { DidResolverService } from './DidResolverService'
+
 @injectable()
 export class DidRegistrarService {
   private logger: Logger
   private didsModuleConfig: DidsModuleConfig
+  private didResolverService: DidResolverService
 
-  public constructor(@inject(InjectionSymbols.Logger) logger: Logger, didsModuleConfig: DidsModuleConfig) {
+  public constructor(
+    @inject(InjectionSymbols.Logger) logger: Logger,
+    didsModuleConfig: DidsModuleConfig,
+    didResolverService: DidResolverService
+  ) {
     this.logger = logger
     this.didsModuleConfig = didsModuleConfig
+    this.didResolverService = didResolverService
   }
 
   public async create<CreateOptions extends DidCreateOptions = DidCreateOptions>(
@@ -110,6 +118,9 @@ export class DidRegistrarService {
       }
     }
 
+    // Invalidate cache before updating
+    await this.didResolverService.invalidateCacheForDid(agentContext, options.did)
+
     return await registrar.update(agentContext, options)
   }
 
@@ -146,6 +157,9 @@ export class DidRegistrarService {
         },
       }
     }
+
+    // Invalidate cache before deactivating
+    await this.didResolverService.invalidateCacheForDid(agentContext, options.did)
 
     return await registrar.deactivate(agentContext, options)
   }

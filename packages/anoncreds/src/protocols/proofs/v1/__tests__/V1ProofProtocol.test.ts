@@ -245,7 +245,6 @@ describe('V1ProofProtocol', () => {
       }
       expect(proofRepository.getSingleByQuery).toHaveBeenNthCalledWith(1, agentContext, {
         threadId: 'somethreadid',
-        connectionId: connection.id,
       })
       expect(repositoryUpdateSpy).toHaveBeenCalledTimes(1)
       const [[, updatedCredentialRecord]] = repositoryUpdateSpy.mock.calls

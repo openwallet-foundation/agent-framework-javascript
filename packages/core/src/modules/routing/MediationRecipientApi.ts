@@ -118,7 +118,16 @@ export class MediationRecipientApi {
     })
   }
 
-  private async openMediationWebSocket(mediator: MediationRecord) {
+  /**
+   * Implicit mode consists simply on initiating a long-lived session to a mediator and wait for the
+   * messages to arrive automatically.
+   *
+   * In order to do initiate this session, we open a suitable connection (using WebSocket transport) and
+   * send a Trust Ping message.
+   *
+   * @param mediator
+   */
+  private async initiateImplicitMode(mediator: MediationRecord) {
     const connection = await this.connectionService.getById(this.agentContext, mediator.connectionId)
     const { message, connectionRecord } = await this.connectionService.createTrustPing(this.agentContext, connection, {
       responseRequested: false,
@@ -218,7 +227,7 @@ export class MediationRecipientApi {
                 protocolVersion: 'v2',
               })
             } else {
-              await this.openMediationWebSocket(mediator)
+              await this.initiateImplicitMode(mediator)
             }
           } catch (error) {
             this.logger.warn('Unable to re-open websocket connection to mediator', { error })
@@ -252,7 +261,11 @@ export class MediationRecipientApi {
       case MediatorPickupStrategy.PickUpV2: {
         const stopConditions$ = merge(this.stop$, this.stopMessagePickup$).pipe()
         // PickUpV1/PickUpV2 means polling every X seconds with batch message
-        this.logger.info(`Starting explicit (batch) pickup of messages from mediator '${mediatorRecord.id}'`)
+        const protocolVersion = mediatorPickupStrategy === MediatorPickupStrategy.PickUpV2 ? 'v2' : 'v1'
+
+        this.logger.info(
+          `Starting explicit pickup of messages from mediator '${mediatorRecord.id}' using ${protocolVersion}`
+        )
         const subscription = interval(mediatorPollingInterval)
           .pipe(takeUntil(stopConditions$))
           .subscribe({
@@ -260,7 +273,7 @@ export class MediationRecipientApi {
               await this.messagePickupApi.pickupMessages({
                 connectionId: mediatorConnection.id,
                 batchSize: this.config.maximumMessagePickup,
-                protocolVersion: mediatorPickupStrategy === MediatorPickupStrategy.PickUpV2 ? 'v2' : 'v1',
+                protocolVersion,
               })
             },
             complete: () => this.logger.info(`Stopping pickup of messages from mediator '${mediatorRecord.id}'`),
@@ -290,7 +303,7 @@ export class MediationRecipientApi {
         // such as WebSockets to work
         this.logger.info(`Starting implicit pickup of messages from mediator '${mediatorRecord.id}'`)
         await this.monitorMediatorWebSocketEvents(mediatorRecord, mediatorPickupStrategy)
-        await this.openMediationWebSocket(mediatorRecord)
+        await this.initiateImplicitMode(mediatorRecord)
         break
       default:
         this.logger.info(`Skipping pickup of messages from mediator '${mediatorRecord.id}' due to pickup strategy none`)

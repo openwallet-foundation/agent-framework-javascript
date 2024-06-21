@@ -15,6 +15,7 @@ export interface AnonCredsCredentialDefinitionRecordProps {
   credentialDefinitionId: string
   credentialDefinition: AnonCredsCredentialDefinition
   methodName: string
+  createdAt?: Date
 }
 
 export type DefaultAnonCredsCredentialDefinitionTags = {
@@ -52,6 +53,7 @@ export class AnonCredsCredentialDefinitionRecord extends BaseRecord<
 
     if (props) {
       this.id = props.id ?? utils.uuid()
+      this.createdAt = props.createdAt ?? new Date()
       this.credentialDefinitionId = props.credentialDefinitionId
       this.credentialDefinition = props.credentialDefinition
       this.methodName = props.methodName

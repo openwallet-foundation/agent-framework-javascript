@@ -23,7 +23,7 @@ import type { ProofProtocol } from './protocol/ProofProtocol'
 import type { ProofFormatsFromProtocols } from './protocol/ProofProtocolOptions'
 import type { ProofExchangeRecord } from './repository/ProofExchangeRecord'
 import type { AgentMessage } from '../../agent/AgentMessage'
-import type { Query } from '../../storage/StorageService'
+import type { Query, QueryOptions } from '../../storage/StorageService'
 
 import { injectable } from 'tsyringe'
 
@@ -72,7 +72,7 @@ export interface ProofsApi<PPs extends ProofProtocol[]> {
 
   // Record Methods
   getAll(): Promise<ProofExchangeRecord[]>
-  findAllByQuery(query: Query<ProofExchangeRecord>): Promise<ProofExchangeRecord[]>
+  findAllByQuery(query: Query<ProofExchangeRecord>, queryOptions?: QueryOptions): Promise<ProofExchangeRecord[]>
   getById(proofRecordId: string): Promise<ProofExchangeRecord>
   findById(proofRecordId: string): Promise<ProofExchangeRecord | null>
   deleteById(proofId: string, options?: DeleteProofOptions): Promise<void>
@@ -141,6 +141,7 @@ export class ProofsApi<PPs extends ProofProtocol[]> implements ProofsApi<PPs> {
       proofFormats: options.proofFormats,
       autoAcceptProof: options.autoAcceptProof,
       goalCode: options.goalCode,
+      goal: options.goal,
       comment: options.comment,
       parentThreadId: options.parentThreadId,
     })
@@ -182,6 +183,7 @@ export class ProofsApi<PPs extends ProofProtocol[]> implements ProofsApi<PPs> {
       proofRecord,
       proofFormats: options.proofFormats,
       goalCode: options.goalCode,
+      goal: options.goal,
       willConfirm: options.willConfirm,
       comment: options.comment,
       autoAcceptProof: options.autoAcceptProof,
@@ -227,6 +229,7 @@ export class ProofsApi<PPs extends ProofProtocol[]> implements ProofsApi<PPs> {
       autoAcceptProof: options.autoAcceptProof,
       comment: options.comment,
       goalCode: options.goalCode,
+      goal: options.goal,
       willConfirm: options.willConfirm,
     })
 
@@ -261,6 +264,7 @@ export class ProofsApi<PPs extends ProofProtocol[]> implements ProofsApi<PPs> {
       parentThreadId: options.parentThreadId,
       comment: options.comment,
       goalCode: options.goalCode,
+      goal: options.goal,
       willConfirm: options.willConfirm,
     })
 
@@ -304,6 +308,7 @@ export class ProofsApi<PPs extends ProofProtocol[]> implements ProofsApi<PPs> {
       comment: options.comment,
       autoAcceptProof: options.autoAcceptProof,
       goalCode: options.goalCode,
+      goal: options.goal,
     })
 
     const outboundMessageContext = await getOutboundMessageContext(this.agentContext, {
@@ -362,6 +367,7 @@ export class ProofsApi<PPs extends ProofProtocol[]> implements ProofsApi<PPs> {
       proofFormats: options.proofFormats,
       autoAcceptProof: options.autoAcceptProof,
       goalCode: options.goalCode,
+      goal: options.goal,
       comment: options.comment,
     })
 
@@ -394,6 +400,7 @@ export class ProofsApi<PPs extends ProofProtocol[]> implements ProofsApi<PPs> {
       comment: options.comment,
       parentThreadId: options.parentThreadId,
       goalCode: options.goalCode,
+      goal: options.goal,
       willConfirm: options.willConfirm,
     })
   }
@@ -548,8 +555,11 @@ export class ProofsApi<PPs extends ProofProtocol[]> implements ProofsApi<PPs> {
    *
    * @returns List containing all proof records matching specified params
    */
-  public findAllByQuery(query: Query<ProofExchangeRecord>): Promise<ProofExchangeRecord[]> {
-    return this.proofRepository.findByQuery(this.agentContext, query)
+  public findAllByQuery(
+    query: Query<ProofExchangeRecord>,
+    queryOptions?: QueryOptions
+  ): Promise<ProofExchangeRecord[]> {
+    return this.proofRepository.findByQuery(this.agentContext, query, queryOptions)
   }
 
   /**

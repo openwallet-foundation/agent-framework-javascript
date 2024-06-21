@@ -1,7 +1,18 @@
-# Change Log
+# Changelog
 
-All notable changes to this project will be documented in this file.
-See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
+## [0.5.3](https://github.com/openwallet-foundation/credo-ts/compare/v0.5.2...v0.5.3) (2024-05-01)
+
+**Note:** Version bump only for package @credo-ts/tenants
+
+## [0.5.2](https://github.com/openwallet-foundation/credo-ts/compare/v0.5.1...v0.5.2) (2024-04-26)
+
+### Bug Fixes
+
+- close tenant session after migration ([#1835](https://github.com/openwallet-foundation/credo-ts/issues/1835)) ([eb2c513](https://github.com/openwallet-foundation/credo-ts/commit/eb2c51384c077038e6cd38c1ab737d0d47c1b81e))
+
+### Features
+
+- **tenants:** return value from withTenatnAgent ([#1832](https://github.com/openwallet-foundation/credo-ts/issues/1832)) ([8371d87](https://github.com/openwallet-foundation/credo-ts/commit/8371d8728685295a1f648ca677cc6de2cb873c09))
 
 ## [0.5.1](https://github.com/openwallet-foundation/credo-ts/compare/v0.5.0...v0.5.1) (2024-03-28)
 

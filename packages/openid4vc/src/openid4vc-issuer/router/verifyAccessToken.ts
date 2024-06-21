@@ -41,4 +41,12 @@ export async function verifyAccessToken(
   if (accessToken.payload.iss !== issuerMetadata.issuerUrl) {
     throw new CredoError('Access token was not issued by the expected issuer')
   }
+
+  if (typeof accessToken.payload.additionalClaims.preAuthorizedCode !== 'string') {
+    throw new CredoError('No preAuthorizedCode present in access token')
+  }
+
+  return {
+    preAuthorizedCode: accessToken.payload.additionalClaims.preAuthorizedCode,
+  }
 }

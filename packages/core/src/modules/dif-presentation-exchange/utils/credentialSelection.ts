@@ -1,17 +1,20 @@
-import type { SdJwtVcRecord } from '../../sd-jwt-vc'
-import type { W3cCredentialRecord } from '../../vc'
 import type {
   DifPexCredentialsForRequest,
   DifPexCredentialsForRequestRequirement,
   DifPexCredentialsForRequestSubmissionEntry,
+  SubmissionEntryCredential,
 } from '../models'
 import type { IPresentationDefinition, SelectResults, SubmissionRequirementMatch, PEX } from '@sphereon/pex'
 import type { InputDescriptorV1, InputDescriptorV2, SubmissionRequirement } from '@sphereon/pex-models'
 
+import { decodeSdJwtSync, getClaimsSync } from '@sd-jwt/decode'
 import { Rules } from '@sphereon/pex-models'
 import { default as jp } from 'jsonpath'
 
-import { deepEquality } from '../../../utils'
+import { CredoError } from '../../../error'
+import { deepEquality, Hasher } from '../../../utils'
+import { SdJwtVcRecord } from '../../sd-jwt-vc'
+import { ClaimFormat, W3cCredentialRecord } from '../../vc'
 import { DifPresentationExchangeError } from '../DifPresentationExchangeError'
 
 import { getSphereonOriginalVerifiableCredential } from './transform'
@@ -28,7 +31,7 @@ export async function getCredentialsForRequest(
   const selectResults = {
     ...selectResultsRaw,
     // Map the encoded credential to their respective w3c credential record
-    verifiableCredential: selectResultsRaw.verifiableCredential?.map((selectedEncoded) => {
+    verifiableCredential: selectResultsRaw.verifiableCredential?.map((selectedEncoded): SubmissionEntryCredential => {
       const credentialRecordIndex = encodedCredentials.findIndex((encoded) => {
         if (
           typeof selectedEncoded === 'string' &&
@@ -52,7 +55,26 @@ export async function getCredentialsForRequest(
         throw new DifPresentationExchangeError('Unable to find credential in credential records.')
       }
 
-      return credentialRecords[credentialRecordIndex]
+      const credentialRecord = credentialRecords[credentialRecordIndex]
+      if (credentialRecord instanceof SdJwtVcRecord) {
+        // selectedEncoded always string when SdJwtVcRecord
+        // Get the decoded payload from the the selected credential, this already has SD applied
+        const { jwt, disclosures } = decodeSdJwtSync(selectedEncoded as string, Hasher.hash)
+        const prettyClaims = getClaimsSync(jwt.payload, disclosures, Hasher.hash)
+
+        return {
+          type: ClaimFormat.SdJwtVc,
+          credentialRecord,
+          disclosedPayload: prettyClaims as Record<string, unknown>,
+        }
+      } else if (credentialRecord instanceof W3cCredentialRecord) {
+        return {
+          type: credentialRecord.credential.claimFormat,
+          credentialRecord,
+        }
+      } else {
+        throw new CredoError(`Unrecognized credential record type`)
+      }
     }),
   }
 
@@ -294,14 +316,15 @@ function getSubmissionForInputDescriptor(
 
 function extractCredentialsFromMatch(
   match: SubmissionRequirementMatch,
-  availableCredentials?: Array<W3cCredentialRecord | SdJwtVcRecord>
+  availableCredentials?: SubmissionEntryCredential[]
 ) {
-  const verifiableCredentials: Array<W3cCredentialRecord | SdJwtVcRecord> = []
+  const verifiableCredentials: SubmissionEntryCredential[] = []
 
   for (const vcPath of match.vc_path) {
-    const [verifiableCredential] = jp.query({ verifiableCredential: availableCredentials }, vcPath) as [
-      W3cCredentialRecord
-    ]
+    const [verifiableCredential] = jp.query(
+      { verifiableCredential: availableCredentials },
+      vcPath
+    ) as SubmissionEntryCredential[]
     verifiableCredentials.push(verifiableCredential)
   }
 
@@ -309,8 +332,8 @@ function extractCredentialsFromMatch(
 }
 
 /**
- * Custom SelectResults that includes the AFJ records instead of the encoded verifiable credential
+ * Custom SelectResults that includes the Credo records instead of the encoded verifiable credential
  */
 type CredentialRecordSelectResults = Omit<SelectResults, 'verifiableCredential'> & {
-  verifiableCredential?: Array<W3cCredentialRecord | SdJwtVcRecord>
+  verifiableCredential?: SubmissionEntryCredential[]
 }

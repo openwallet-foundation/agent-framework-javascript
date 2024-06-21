@@ -51,7 +51,21 @@ export class RevocationNotificationService {
     comment?: string
   ) {
     // TODO: can we extract support for this revocation notification handler to the anoncreds module?
-    const query = { anonCredsRevocationRegistryId, anonCredsCredentialRevocationId, connectionId: connection.id }
+    // Search for the revocation registry in both qualified and unqualified forms
+    const query = {
+      $or: [
+        {
+          anonCredsRevocationRegistryId,
+          anonCredsCredentialRevocationId,
+          connectionId: connection.id,
+        },
+        {
+          anonCredsUnqualifiedRevocationRegistryId: anonCredsRevocationRegistryId,
+          anonCredsCredentialRevocationId,
+          connectionId: connection.id,
+        },
+      ],
+    }
 
     this.logger.trace(`Getting record by query for revocation notification:`, query)
     const credentialRecord = await this.credentialRepository.getSingleByQuery(agentContext, query)

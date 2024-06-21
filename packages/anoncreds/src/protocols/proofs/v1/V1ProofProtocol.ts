@@ -198,6 +198,7 @@ export class V1ProofProtocol extends BaseProofProtocol implements ProofProtocol<
       await connectionService.assertConnectionOrOutOfBandExchange(messageContext, {
         lastReceivedMessage,
         lastSentMessage,
+        expectedConnectionId: proofRecord.connectionId,
       })
 
       // Update record
@@ -209,6 +210,8 @@ export class V1ProofProtocol extends BaseProofProtocol implements ProofProtocol<
       await this.updateState(agentContext, proofRecord, ProofState.ProposalReceived)
     } else {
       agentContext.config.logger.debug('Proof record does not exist yet for incoming proposal')
+      // Assert
+      await connectionService.assertConnectionOrOutOfBandExchange(messageContext)
 
       // No proof record exists with thread id
       proofRecord = new ProofExchangeRecord({
@@ -219,9 +222,6 @@ export class V1ProofProtocol extends BaseProofProtocol implements ProofProtocol<
         role: ProofRole.Verifier,
         protocolVersion: 'v1',
       })
-
-      // Assert
-      await connectionService.assertConnectionOrOutOfBandExchange(messageContext)
 
       await didCommMessageRepository.saveOrUpdateAgentMessage(agentContext, {
         agentMessage: proposalMessage,
@@ -456,6 +456,7 @@ export class V1ProofProtocol extends BaseProofProtocol implements ProofProtocol<
       await connectionService.assertConnectionOrOutOfBandExchange(messageContext, {
         lastReceivedMessage,
         lastSentMessage,
+        expectedConnectionId: proofRecord.connectionId,
       })
 
       await this.indyProofFormat.processRequest(agentContext, {
@@ -470,6 +471,9 @@ export class V1ProofProtocol extends BaseProofProtocol implements ProofProtocol<
       })
       await this.updateState(agentContext, proofRecord, ProofState.RequestReceived)
     } else {
+      // Assert
+      await connectionService.assertConnectionOrOutOfBandExchange(messageContext)
+
       // No proof record exists with thread id
       proofRecord = new ProofExchangeRecord({
         connectionId: connection?.id,
@@ -490,9 +494,6 @@ export class V1ProofProtocol extends BaseProofProtocol implements ProofProtocol<
         associatedRecordId: proofRecord.id,
         role: DidCommMessageRole.Receiver,
       })
-
-      // Assert
-      await connectionService.assertConnectionOrOutOfBandExchange(messageContext)
 
       // Save in repository
       await proofRepository.save(agentContext, proofRecord)
@@ -791,6 +792,7 @@ export class V1ProofProtocol extends BaseProofProtocol implements ProofProtocol<
     await connectionService.assertConnectionOrOutOfBandExchange(messageContext, {
       lastReceivedMessage: proposalMessage,
       lastSentMessage: requestMessage,
+      expectedConnectionId: proofRecord.connectionId,
     })
 
     // This makes sure that the sender of the incoming message is authorized to do so.
@@ -922,6 +924,7 @@ export class V1ProofProtocol extends BaseProofProtocol implements ProofProtocol<
     await connectionService.assertConnectionOrOutOfBandExchange(messageContext, {
       lastReceivedMessage,
       lastSentMessage,
+      expectedConnectionId: proofRecord.connectionId,
     })
 
     // Update record

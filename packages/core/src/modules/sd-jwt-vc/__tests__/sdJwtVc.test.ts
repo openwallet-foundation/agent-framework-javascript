@@ -66,16 +66,21 @@ describe('sd-jwt-vc end to end test', () => {
         method: 'did',
       },
       disclosureFrame: {
-        is_over_65: true,
-        is_over_21: true,
-        is_over_18: true,
-        birthdate: true,
-        email: true,
-        address: { country: true, region: true, locality: true, __decoyCount: 2, street_address: true },
-        __decoyCount: 2,
-        given_name: true,
-        family_name: true,
-        phone_number: true,
+        _sd: [
+          'is_over_65',
+          'is_over_21',
+          'is_over_18',
+          'birthdate',
+          'email',
+          'given_name',
+          'family_name',
+          'phone_number',
+        ],
+        _sd_decoy: 2,
+        address: {
+          _sd: ['country', 'region', 'locality', 'street_address'],
+          _sd_decoy: 2,
+        },
       },
     })
 
@@ -170,11 +175,10 @@ describe('sd-jwt-vc end to end test', () => {
       nonce: await verifier.wallet.generateNonce(),
     }
 
-    const presentation = await holder.sdJwtVc.present<Header, Payload>({
+    const presentation = await holder.sdJwtVc.present<Payload>({
       compactSdJwtVc: compact,
       verifierMetadata,
       presentationFrame: {
-        vct: true,
         given_name: true,
         family_name: true,
         email: true,
@@ -201,10 +205,11 @@ describe('sd-jwt-vc end to end test', () => {
         'is_over_18',
         'birthdate',
         'email',
-        'country',
-        'region',
-        'locality',
-        'street_address',
+        'address.country',
+        'address.region',
+        'address.locality',
+        'address',
+        'address.street_address',
         'given_name',
         'family_name',
         'phone_number',

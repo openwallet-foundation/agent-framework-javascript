@@ -3,8 +3,6 @@ import type { OpenId4VciCredentialRequest } from '../../shared'
 import type { OpenId4VciCredentialRequestToCredentialMapper } from '../OpenId4VcIssuerServiceOptions'
 import type { Router, Response } from 'express'
 
-import { CredoError, JwsService, Jwt } from '@credo-ts/core'
-
 import { getRequestContext, sendErrorResponse } from '../../shared/router'
 import { OpenId4VcIssuerService } from '../OpenId4VcIssuerService'
 import { getCNonceFromCredentialRequest } from '../util/credentialRequest'
@@ -31,9 +29,12 @@ export function configureCredentialEndpoint(router: Router, config: OpenId4VciCr
     const { agentContext, issuer } = getRequestContext(request)
     const openId4VcIssuerService = agentContext.dependencyManager.resolve(OpenId4VcIssuerService)
 
+    let preAuthorizedCode: string
+
     // Verify the access token (should at some point be moved to a middleware function or something)
     try {
-      await verifyAccessToken(agentContext, issuer, request.headers.authorization)
+      preAuthorizedCode = (await verifyAccessToken(agentContext, issuer, request.headers.authorization))
+        .preAuthorizedCode
     } catch (error) {
       return sendErrorResponse(response, agentContext.config.logger, 401, 'unauthorized', error)
     }
@@ -45,6 +46,19 @@ export function configureCredentialEndpoint(router: Router, config: OpenId4VciCr
         issuerId: issuer.issuerId,
         credentialRequest,
       })
+
+      if (issuanceSession?.preAuthorizedCode !== preAuthorizedCode) {
+        agentContext.config.logger.warn(
+          `Credential request used access token with for credential offer with different pre-authorized code than was used for the issuance session ${issuanceSession?.id}`
+        )
+        return sendErrorResponse(
+          response,
+          agentContext.config.logger,
+          401,
+          'unauthorized',
+          'Access token is not valid for this credential request'
+        )
+      }
 
       if (!issuanceSession) {
         const cNonce = getCNonceFromCredentialRequest(credentialRequest)

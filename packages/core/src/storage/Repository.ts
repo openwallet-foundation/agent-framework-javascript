@@ -1,6 +1,6 @@
 import type { BaseRecord } from './BaseRecord'
 import type { RecordSavedEvent, RecordUpdatedEvent, RecordDeletedEvent } from './RepositoryEvents'
-import type { BaseRecordConstructor, Query, StorageService } from './StorageService'
+import type { BaseRecordConstructor, Query, QueryOptions, StorageService } from './StorageService'
 import type { AgentContext } from '../agent'
 import type { EventEmitter } from '../agent/EventEmitter'
 
@@ -105,8 +105,8 @@ export class Repository<T extends BaseRecord<any, any, any>> {
   }
 
   /** @inheritDoc {StorageService#findByQuery} */
-  public async findByQuery(agentContext: AgentContext, query: Query<T>): Promise<T[]> {
-    return this.storageService.findByQuery(agentContext, this.recordClass, query)
+  public async findByQuery(agentContext: AgentContext, query: Query<T>, queryOptions?: QueryOptions): Promise<T[]> {
+    return this.storageService.findByQuery(agentContext, this.recordClass, query, queryOptions)
   }
 
   /**

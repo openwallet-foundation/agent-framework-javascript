@@ -1,7 +1,7 @@
 import type { ConnectionType } from './models'
 import type { ConnectionRecord } from './repository/ConnectionRecord'
 import type { Routing } from './services'
-import type { Query } from '../../storage/StorageService'
+import type { Query, QueryOptions } from '../../storage/StorageService'
 import type { OutOfBandRecord } from '../oob/repository'
 
 import { AgentContext } from '../../agent'
@@ -109,9 +109,11 @@ export class ConnectionsApi {
       throw new CredoError(`'routing' is disallowed when defining 'ourDid'`)
     }
 
-    const routing =
-      config.routing ||
-      (await this.routingService.getRouting(this.agentContext, { mediatorId: outOfBandRecord.mediatorId }))
+    // Only generate routing if ourDid hasn't been provided
+    let routing = config.routing
+    if (!routing && !ourDid) {
+      routing = await this.routingService.getRouting(this.agentContext, { mediatorId: outOfBandRecord.mediatorId })
+    }
 
     let result
     if (protocol === HandshakeProtocol.DidExchange) {
@@ -125,6 +127,11 @@ export class ConnectionsApi {
     } else if (protocol === HandshakeProtocol.Connections) {
       if (ourDid) {
         throw new CredoError('Using an externally defined did for connections protocol is unsupported')
+      }
+      // This is just to make TS happy, as we always generate routing if ourDid is not provided
+      // and ourDid is not supported for connection (see check above)
+      if (!routing) {
+        throw new CredoError('Routing is required for connections protocol')
       }
 
       result = await this.connectionService.createRequest(this.agentContext, outOfBandRecord, {
@@ -169,9 +176,13 @@ export class ConnectionsApi {
       throw new CredoError(`Out-of-band record ${connectionRecord.outOfBandId} not found.`)
     }
 
-    // If the outOfBandRecord is reusable we need to use new routing keys for the connection, otherwise
-    // all connections will use the same routing keys
-    const routing = outOfBandRecord.reusable ? await this.routingService.getRouting(this.agentContext) : undefined
+    // We generate routing in two scenarios:
+    // 1. When the out-of-band invitation is reusable, as otherwise all connections use the same keys
+    // 2. When the out-of-band invitation has no inline services, as we don't want to generate a legacy did doc from a service did
+    const routing =
+      outOfBandRecord.reusable || outOfBandRecord.outOfBandInvitation.getInlineServices().length === 0
+        ? await this.routingService.getRouting(this.agentContext)
+        : undefined
 
     let outboundMessageContext
     if (connectionRecord.protocol === HandshakeProtocol.DidExchange) {
@@ -186,6 +197,14 @@ export class ConnectionsApi {
         connection: connectionRecord,
       })
     } else {
+      // We generate routing in two scenarios:
+      // 1. When the out-of-band invitation is reusable, as otherwise all connections use the same keys
+      // 2. When the out-of-band invitation has no inline services, as we don't want to generate a legacy did doc from a service did
+      const routing =
+        outOfBandRecord.reusable || outOfBandRecord.outOfBandInvitation.getInlineServices().length === 0
+          ? await this.routingService.getRouting(this.agentContext)
+          : undefined
+
       const { message } = await this.connectionService.createResponse(
         this.agentContext,
         connectionRecord,
@@ -258,11 +277,11 @@ export class ConnectionsApi {
    * @param connectionId the id of the connection for which to accept the response
    * @param responseRequested do we want a response to our ping
    * @param withReturnRouting do we want a response at the time of posting
-   * @returns TurstPingMessage
+   * @returns TrustPingMessage
    */
   public async sendPing(
     connectionId: string,
-    { responseRequested = true, withReturnRouting = undefined }: SendPingOptions
+    { responseRequested = true, withReturnRouting = undefined }: SendPingOptions = {}
   ) {
     const connection = await this.getById(connectionId)
 
@@ -351,6 +370,9 @@ export class ConnectionsApi {
 
     // After hang-up message submission, delete connection if required
     if (options.deleteAfterHangup) {
+      // First remove any recipient keys related to it
+      await this.removeRouting(connectionBeforeHangup)
+
       await this.deleteById(connection.id)
     }
   }
@@ -373,8 +395,8 @@ export class ConnectionsApi {
    *
    * @returns List containing all connection records matching specified query paramaters
    */
-  public findAllByQuery(query: Query<ConnectionRecord>) {
-    return this.connectionService.findAllByQuery(this.agentContext, query)
+  public findAllByQuery(query: Query<ConnectionRecord>, queryOptions?: QueryOptions) {
+    return this.connectionService.findAllByQuery(this.agentContext, query, queryOptions)
   }
 
   /**
@@ -457,18 +479,22 @@ export class ConnectionsApi {
   public async deleteById(connectionId: string) {
     const connection = await this.connectionService.getById(this.agentContext, connectionId)
 
-    if (connection.mediatorId && connection.did) {
-      const did = await this.didResolverService.resolve(this.agentContext, connection.did)
+    await this.removeRouting(connection)
 
-      if (did.didDocument) {
+    return this.connectionService.deleteById(this.agentContext, connectionId)
+  }
+
+  private async removeRouting(connection: ConnectionRecord) {
+    if (connection.mediatorId && connection.did) {
+      const { didDocument } = await this.didResolverService.resolve(this.agentContext, connection.did)
+
+      if (didDocument) {
         await this.routingService.removeRouting(this.agentContext, {
-          recipientKeys: did.didDocument.recipientKeys,
+          recipientKeys: didDocument.recipientKeys,
           mediatorId: connection.mediatorId,
         })
       }
     }
-
-    return this.connectionService.deleteById(this.agentContext, connectionId)
   }
 
   /**

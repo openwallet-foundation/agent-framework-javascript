@@ -1,16 +1,19 @@
 import type { AgentMessage } from './AgentMessage'
 import type { AgentMessageProcessedEvent } from './Events'
+import type { MessageHandlerMiddleware } from './MessageHandlerMiddleware'
 import type { InboundMessageContext } from './models/InboundMessageContext'
 
 import { InjectionSymbols } from '../constants'
-import { CredoError } from '../error/CredoError'
+import { CredoError } from '../error'
 import { Logger } from '../logger'
+import { ProblemReportError, ProblemReportReason } from '../modules/problem-reports'
 import { injectable, inject } from '../plugins'
-import { parseMessageType } from '../utils/messageType'
+import { canHandleMessageType, parseMessageType } from '../utils/messageType'
 
 import { ProblemReportMessage } from './../modules/problem-reports/messages/ProblemReportMessage'
 import { EventEmitter } from './EventEmitter'
 import { AgentEventTypes } from './Events'
+import { MessageHandlerMiddlewareRunner } from './MessageHandlerMiddleware'
 import { MessageHandlerRegistry } from './MessageHandlerRegistry'
 import { MessageSender } from './MessageSender'
 import { OutboundMessageContext } from './models'
@@ -34,22 +37,58 @@ class Dispatcher {
     this.logger = logger
   }
 
-  public async dispatch(messageContext: InboundMessageContext): Promise<void> {
-    const { agentContext, connection, senderKey, recipientKey, message } = messageContext
-    const messageHandler = this.messageHandlerRegistry.getHandlerForMessageType(message.type)
+  private defaultHandlerMiddleware: MessageHandlerMiddleware = async (inboundMessageContext, next) => {
+    let messageHandler = inboundMessageContext.messageHandler
 
-    if (!messageHandler) {
-      throw new CredoError(`No handler for message type "${message.type}" found`)
+    if (!messageHandler && inboundMessageContext.agentContext.dependencyManager.fallbackMessageHandler) {
+      messageHandler = {
+        supportedMessages: [],
+        handle: inboundMessageContext.agentContext.dependencyManager.fallbackMessageHandler,
+      }
     }
 
-    let outboundMessage: OutboundMessageContext<AgentMessage> | void
+    if (!messageHandler) {
+      throw new ProblemReportError(
+        `Error handling message ${inboundMessageContext.message.id} with type ${inboundMessageContext.message.type}. The message type is not supported`,
+        {
+          problemCode: ProblemReportReason.MessageParseFailure,
+        }
+      )
+    }
+
+    const outboundMessage = await messageHandler.handle(inboundMessageContext)
+    if (outboundMessage) {
+      inboundMessageContext.setResponseMessage(outboundMessage)
+    }
+
+    await next()
+  }
+
+  public async dispatch(messageContext: InboundMessageContext): Promise<void> {
+    const { agentContext, connection, senderKey, recipientKey, message } = messageContext
+
+    // Set default handler if available, middleware can still override the message handler
+    const messageHandler = this.messageHandlerRegistry.getHandlerForMessageType(message.type)
+    if (messageHandler) {
+      messageContext.setMessageHandler(messageHandler)
+    }
+
+    let outboundMessage: OutboundMessageContext<AgentMessage> | undefined
 
     try {
-      outboundMessage = await messageHandler.handle(messageContext)
+      const middlewares = [...agentContext.dependencyManager.messageHandlerMiddlewares, this.defaultHandlerMiddleware]
+      await MessageHandlerMiddlewareRunner.run(middlewares, messageContext)
+
+      outboundMessage = messageContext.responseMessage
     } catch (error) {
       const problemReportMessage = error.problemReport
 
       if (problemReportMessage instanceof ProblemReportMessage && messageContext.connection) {
+        const messageType = parseMessageType(messageContext.message.type)
+        if (canHandleMessageType(ProblemReportMessage, messageType)) {
+          throw new CredoError(`Not sending problem report in response to problem report: ${message}`)
+        }
+
         const { protocolUri: problemReportProtocolUri } = parseMessageType(problemReportMessage.type)
         const { protocolUri: inboundProtocolUri } = parseMessageType(messageContext.message.type)
 
@@ -91,12 +130,14 @@ class Dispatcher {
 
       await this.messageSender.sendMessage(outboundMessage)
     }
+
     // Emit event that allows to hook into received messages
     this.eventEmitter.emit<AgentMessageProcessedEvent>(agentContext, {
       type: AgentEventTypes.AgentMessageProcessed,
       payload: {
         message,
         connection,
+        receivedAt: messageContext.receivedAt,
       },
     })
   }

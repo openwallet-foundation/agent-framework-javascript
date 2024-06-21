@@ -20,7 +20,7 @@ import type { FeatureRegistry } from '../../../agent/FeatureRegistry'
 import type { AgentContext } from '../../../agent/context/AgentContext'
 import type { InboundMessageContext } from '../../../agent/models/InboundMessageContext'
 import type { DependencyManager } from '../../../plugins'
-import type { Query } from '../../../storage/StorageService'
+import type { Query, QueryOptions } from '../../../storage/StorageService'
 import type { ProblemReportMessage } from '../../problem-reports'
 import type { ExtractProofFormats, ProofFormatService } from '../formats'
 import type { ProofRole } from '../models'
@@ -99,7 +99,11 @@ export interface ProofProtocol<PFs extends ProofFormatService[] = ProofFormatSer
   updateState(agentContext: AgentContext, proofRecord: ProofExchangeRecord, newState: ProofState): Promise<void>
   getById(agentContext: AgentContext, proofExchangeId: string): Promise<ProofExchangeRecord>
   getAll(agentContext: AgentContext): Promise<ProofExchangeRecord[]>
-  findAllByQuery(agentContext: AgentContext, query: Query<ProofExchangeRecord>): Promise<ProofExchangeRecord[]>
+  findAllByQuery(
+    agentContext: AgentContext,
+    query: Query<ProofExchangeRecord>,
+    queryOptions?: QueryOptions
+  ): Promise<ProofExchangeRecord[]>
   findById(agentContext: AgentContext, proofExchangeId: string): Promise<ProofExchangeRecord | null>
   delete(agentContext: AgentContext, proofRecord: ProofExchangeRecord, options?: DeleteProofOptions): Promise<void>
   getByProperties(

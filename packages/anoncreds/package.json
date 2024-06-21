@@ -2,7 +2,7 @@
   "name": "@credo-ts/anoncreds",
   "main": "build/index",
   "types": "build/index",
-  "version": "0.5.1",
+  "version": "0.5.4",
   "files": [
     "build"
   ],
@@ -17,15 +17,16 @@
     "directory": "packages/anoncreds"
   },
   "scripts": {
-    "build": "yarn run clean && yarn run compile",
+    "build": "pnpm run clean && pnpm run compile",
     "clean": "rimraf ./build",
     "compile": "tsc -p tsconfig.build.json",
-    "prepublishOnly": "yarn run build",
+    "prepublishOnly": "pnpm run build",
     "test": "jest"
   },
   "dependencies": {
     "@astronautlabs/jsonpath": "^1.1.2",
-    "@credo-ts/core": "0.5.1",
+    "@credo-ts/core": "workspace:*",
+    "@sphereon/pex-models": "^2.2.4",
     "big-integer": "^1.6.51",
     "bn.js": "^5.2.1",
     "class-transformer": "0.5.1",
@@ -33,14 +34,14 @@
     "reflect-metadata": "^0.1.13"
   },
   "devDependencies": {
-    "@credo-ts/node": "0.5.1",
-    "@hyperledger/anoncreds-nodejs": "^0.2.1",
-    "@hyperledger/anoncreds-shared": "^0.2.1",
+    "@credo-ts/node": "workspace:*",
+    "@hyperledger/anoncreds-nodejs": "^0.2.2",
+    "@hyperledger/anoncreds-shared": "^0.2.2",
     "rimraf": "^4.4.0",
     "rxjs": "^7.8.0",
-    "typescript": "~4.9.5"
+    "typescript": "~5.5.0-beta"
   },
   "peerDependencies": {
-    "@hyperledger/anoncreds-shared": "^0.2.1"
+    "@hyperledger/anoncreds-shared": "^0.2.2"
   }
 }

@@ -54,12 +54,17 @@ describe('DidCommMessageRepository', () => {
         associatedRecordId: '04a2c382-999e-4de9-a1d2-9dec0b2fa5e4',
       })
 
-      expect(storageMock.findByQuery).toBeCalledWith(agentContext, DidCommMessageRecord, {
-        associatedRecordId: '04a2c382-999e-4de9-a1d2-9dec0b2fa5e4',
-        messageName: 'invitation',
-        protocolName: 'connections',
-        protocolMajorVersion: '1',
-      })
+      expect(storageMock.findByQuery).toBeCalledWith(
+        agentContext,
+        DidCommMessageRecord,
+        {
+          associatedRecordId: '04a2c382-999e-4de9-a1d2-9dec0b2fa5e4',
+          messageName: 'invitation',
+          protocolName: 'connections',
+          protocolMajorVersion: '1',
+        },
+        undefined
+      )
       expect(invitation).toBeInstanceOf(ConnectionInvitationMessage)
     })
   })
@@ -73,12 +78,17 @@ describe('DidCommMessageRepository', () => {
         associatedRecordId: '04a2c382-999e-4de9-a1d2-9dec0b2fa5e4',
       })
 
-      expect(storageMock.findByQuery).toBeCalledWith(agentContext, DidCommMessageRecord, {
-        associatedRecordId: '04a2c382-999e-4de9-a1d2-9dec0b2fa5e4',
-        messageName: 'invitation',
-        protocolName: 'connections',
-        protocolMajorVersion: '1',
-      })
+      expect(storageMock.findByQuery).toBeCalledWith(
+        agentContext,
+        DidCommMessageRecord,
+        {
+          associatedRecordId: '04a2c382-999e-4de9-a1d2-9dec0b2fa5e4',
+          messageName: 'invitation',
+          protocolName: 'connections',
+          protocolMajorVersion: '1',
+        },
+        undefined
+      )
       expect(invitation).toBeInstanceOf(ConnectionInvitationMessage)
     })
 
@@ -90,12 +100,17 @@ describe('DidCommMessageRepository', () => {
         associatedRecordId: '04a2c382-999e-4de9-a1d2-9dec0b2fa5e4',
       })
 
-      expect(storageMock.findByQuery).toBeCalledWith(agentContext, DidCommMessageRecord, {
-        associatedRecordId: '04a2c382-999e-4de9-a1d2-9dec0b2fa5e4',
-        messageName: 'invitation',
-        protocolName: 'connections',
-        protocolMajorVersion: '1',
-      })
+      expect(storageMock.findByQuery).toBeCalledWith(
+        agentContext,
+        DidCommMessageRecord,
+        {
+          associatedRecordId: '04a2c382-999e-4de9-a1d2-9dec0b2fa5e4',
+          messageName: 'invitation',
+          protocolName: 'connections',
+          protocolMajorVersion: '1',
+        },
+        undefined
+      )
       expect(invitation).toBeNull()
     })
   })
@@ -147,12 +162,17 @@ describe('DidCommMessageRepository', () => {
         associatedRecordId: '04a2c382-999e-4de9-a1d2-9dec0b2fa5e4',
       })
 
-      expect(storageMock.findByQuery).toBeCalledWith(agentContext, DidCommMessageRecord, {
-        associatedRecordId: '04a2c382-999e-4de9-a1d2-9dec0b2fa5e4',
-        messageName: 'invitation',
-        protocolName: 'connections',
-        protocolMajorVersion: '1',
-      })
+      expect(storageMock.findByQuery).toBeCalledWith(
+        agentContext,
+        DidCommMessageRecord,
+        {
+          associatedRecordId: '04a2c382-999e-4de9-a1d2-9dec0b2fa5e4',
+          messageName: 'invitation',
+          protocolName: 'connections',
+          protocolMajorVersion: '1',
+        },
+        undefined
+      )
       expect(storageMock.update).toBeCalledWith(agentContext, record)
     })
   })

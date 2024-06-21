@@ -50,7 +50,7 @@ export class DidsModuleConfig {
   }
 
   /** See {@link DidsModuleConfigOptions.registrars} */
-  public get registrars() {
+  public get registrars(): DidRegistrar[] {
     // This prevents creating new instances every time this property is accessed
     if (this._registrars) return this._registrars
 

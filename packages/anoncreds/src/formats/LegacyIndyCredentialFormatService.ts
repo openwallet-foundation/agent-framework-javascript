@@ -300,22 +300,11 @@ export class LegacyIndyCredentialFormatService implements CredentialFormatServic
     const credentialRequest = requestAttachment.getDataAsJson<AnonCredsCredentialRequest>()
     if (!credentialRequest) throw new CredoError('Missing indy credential request in createCredential')
 
-    const { credential, credentialRevocationId } = await anonCredsIssuerService.createCredential(agentContext, {
+    const { credential } = await anonCredsIssuerService.createCredential(agentContext, {
       credentialOffer,
       credentialRequest,
       credentialValues: convertAttributesToCredentialValues(credentialAttributes),
     })
-
-    if (credential.rev_reg_id) {
-      credentialRecord.metadata.add<AnonCredsCredentialMetadata>(AnonCredsCredentialMetadataKey, {
-        credentialRevocationId: credentialRevocationId,
-        revocationRegistryId: credential.rev_reg_id,
-      })
-      credentialRecord.setTags({
-        anonCredsRevocationRegistryId: credential.rev_reg_id,
-        anonCredsCredentialRevocationId: credentialRevocationId,
-      })
-    }
 
     const format = new CredentialFormatSpec({
       attachmentId,
@@ -399,6 +388,7 @@ export class LegacyIndyCredentialFormatService implements CredentialFormatServic
       })
       credentialRecord.setTags({
         anonCredsRevocationRegistryId: credential.revocationRegistryId,
+        anonCredsUnqualifiedRevocationRegistryId: anonCredsCredential.rev_reg_id,
         anonCredsCredentialRevocationId: credential.credentialRevocationId,
       })
     }

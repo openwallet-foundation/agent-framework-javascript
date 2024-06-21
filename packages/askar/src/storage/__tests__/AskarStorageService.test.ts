@@ -325,5 +325,35 @@ describe('AskarStorageService', () => {
         })
       ).toEqual(expectedQuery)
     })
+
+    it('should retrieve correct paginated records', async () => {
+      await insertRecord({ tags: { myTag: 'notfoobar' } })
+      await insertRecord({ tags: { myTag: 'foobar' } })
+      await insertRecord({ tags: { myTag: 'foobar' } })
+      await insertRecord({ tags: { myTag: 'notfoobar' } })
+
+      const records = await storageService.findByQuery(agentContext, TestRecord, {}, { offset: 3, limit: 2 })
+
+      expect(records.length).toBe(1)
+    })
+
+    it('should retrieve correct paginated records that match the query', async () => {
+      await insertRecord({ tags: { myTag: 'notfoobar' } })
+      const expectedRecord1 = await insertRecord({ tags: { myTag: 'foobar' } })
+      const expectedRecord2 = await insertRecord({ tags: { myTag: 'foobar' } })
+      await insertRecord({ tags: { myTag: 'notfoobar' } })
+
+      const records = await storageService.findByQuery(
+        agentContext,
+        TestRecord,
+        {
+          myTag: 'foobar',
+        },
+        { offset: 0, limit: 2 }
+      )
+
+      expect(records.length).toBe(2)
+      expect(records).toEqual(expect.arrayContaining([expectedRecord1, expectedRecord2]))
+    })
   })
 })

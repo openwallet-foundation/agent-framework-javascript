@@ -11,15 +11,22 @@ import { CacheModuleConfig } from '../../cache'
 import { DidsModuleConfig } from '../DidsModuleConfig'
 import { DidDocument } from '../domain'
 import { parseDid } from '../domain/parse'
+import { DidRepository } from '../repository'
 
 @injectable()
 export class DidResolverService {
   private logger: Logger
   private didsModuleConfig: DidsModuleConfig
+  private didRepository: DidRepository
 
-  public constructor(@inject(InjectionSymbols.Logger) logger: Logger, didsModuleConfig: DidsModuleConfig) {
+  public constructor(
+    @inject(InjectionSymbols.Logger) logger: Logger,
+    didsModuleConfig: DidsModuleConfig,
+    didRepository: DidRepository
+  ) {
     this.logger = logger
     this.didsModuleConfig = didsModuleConfig
+    this.didRepository = didRepository
   }
 
   public async resolve(
@@ -57,8 +64,13 @@ export class DidResolverService {
     }
 
     // extract caching options and set defaults
-    const { useCache = true, cacheDurationInSeconds = 300, persistInCache = true } = options
-    const cacheKey = `did:resolver:${parsed.did}`
+    const {
+      useCache = true,
+      cacheDurationInSeconds = 300,
+      persistInCache = true,
+      useLocalCreatedDidRecord = true,
+    } = options
+    const cacheKey = this.getCacheKey(parsed.did)
 
     if (resolver.allowsCaching && useCache) {
       const cache = agentContext.dependencyManager.resolve(CacheModuleConfig).cache
@@ -80,6 +92,24 @@ export class DidResolverService {
           didResolutionMetadata: {
             ...cachedDidDocument.didResolutionMetadata,
             servedFromCache: true,
+          },
+        }
+      }
+    }
+
+    if (resolver.allowsLocalDidRecord && useLocalCreatedDidRecord) {
+      // TODO: did should have tag whether a did document is present in the did record
+      const [didRecord] = await this.didRepository.getCreatedDids(agentContext, {
+        did: parsed.did,
+      })
+
+      if (didRecord && didRecord.didDocument) {
+        return {
+          didDocument: didRecord.didDocument,
+          didDocumentMetadata: {},
+          didResolutionMetadata: {
+            servedFromCache: false,
+            servedFromDidRecord: true,
           },
         }
       }
@@ -129,6 +159,15 @@ export class DidResolverService {
       throw new CredoError(`Unable to resolve did document for did '${did}': ${error} ${message}`)
     }
     return didDocument
+  }
+
+  public async invalidateCacheForDid(agentContext: AgentContext, did: string) {
+    const cache = agentContext.dependencyManager.resolve(CacheModuleConfig).cache
+    await cache.remove(agentContext, this.getCacheKey(did))
+  }
+
+  private getCacheKey(did: string) {
+    return `did:resolver:${did}`
   }
 
   private findResolver(parsed: ParsedDid): DidResolver | null {

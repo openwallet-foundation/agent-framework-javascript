@@ -17,7 +17,7 @@ import type {
   W3cVerifyPresentationResult,
 } from './models'
 import type { AgentContext } from '../../agent/context'
-import type { Query } from '../../storage/StorageService'
+import type { Query, QueryOptions } from '../../storage/StorageService'
 
 import { CredoError } from '../../error'
 import { injectable } from '../../plugins'
@@ -200,9 +200,10 @@ export class W3cCredentialService {
 
   public async findCredentialsByQuery(
     agentContext: AgentContext,
-    query: Query<W3cCredentialRecord>
+    query: Query<W3cCredentialRecord>,
+    queryOptions?: QueryOptions
   ): Promise<W3cVerifiableCredential[]> {
-    const result = await this.w3cCredentialRepository.findByQuery(agentContext, query)
+    const result = await this.w3cCredentialRepository.findByQuery(agentContext, query, queryOptions)
     return result.map((record) => record.credential)
   }
 

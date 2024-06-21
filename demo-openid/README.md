@@ -17,7 +17,7 @@ Alice, a former student of Faber College, connects with the College, is issued a
 
 ### Platform Specific Setup
 
-In order to run the Credo demo, you need to make sure you have Node.JS and Yarn installed. See the [Credo Prerequisites](https://credo.js.org/guides/getting-started/prerequisites) for more information.
+In order to run the Credo demo, you need to make sure you have Node.JS and PNPM installed. See the [Credo Prerequisites](https://credo.js.org/guides/getting-started/prerequisites) for more information.
 
 ### Run the demo
 
@@ -38,25 +38,25 @@ cd credo-ts/demo-openid
 Install the project in one of the terminals:
 
 ```sh
-yarn install
+pnpm install
 ```
 
 In the first terminal run the Issuer:
 
 ```sh
-yarn issuer
+pnpm issuer
 ```
 
 In the second terminal run the Holder:
 
 ```sh
-yarn holder
+pnpm holder
 ```
 
 In the last terminal run the Verifier:
 
 ```sh
-yarn verifier
+pnpm verifier
 ```
 
 ### Usage

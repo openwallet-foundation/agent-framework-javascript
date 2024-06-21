@@ -341,7 +341,7 @@ export class AnonCredsCredentialFormatService implements CredentialFormatService
       revocationStatusList = revocationStatusListResult.revocationStatusList
     }
 
-    const { credential } = await anonCredsIssuerService.createCredential(agentContext, {
+    const { credential, credentialRevocationId } = await anonCredsIssuerService.createCredential(agentContext, {
       credentialOffer,
       credentialRequest,
       credentialValues: convertAttributesToCredentialValues(credentialAttributes),
@@ -349,6 +349,18 @@ export class AnonCredsCredentialFormatService implements CredentialFormatService
       revocationRegistryIndex,
       revocationStatusList,
     })
+
+    // If the credential is revocable, store the revocation identifiers in the credential record
+    if (credential.rev_reg_id) {
+      credentialRecord.metadata.add<AnonCredsCredentialMetadata>(AnonCredsCredentialMetadataKey, {
+        revocationRegistryId: revocationRegistryDefinitionId ?? undefined,
+        credentialRevocationId: credentialRevocationId ?? undefined,
+      })
+      credentialRecord.setTags({
+        anonCredsRevocationRegistryId: revocationRegistryDefinitionId,
+        anonCredsCredentialRevocationId: credentialRevocationId,
+      })
+    }
 
     const format = new CredentialFormatSpec({
       attachmentId,

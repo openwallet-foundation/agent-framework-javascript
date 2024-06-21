@@ -6,6 +6,7 @@ export interface AnonCredsCredentialDefinitionPrivateRecordProps {
   id?: string
   credentialDefinitionId: string
   value: Record<string, unknown>
+  createdAt?: Date
 }
 
 export type DefaultAnonCredsCredentialDefinitionPrivateTags = {
@@ -29,6 +30,7 @@ export class AnonCredsCredentialDefinitionPrivateRecord extends BaseRecord<
       this.id = props.id ?? utils.uuid()
       this.credentialDefinitionId = props.credentialDefinitionId
       this.value = props.value
+      this.createdAt = props.createdAt ?? new Date()
     }
   }
 

@@ -51,6 +51,16 @@ export class OpenId4VcCredentialOfferSessionStateManager implements IStateManage
       credentialOfferUri = decodeURIComponent(credentialOfferUri.split('credential_offer_uri=')[1].split('=')[0])
     }
 
+    let state = openId4VcIssuanceStateFromSphereon(stateValue.status)
+
+    // we set the completed state manually when all credentials have been issued
+    if (
+      state === OpenId4VcIssuanceSessionState.CredentialsPartiallyIssued &&
+      (record?.issuedCredentials?.length ?? 0) >= stateValue.credentialOffer.credential_offer.credentials.length
+    ) {
+      state = OpenId4VcIssuanceSessionState.Completed
+    }
+
     // NOTE: we don't use clientId at the moment, will become relevant when doing the authorized flow
     if (record) {
       record.issuanceMetadata = stateValue.credentialDataSupplierInput
@@ -59,7 +69,7 @@ export class OpenId4VcCredentialOfferSessionStateManager implements IStateManage
       record.preAuthorizedCode = stateValue.preAuthorizedCode
       record.errorMessage = stateValue.error
       record.credentialOfferUri = credentialOfferUri
-      record.state = openId4VcIssuanceStateFromSphereon(stateValue.status)
+      record.state = state
       await this.openId4VcIssuanceSessionRepository.update(this.agentContext, record)
     } else {
       record = new OpenId4VcIssuanceSessionRecord({
@@ -70,7 +80,7 @@ export class OpenId4VcCredentialOfferSessionStateManager implements IStateManage
         credentialOfferUri,
         userPin: stateValue.userPin,
         errorMessage: stateValue.error,
-        state: openId4VcIssuanceStateFromSphereon(stateValue.status),
+        state: state,
       })
 
       await this.openId4VcIssuanceSessionRepository.save(this.agentContext, record)
@@ -183,7 +193,8 @@ function openId4VcIssuanceStateFromSphereon(stateValue: IssueStatus): OpenId4VcI
   if (stateValue === IssueStatus.ACCESS_TOKEN_CREATED) return OpenId4VcIssuanceSessionState.AccessTokenCreated
   if (stateValue === IssueStatus.CREDENTIAL_REQUEST_RECEIVED)
     return OpenId4VcIssuanceSessionState.CredentialRequestReceived
-  if (stateValue === IssueStatus.CREDENTIAL_ISSUED) return OpenId4VcIssuanceSessionState.CredentialIssued
+  // we set the completed state manually when all credentials have been issued
+  if (stateValue === IssueStatus.CREDENTIAL_ISSUED) return OpenId4VcIssuanceSessionState.CredentialsPartiallyIssued
   if (stateValue === IssueStatus.ERROR) return OpenId4VcIssuanceSessionState.Error
 
   throw new CredoError(`Unknown state value: ${stateValue}`)
@@ -195,7 +206,9 @@ function sphereonIssueStatusFromOpenId4VcIssuanceState(state: OpenId4VcIssuanceS
   if (state === OpenId4VcIssuanceSessionState.AccessTokenRequested) return IssueStatus.ACCESS_TOKEN_REQUESTED
   if (state === OpenId4VcIssuanceSessionState.AccessTokenCreated) return IssueStatus.ACCESS_TOKEN_CREATED
   if (state === OpenId4VcIssuanceSessionState.CredentialRequestReceived) return IssueStatus.CREDENTIAL_REQUEST_RECEIVED
-  if (state === OpenId4VcIssuanceSessionState.CredentialIssued) return IssueStatus.CREDENTIAL_ISSUED
+  // sphereon does not have a completed state indicating that all credentials have been issued
+  if (state === OpenId4VcIssuanceSessionState.CredentialsPartiallyIssued) return IssueStatus.CREDENTIAL_ISSUED
+  if (state === OpenId4VcIssuanceSessionState.Completed) return IssueStatus.CREDENTIAL_ISSUED
   if (state === OpenId4VcIssuanceSessionState.Error) return IssueStatus.ERROR
 
   throw new CredoError(`Unknown state value: ${state}`)
