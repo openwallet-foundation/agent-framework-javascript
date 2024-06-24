@@ -61,7 +61,7 @@
     "tsconfig-paths": "^4.1.2",
     "tsyringe": "^4.8.0",
     "typescript": "~5.5.0-beta",
-    "ws": "^8.13.0"
+    "ws": "^8.17.1"
   },
   "resolutions": {
     "@types/node": "18.18.8"
