@@ -33,7 +33,7 @@
     "@cosmjs/stargate": "~0.30.0",
     "@credo-ts/anoncreds": "workspace:*",
     "@credo-ts/core": "workspace:*",
-    "@stablelib/ed25519": "^1.0.3",
+    "@stablelib/ed25519": "^2.0.0",
     "class-transformer": "^0.5.1",
     "class-validator": "0.14.1",
     "rxjs": "^7.8.0",
