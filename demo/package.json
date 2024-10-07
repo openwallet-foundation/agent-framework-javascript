@@ -16,7 +16,7 @@
     "@hyperledger/indy-vdr-nodejs": "^0.2.2",
     "@hyperledger/anoncreds-nodejs": "^0.2.2",
     "@hyperledger/aries-askar-nodejs": "^0.2.3",
-    "inquirer": "^8.2.5"
+    "inquirer": "^10.2.2"
   },
   "devDependencies": {
     "@credo-ts/anoncreds": "workspace:*",
