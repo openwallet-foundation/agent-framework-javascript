@@ -40,7 +40,7 @@
     "@sd-jwt/sd-jwt-vc": "^0.7.0",
     "@sd-jwt/types": "^0.7.0",
     "@sd-jwt/utils": "^0.7.0",
-    "@sphereon/pex": "^3.3.2",
+    "@sphereon/pex": "^4.1.0",
     "@sphereon/pex-models": "^2.2.4",
     "@sphereon/ssi-types": "^0.28.0",
     "@stablelib/ed25519": "^1.0.2",
