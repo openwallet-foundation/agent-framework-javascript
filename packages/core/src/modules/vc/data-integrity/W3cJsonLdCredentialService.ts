@@ -259,6 +259,7 @@ export class W3cJsonLdCredentialService {
       )
       const allSuites = presentationSuites.concat(...credentialSuites)
 
+      const verifyCredentialStatus = options.verifyCredentialStatus ?? true
       const verifyOptions: Record<string, unknown> = {
         presentation: JsonTransformer.toJSON(options.presentation),
         suite: allSuites,
@@ -266,7 +267,7 @@ export class W3cJsonLdCredentialService {
         domain: options.domain,
         documentLoader: this.w3cCredentialsModuleConfig.documentLoader(agentContext),
         checkStatus: async ({ credential }: { credential: W3cJsonCredential }) => {
-          if ('credentialStatus' in credential) {
+          if (verifyCredentialStatus && 'credentialStatus' in credential) {
             await verifyBitStringCredentialStatus(credential, agentContext)
           }
           return {
