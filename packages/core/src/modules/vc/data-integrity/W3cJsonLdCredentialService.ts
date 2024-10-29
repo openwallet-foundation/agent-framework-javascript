@@ -9,9 +9,7 @@ import type {
   W3cJsonLdVerifyPresentationOptions,
 } from '../W3cCredentialServiceOptions'
 import type { W3cVerifyCredentialResult, W3cVerifyPresentationResult } from '../models'
-import type { BitStringStatusListCredential, W3cJsonCredential } from '../models/credential/W3cJsonCredential'
-
-import * as pako from 'pako'
+import type { W3cJsonCredential } from '../models/credential/W3cJsonCredential'
 
 import { createWalletKeyPairClass } from '../../../crypto/WalletKeyPair'
 import { CredoError } from '../../../error'
@@ -23,6 +21,7 @@ import { W3cCredentialsModuleConfig } from '../W3cCredentialsModuleConfig'
 import { w3cDate } from '../util'
 
 import { SignatureSuiteRegistry } from './SignatureSuiteRegistry'
+import { verifyBitStringCredentialStatus } from './VerifyBitStringCredentialStatus'
 import { deriveProof } from './deriveProof'
 import { assertOnlyW3cJsonLdVerifiableCredentials } from './jsonldUtil'
 import jsonld from './libraries/jsonld'
@@ -112,46 +111,8 @@ export class W3cJsonLdCredentialService {
         suite: suites,
         documentLoader: this.w3cCredentialsModuleConfig.documentLoader(agentContext),
         checkStatus: async ({ credential }: { credential: W3cJsonCredential }) => {
-          // Only throw error if credentialStatus is present
           if (verifyCredentialStatus && 'credentialStatus' in credential) {
-            if (Array.isArray(credential.credentialStatus)) {
-              throw new CredoError(
-                'Verifying credential status as an array for JSON-LD credentials is currently not supported'
-              )
-            }
-
-            // Ensure credentialStatus contains the necessary properties
-            if (!credential.credentialStatus || credential.credentialStatus.statusListIndex === undefined) {
-              throw new CredoError('Invalid credential status format')
-            }
-
-            const credentialStatusURL = credential.credentialStatus.statusListCredential
-            const bitStringStatusListCredential = await agentContext.config.agentDependencies.fetch(
-              credentialStatusURL,
-              {
-                method: 'GET',
-              }
-            )
-
-            if (!bitStringStatusListCredential.ok) {
-              throw new CredoError(`HTTP error! Status: ${bitStringStatusListCredential.status}`)
-            }
-            const bitStringCredential =
-              (await bitStringStatusListCredential.json()) as unknown as BitStringStatusListCredential
-            const encodedBitString = bitStringCredential.credential.credentialSubject.encodedList
-            const compressedBuffer = Uint8Array.from(atob(encodedBitString), (c) => c.charCodeAt(0))
-
-            // Decompress using pako
-            const decodedBitString = pako.ungzip(compressedBuffer, { to: 'string' })
-            const statusListIndex = Number(credential.credentialStatus.statusListIndex)
-
-            if (statusListIndex < 0 || statusListIndex >= decodedBitString.length) {
-              throw new CredoError('Index out of bounds')
-            }
-
-            if (decodedBitString[statusListIndex] === '1') {
-              throw new CredoError(`Credential at index ${credential.credentialStatus.statusListIndex} is revoked.`)
-            }
+            await verifyBitStringCredentialStatus(credential, agentContext)
           }
           return {
             verified: true,
@@ -305,46 +266,8 @@ export class W3cJsonLdCredentialService {
         domain: options.domain,
         documentLoader: this.w3cCredentialsModuleConfig.documentLoader(agentContext),
         checkStatus: async ({ credential }: { credential: W3cJsonCredential }) => {
-          // Only throw error if credentialStatus is present
           if ('credentialStatus' in credential) {
-            if (Array.isArray(credential.credentialStatus)) {
-              throw new CredoError(
-                'Verifying credential status as an array for JSON-LD credentials is currently not supported'
-              )
-            }
-
-            // Ensure credentialStatus contains the necessary properties
-            if (!credential.credentialStatus || credential.credentialStatus.statusListIndex === undefined) {
-              throw new CredoError('Invalid credential status format')
-            }
-
-            const credentialStatusURL = credential.credentialStatus.statusListCredential
-            const bitStringStatusListCredential = await agentContext.config.agentDependencies.fetch(
-              credentialStatusURL,
-              {
-                method: 'GET',
-              }
-            )
-
-            if (!bitStringStatusListCredential.ok) {
-              throw new CredoError(`HTTP error! Status: ${bitStringStatusListCredential.status}`)
-            }
-            const bitStringCredential =
-              (await bitStringStatusListCredential.json()) as unknown as BitStringStatusListCredential
-            const encodedBitString = bitStringCredential.credential.credentialSubject.encodedList
-            const compressedBuffer = Uint8Array.from(atob(encodedBitString), (c) => c.charCodeAt(0))
-
-            // Decompress using pako
-            const decodedBitString = pako.ungzip(compressedBuffer, { to: 'string' })
-            const statusListIndex = Number(credential.credentialStatus.statusListIndex)
-
-            if (statusListIndex < 0 || statusListIndex >= decodedBitString.length) {
-              throw new CredoError('Index out of bounds')
-            }
-
-            if (decodedBitString[statusListIndex] === '1') {
-              throw new CredoError(`Credential at index ${credential.credentialStatus.statusListIndex} is revoked.`)
-            }
+            await verifyBitStringCredentialStatus(credential, agentContext)
           }
           return {
             verified: true,

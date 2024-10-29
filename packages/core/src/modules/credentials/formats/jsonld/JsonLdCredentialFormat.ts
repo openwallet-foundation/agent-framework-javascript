@@ -11,7 +11,16 @@ export interface JsonCredential {
   issuanceDate: string
   expirationDate?: string
   credentialSubject: SingleOrArray<JsonObject>
+  credentialStatus?: SingleOrArray<BitstringStatusListEntry>
   [key: string]: unknown
+}
+
+export interface BitstringStatusListEntry {
+  id: string
+  type: string
+  statusPurpose: string
+  statusListIndex: string
+  statusListCredential: string
 }
 
 /**

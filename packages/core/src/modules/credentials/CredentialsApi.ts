@@ -17,12 +17,17 @@ import type {
   DeleteCredentialOptions,
   SendRevocationNotificationOptions,
   DeclineCredentialOfferOptions,
+  RevokeCredentialOption,
+  BitStringCredential,
+  JsonLdRevocationStatus,
 } from './CredentialsApiOptions'
 import type { CredentialProtocol } from './protocol/CredentialProtocol'
 import type { CredentialFormatsFromProtocols } from './protocol/CredentialProtocolOptions'
 import type { CredentialExchangeRecord } from './repository/CredentialExchangeRecord'
 import type { AgentMessage } from '../../agent/AgentMessage'
 import type { Query, QueryOptions } from '../../storage/StorageService'
+
+import * as pako from 'pako'
 
 import { AgentContext } from '../../agent'
 import { MessageSender } from '../../agent/MessageSender'
@@ -32,10 +37,12 @@ import { CredoError } from '../../error'
 import { Logger } from '../../logger'
 import { inject, injectable } from '../../plugins'
 import { DidCommMessageRepository } from '../../storage/didcomm/DidCommMessageRepository'
+import { Buffer } from '../../utils'
 import { ConnectionService } from '../connections/services'
 import { RoutingService } from '../routing/services/RoutingService'
 
 import { CredentialsModuleConfig } from './CredentialsModuleConfig'
+import { BitstringStatusListEntry, JsonLdCredentialFormat } from './formats'
 import { CredentialState } from './models/CredentialState'
 import { RevocationNotificationService } from './protocol/revocation-notification/services'
 import { CredentialRepository } from './repository/CredentialRepository'
@@ -62,8 +69,11 @@ export interface CredentialsApi<CPs extends CredentialProtocol[]> {
   // Issue Credential Methods
   acceptCredential(options: AcceptCredentialOptions): Promise<CredentialExchangeRecord>
 
-  // Revoke Credential Methods
+  // Revoke JSON-LD credential Methods
   sendRevocationNotification(options: SendRevocationNotificationOptions): Promise<void>
+
+  // Revoke Credential Methods
+  revokeJsonLdCredential(options: RevokeCredentialOption): Promise<{ message: string }>
 
   // out of band
   createOffer(options: CreateCredentialOfferOptions<CPs>): Promise<{
@@ -516,6 +526,87 @@ export class CredentialsApi<CPs extends CredentialProtocol[]> implements Credent
   }
 
   /**
+   * Revoke a credential by issuer
+   * associated with the credential record.
+   *
+   * @param credentialRecordId The id of the credential record for which to revoke the credential
+   * @returns Revoke credential notification message
+   *
+   */
+  public async revokeJsonLdCredential(options: RevokeCredentialOption): Promise<{ message: string }> {
+    // Default to '1' (revoked)
+    const revocationStatus = '1' as JsonLdRevocationStatus
+
+    const credentialRecord = await this.getCredentialRecord(options.credentialRecordId)
+    const credentialStatus = this.validateCredentialStatus(credentialRecord)
+
+    const { statusListIndex: credentialIndex, statusListCredential: statusListCredentialURL } = credentialStatus
+    const bitStringCredential = await this.fetchAndValidateBitStringCredential(statusListCredentialURL)
+    const decodedBitString = await this.decodeBitSting(bitStringCredential.credential.credentialSubject.encodedList)
+
+    if (decodedBitString.charAt(Number(credentialIndex)) === revocationStatus) {
+      throw new CredoError('The JSON-LD credential is already revoked')
+    }
+
+    // Update the bit string with the revocation status
+    const updatedBitString = this.updateBitString(decodedBitString, credentialIndex, revocationStatus)
+    bitStringCredential.credential.credentialSubject.encodedList = await this.encodeBitString(updatedBitString)
+
+    await this.postUpdatedBitString(statusListCredentialURL, bitStringCredential)
+
+    return { message: 'The JSON-LD credential has been successfully revoked.' }
+  }
+
+  private async getCredentialRecord(
+    credentialRecordId: string
+  ): Promise<GetCredentialFormatDataReturn<JsonLdCredentialFormat[]>> {
+    return this.getFormatData(credentialRecordId)
+  }
+
+  private validateCredentialStatus(
+    credentialRecord: GetCredentialFormatDataReturn<JsonLdCredentialFormat[]>
+  ): BitstringStatusListEntry {
+    const credentialStatus = credentialRecord.offer?.jsonld?.credential?.credentialStatus
+
+    if (Array.isArray(credentialStatus)) {
+      throw new CredoError('This credential status as an array for JSON-LD credentials is currently not supported')
+    }
+
+    if (!credentialStatus) {
+      throw new CredoError('This JSON-LD credential is non-revocable')
+    }
+
+    return credentialStatus
+  }
+
+  private async fetchAndValidateBitStringCredential(statusListCredentialURL: string): Promise<BitStringCredential> {
+    const response = await fetch(statusListCredentialURL)
+    if (!response.ok) {
+      throw new CredoError(`Failed to fetch credential: ${response.statusText}`)
+    }
+    return response.json() as Promise<BitStringCredential>
+  }
+
+  private updateBitString(decodedBitString: string, credentialIndex: string, revocationStatus: string): string {
+    return [
+      decodedBitString.slice(0, Number(credentialIndex)),
+      revocationStatus,
+      decodedBitString.slice(Number(credentialIndex) + 1),
+    ].join('')
+  }
+
+  private async postUpdatedBitString(
+    statusListCredentialURL: string,
+    bitStringCredential: BitStringCredential
+  ): Promise<void> {
+    await fetch(statusListCredentialURL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ credentialsData: bitStringCredential }),
+    })
+  }
+
+  /**
    * Send a revocation notification for a credential exchange record. Currently Revocation Notification V2 protocol is supported
    *
    * @param credentialRecordId The id of the credential record for which to send revocation notification
@@ -704,5 +795,22 @@ export class CredentialsApi<CPs extends CredentialProtocol[]> implements Credent
     const credentialExchangeRecord = await this.getById(credentialExchangeId)
 
     return this.getProtocol(credentialExchangeRecord.protocolVersion)
+  }
+
+  private async encodeBitString(bitString: string): Promise<string> {
+    // Convert the bitString to a Uint8Array
+    const buffer = new TextEncoder().encode(bitString)
+    const compressedBuffer = pako.gzip(buffer)
+    // Convert the compressed buffer to a base64 string
+    return Buffer.from(compressedBuffer).toString('base64')
+  }
+
+  private async decodeBitSting(bitString: string): Promise<string> {
+    // Decode base64 string to Uint8Array
+    const compressedBuffer = Uint8Array.from(atob(bitString), (c) => c.charCodeAt(0))
+
+    // Decompress using pako
+    const decompressedBuffer = pako.ungzip(compressedBuffer, { to: 'string' })
+    return decompressedBuffer
   }
 }

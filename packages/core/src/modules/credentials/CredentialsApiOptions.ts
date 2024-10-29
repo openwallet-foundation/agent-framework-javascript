@@ -44,6 +44,8 @@ interface BaseOptions {
   goal?: string
 }
 
+export type JsonLdRevocationStatus = '0' | '1'
+
 /**
  * Interface for CredentialsApi.proposeCredential. Will send a proposal.
  */
@@ -170,4 +172,29 @@ export interface DeclineCredentialOfferOptions {
    * @default "Offer declined"
    */
   problemReportDescription?: string
+}
+
+/**
+ * Interface for CredentialsApi.revokeCredential. revoke a jsonld credential by Issuer.
+ */
+export interface RevokeCredentialOption {
+  credentialRecordId: string
+}
+
+export interface CredentialSubject {
+  id: string
+  type: string
+  encodedList: string
+  statusPurpose: string
+}
+
+export interface Credential {
+  credentialSubject: CredentialSubject
+}
+
+/**
+ * Interface for bit string credential. Representing the bit string credential status.
+ */
+export interface BitStringCredential {
+  credential: Credential
 }
