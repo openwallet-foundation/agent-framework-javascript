@@ -46,6 +46,7 @@
     "@sphereon/pex-models": "^2.3.1",
     "@sphereon/ssi-types": "0.30.2-next.135",
     "@stablelib/ed25519": "^1.0.2",
+    "@types/pako": "^2.0.3",
     "@types/ws": "^8.5.4",
     "big-integer": "^1.6.51",
     "borc": "^3.0.0",
