@@ -13,7 +13,7 @@ import { OpenId4VcVerifierApi } from './OpenId4VcVerifierApi'
 import { OpenId4VcVerifierModuleConfig } from './OpenId4VcVerifierModuleConfig'
 import { OpenId4VcVerifierRepository } from './repository'
 import { OpenId4VcRelyingPartyEventHandler } from './repository/OpenId4VcRelyingPartyEventEmitter'
-import { configureAuthorizationEndpoint } from './router'
+import { configureAuthorizationEndpoint, configureFederationEndpoint } from './router'
 import { configureAuthorizationRequestEndpoint } from './router/authorizationRequestEndpoint'
 
 /**
@@ -123,6 +123,10 @@ export class OpenId4VcVerifierModule implements Module {
     // Configure endpoints
     configureAuthorizationEndpoint(endpointRouter, this.config.authorizationEndpoint)
     configureAuthorizationRequestEndpoint(endpointRouter, this.config.authorizationRequestEndpoint)
+
+    // TODO: The keys needs to be passed down to the federation endpoint to be used in the entity configuration for the openid relying party
+    // TODO: But the keys also needs to be available for the request signing. They also needs to get saved because it needs to survive a restart of the agent.
+    configureFederationEndpoint(endpointRouter)
 
     // First one will be called for all requests (when next is called)
     contextRouter.use(async (req: OpenId4VcVerificationRequest, _res: unknown, next) => {

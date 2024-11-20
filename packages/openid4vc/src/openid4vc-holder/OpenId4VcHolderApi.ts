@@ -7,7 +7,11 @@ import type {
   OpenId4VciRequestTokenResponse,
   OpenId4VciRetrieveAuthorizationCodeUsingPresentationOptions,
 } from './OpenId4VciHolderServiceOptions'
-import type { OpenId4VcSiopAcceptAuthorizationRequestOptions } from './OpenId4vcSiopHolderServiceOptions'
+import type {
+  OpenId4VcSiopAcceptAuthorizationRequestOptions,
+  OpenId4VcSiopResolveAuthorizationRequestOptions,
+  OpenId4VcSiopResolveTrustChainsOptions,
+} from './OpenId4vcSiopHolderServiceOptions'
 
 import { injectable, AgentContext, DifPresentationExchangeService, DifPexCredentialsForRequest } from '@credo-ts/core'
 
@@ -42,8 +46,11 @@ export class OpenId4VcHolderApi {
    * @param requestJwtOrUri JWT or an SIOPv2 request URI
    * @returns the resolved and verified authentication request.
    */
-  public async resolveSiopAuthorizationRequest(requestJwtOrUri: string) {
-    return this.openId4VcSiopHolderService.resolveAuthorizationRequest(this.agentContext, requestJwtOrUri)
+  public async resolveSiopAuthorizationRequest(
+    requestJwtOrUri: string,
+    options: OpenId4VcSiopResolveAuthorizationRequestOptions = {}
+  ) {
+    return this.openId4VcSiopHolderService.resolveAuthorizationRequest(this.agentContext, requestJwtOrUri, options)
   }
 
   /**
@@ -159,5 +166,9 @@ export class OpenId4VcHolderApi {
    */
   public async sendNotification(options: OpenId4VciSendNotificationOptions) {
     return this.openId4VciHolderService.sendNotification(this.agentContext, options)
+  }
+
+  public async resolveOpenIdFederationChains(options: OpenId4VcSiopResolveTrustChainsOptions) {
+    return this.openId4VcSiopHolderService.resolveOpenIdFederationChains(this.agentContext, options)
   }
 }

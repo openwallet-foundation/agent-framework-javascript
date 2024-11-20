@@ -1,8 +1,12 @@
 import type {
   OpenId4VcSiopAcceptAuthorizationRequestOptions,
+  OpenId4VcSiopFetchEntityConfigurationOptions,
+  OpenId4VcSiopGetOpenIdProviderOptions,
+  OpenId4VcSiopResolveAuthorizationRequestOptions,
   OpenId4VcSiopResolvedAuthorizationRequest,
+  OpenId4VcSiopResolveTrustChainsOptions,
 } from './OpenId4vcSiopHolderServiceOptions'
-import type { OpenId4VcJwtIssuer } from '../shared'
+import type { OpenId4VcJwtIssuer, OpenId4VcJwtIssuerFederation } from '../shared'
 import type { AgentContext, JwkJson, VerifiablePresentation } from '@credo-ts/core'
 import type {
   AuthorizationResponsePayload,
@@ -26,7 +30,12 @@ import {
   injectable,
   parseDid,
   MdocDeviceResponse,
+  JwsService,
 } from '@credo-ts/core'
+import {
+  resolveTrustChains as federationResolveTrustChains,
+  fetchEntityConfiguration as federationFetchEntityConfiguration,
+} from '@openid-federation/core'
 import { OP, ResponseIss, ResponseMode, ResponseType, SupportedVersion, VPTokenLocation } from '@sphereon/did-auth-siop'
 
 import { getSphereonVerifiablePresentation } from '../shared/transform'
@@ -38,9 +47,12 @@ export class OpenId4VcSiopHolderService {
 
   public async resolveAuthorizationRequest(
     agentContext: AgentContext,
-    requestJwtOrUri: string
+    requestJwtOrUri: string,
+    options: OpenId4VcSiopResolveAuthorizationRequestOptions = {}
   ): Promise<OpenId4VcSiopResolvedAuthorizationRequest> {
-    const openidProvider = await this.getOpenIdProvider(agentContext)
+    const openidProvider = await this.getOpenIdProvider(agentContext, {
+      federation: options.federation,
+    })
 
     // parsing happens automatically in verifyAuthorizationRequest
     const verifiedAuthorizationRequest = await openidProvider.verifyAuthorizationRequest(requestJwtOrUri)
@@ -58,6 +70,34 @@ export class OpenId4VcSiopHolderService {
     }
 
     const presentationDefinition = verifiedAuthorizationRequest.presentationDefinitions?.[0]?.definition
+
+    if (verifiedAuthorizationRequest.clientIdScheme === 'entity_id') {
+      const clientId = verifiedAuthorizationRequest.authorizationRequestPayload.client_id
+      if (!clientId) {
+        throw new CredoError("Unable to extract 'client_id' from authorization request")
+      }
+
+      const jwsService = agentContext.dependencyManager.resolve(JwsService)
+
+      const entityConfiguration = await federationFetchEntityConfiguration({
+        entityId: clientId,
+        verifyJwtCallback: async ({ jwt, jwk }) => {
+          const res = await jwsService.verifyJws(agentContext, {
+            jws: jwt,
+            jwkResolver: () => getJwkFromJson(jwk),
+          })
+
+          return res.isValid
+        },
+      })
+      if (!entityConfiguration) throw new CredoError(`Unable to fetch entity configuration for entityId '${clientId}'`)
+
+      const openidRelyingPartyMetadata = entityConfiguration.metadata?.openid_relying_party
+      // When the metadata is present in the federation we want to use that instead of what is passed with the request
+      if (openidRelyingPartyMetadata) {
+        verifiedAuthorizationRequest.authorizationRequestPayload.client_metadata = openidRelyingPartyMetadata
+      }
+    }
 
     return {
       authorizationRequest: verifiedAuthorizationRequest,
@@ -244,7 +284,7 @@ export class OpenId4VcSiopHolderService {
     } as const
   }
 
-  private async getOpenIdProvider(agentContext: AgentContext) {
+  private async getOpenIdProvider(agentContext: AgentContext, options: OpenId4VcSiopGetOpenIdProviderOptions = {}) {
     const builder = OP.builder()
       .withExpiresIn(6000)
       .withIssuer(ResponseIss.SELF_ISSUED_V2)
@@ -255,7 +295,11 @@ export class OpenId4VcSiopHolderService {
         SupportedVersion.SIOPv2_D12_OID4VP_D20,
       ])
       .withCreateJwtCallback(getCreateJwtCallback(agentContext))
-      .withVerifyJwtCallback(getVerifyJwtCallback(agentContext))
+      .withVerifyJwtCallback(
+        getVerifyJwtCallback(agentContext, {
+          federation: options.federation,
+        })
+      )
       .withHasher(Hasher.hash)
 
     const openidProvider = builder.build()
@@ -265,7 +309,7 @@ export class OpenId4VcSiopHolderService {
 
   private getOpenIdTokenIssuerFromVerifiablePresentation(
     verifiablePresentation: VerifiablePresentation
-  ): OpenId4VcJwtIssuer {
+  ): Exclude<OpenId4VcJwtIssuer, OpenId4VcJwtIssuerFederation> {
     let openIdTokenIssuer: OpenId4VcJwtIssuer
 
     if (verifiablePresentation instanceof W3cJsonLdVerifiablePresentation) {
@@ -408,5 +452,48 @@ export class OpenId4VcSiopHolderService {
     })
 
     return jwe
+  }
+
+  public async resolveOpenIdFederationChains(
+    agentContext: AgentContext,
+    options: OpenId4VcSiopResolveTrustChainsOptions
+  ) {
+    const jwsService = agentContext.dependencyManager.resolve(JwsService)
+
+    const { entityId, trustAnchorEntityIds } = options
+
+    return federationResolveTrustChains({
+      entityId,
+      trustAnchorEntityIds,
+      verifyJwtCallback: async ({ jwt, jwk }) => {
+        const res = await jwsService.verifyJws(agentContext, {
+          jws: jwt,
+          jwkResolver: () => getJwkFromJson(jwk),
+        })
+
+        return res.isValid
+      },
+    })
+  }
+
+  public async fetchOpenIdFederationEntityConfiguration(
+    agentContext: AgentContext,
+    options: OpenId4VcSiopFetchEntityConfigurationOptions
+  ) {
+    const jwsService = agentContext.dependencyManager.resolve(JwsService)
+
+    const { entityId } = options
+
+    return federationFetchEntityConfiguration({
+      entityId,
+      verifyJwtCallback: async ({ jwt, jwk }) => {
+        const res = await jwsService.verifyJws(agentContext, {
+          jws: jwt,
+          jwkResolver: () => getJwkFromJson(jwk),
+        })
+
+        return res.isValid
+      },
+    })
   }
 }

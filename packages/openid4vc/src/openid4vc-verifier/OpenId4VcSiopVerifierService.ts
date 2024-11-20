@@ -108,11 +108,18 @@ export class OpenId4VcSiopVerifierService {
       this.config.authorizationEndpoint.endpointPath,
     ])
 
+    const federationClientId = joinUriParts(this.config.baseUrl, [options.verifier.verifierId])
+
     const jwtIssuer =
       options.requestSigner.method === 'x5c'
         ? await openIdTokenIssuerToJwtIssuer(agentContext, {
             ...options.requestSigner,
             issuer: authorizationResponseUrl,
+          })
+        : options.requestSigner.method === 'openid-federation'
+        ? await openIdTokenIssuerToJwtIssuer(agentContext, {
+            ...options.requestSigner,
+            entityId: federationClientId,
           })
         : await openIdTokenIssuerToJwtIssuer(agentContext, options.requestSigner)
 
@@ -143,9 +150,18 @@ export class OpenId4VcSiopVerifierService {
     } else if (jwtIssuer.method === 'did') {
       clientId = jwtIssuer.didUrl.split('#')[0]
       clientIdScheme = 'did'
+    } else if (jwtIssuer.method === 'custom') {
+      if (jwtIssuer.options?.method === 'openid-federation') {
+        clientIdScheme = 'entity_id'
+        clientId = federationClientId
+      } else {
+        throw new CredoError(
+          `jwtIssuer 'method' 'custom' must have a 'method' property with value 'openid-federation' when using the 'custom' method.`
+        )
+      }
     } else {
       throw new CredoError(
-        `Unsupported jwt issuer method '${options.requestSigner.method}'. Only 'did' and 'x5c' are supported.`
+        `Unsupported jwt issuer method '${options.requestSigner.method}'. Only 'did', 'x5c' and 'custom' are supported.`
       )
     }
 
@@ -232,6 +248,8 @@ export class OpenId4VcSiopVerifierService {
 
     const verifier = await this.getVerifierByVerifierId(agentContext, options.verificationSession.verifierId)
     const requestClientId = await authorizationRequest.getMergedProperty<string>('client_id')
+    // TODO: Is this needed for the verification of the federation?
+    const requestClientIdScheme = await authorizationRequest.getMergedProperty<ClientIdScheme>('client_id_scheme')
     const requestNonce = await authorizationRequest.getMergedProperty<string>('nonce')
     const requestState = await authorizationRequest.getMergedProperty<string>('state')
     const responseUri = await authorizationRequest.getMergedProperty<string>('response_uri')
@@ -252,6 +270,7 @@ export class OpenId4VcSiopVerifierService {
       presentationDefinition: presentationDefinitionsWithLocation?.[0]?.definition,
       authorizationResponseUrl,
       clientId: requestClientId,
+      clientIdScheme: requestClientIdScheme,
     })
 
     // This is very unfortunate, but storing state in sphereon's SiOP-OID4VP library
@@ -469,7 +488,7 @@ export class OpenId4VcSiopVerifierService {
     return this.openId4VcVerificationSessionRepository.getById(agentContext, verificationSessionId)
   }
 
-  private async getRelyingParty(
+  public async getRelyingParty(
     agentContext: AgentContext,
     verifier: OpenId4VcVerifierRecord,
     {
