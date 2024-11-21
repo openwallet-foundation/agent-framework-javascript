@@ -119,7 +119,7 @@ export function configureFederationEndpoint(router: Router) {
               openid_relying_party: {
                 ...rpMetadata,
                 jwks: {
-                  keys: [{ kid, alg, ...getJwkFromKey(rpSigningKey).toJson() }],
+                  keys: [{ kid: rpSigningKey.fingerprint, alg, ...getJwkFromKey(rpSigningKey).toJson() }],
                 },
                 client_registration_types: ['automatic'], // TODO: Not really sure why we need to provide this manually
               },
