@@ -10,15 +10,17 @@ import type {
 
 import { Jwt } from '../../../crypto'
 import { JsonTransformer } from '../../../utils'
-import { MdocDeviceResponse } from '../../mdoc'
+import { MdocDeviceResponse, MdocRecord } from '../../mdoc'
 import { SdJwtVcApi } from '../../sd-jwt-vc'
 import { W3cCredentialRecord, W3cJsonLdVerifiablePresentation, W3cJwtVerifiablePresentation } from '../../vc'
 
 export function getSphereonOriginalVerifiableCredential(
-  credentialRecord: W3cCredentialRecord | SdJwtVcRecord
+  credentialRecord: W3cCredentialRecord | SdJwtVcRecord | MdocRecord
 ): SphereonOriginalVerifiableCredential {
   if (credentialRecord instanceof W3cCredentialRecord) {
     return credentialRecord.credential.encoded as SphereonOriginalVerifiableCredential
+  } else if (credentialRecord instanceof MdocRecord) {
+    return credentialRecord.base64Url
   } else {
     return credentialRecord.compactSdJwtVc
   }

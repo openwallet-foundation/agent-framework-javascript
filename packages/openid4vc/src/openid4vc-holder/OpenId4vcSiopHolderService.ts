@@ -72,7 +72,7 @@ export class OpenId4VcSiopHolderService {
     const presentationDefinition = verifiedAuthorizationRequest.presentationDefinitions?.[0]?.definition
 
     if (verifiedAuthorizationRequest.clientIdScheme === 'entity_id') {
-      const clientId = verifiedAuthorizationRequest.authorizationRequestPayload.client_id
+      const clientId = await verifiedAuthorizationRequest.authorizationRequest.getMergedProperty<string>('client_id')
       if (!clientId) {
         throw new CredoError("Unable to extract 'client_id' from authorization request")
       }

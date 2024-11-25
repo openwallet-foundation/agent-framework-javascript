@@ -945,6 +945,10 @@ describe('SdJwtVcService', () => {
         sdJwtVc: expect.any(Object),
         verification: {
           isValid: false,
+          areRequiredClaimsIncluded: false,
+          isSignatureValid: false,
+          isStatusValid: false,
+          isValidJwtPayload: true,
         },
         error: new SDJWTException('Status is not valid'),
       })
@@ -980,7 +984,11 @@ describe('SdJwtVcService', () => {
         isValid: false,
         sdJwtVc: expect.any(Object),
         verification: {
+          areRequiredClaimsIncluded: false,
+          isSignatureValid: false,
+          isStatusValid: false,
           isValid: false,
+          isValidJwtPayload: true,
         },
         error: new Error('Index out of bounds'),
       })
@@ -1149,7 +1157,11 @@ describe('SdJwtVcService', () => {
       expect(verificationResult).toEqual({
         isValid: false,
         verification: {
+          areRequiredClaimsIncluded: false,
+          isSignatureValid: false,
+          isStatusValid: false,
           isValid: false,
+          isValidJwtPayload: true,
         },
         error: new SDJWTException('Verify Error: Invalid JWT Signature'),
         sdJwtVc: expect.any(Object),
@@ -1165,6 +1177,10 @@ describe('SdJwtVcService', () => {
         isValid: false,
         verification: {
           isValid: false,
+          areRequiredClaimsIncluded: false,
+          isSignatureValid: false,
+          isStatusValid: false,
+          isValidJwtPayload: true,
         },
         error: new SDJWTException('Verify Error: Invalid JWT Signature'),
         sdJwtVc: expect.any(Object),

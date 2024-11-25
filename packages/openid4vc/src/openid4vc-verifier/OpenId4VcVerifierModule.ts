@@ -126,7 +126,7 @@ export class OpenId4VcVerifierModule implements Module {
 
     // TODO: The keys needs to be passed down to the federation endpoint to be used in the entity configuration for the openid relying party
     // TODO: But the keys also needs to be available for the request signing. They also needs to get saved because it needs to survive a restart of the agent.
-    configureFederationEndpoint(endpointRouter)
+    configureFederationEndpoint(endpointRouter, this.config.federation)
 
     // First one will be called for all requests (when next is called)
     contextRouter.use(async (req: OpenId4VcVerificationRequest, _res: unknown, next) => {

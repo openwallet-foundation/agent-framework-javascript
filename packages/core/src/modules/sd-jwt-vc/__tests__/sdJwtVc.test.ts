@@ -1,5 +1,7 @@
 import type { Key } from '@credo-ts/core'
 
+import nock, { cleanAll } from 'nock'
+
 import { getInMemoryAgentOptions } from '../../../../tests'
 
 import { Agent, DidKey, getJwkFromKey, KeyType, TypedArrayEncoder } from '@credo-ts/core'
@@ -37,8 +39,10 @@ describe('sd-jwt-vc end to end test', () => {
   })
 
   test('end to end flow', async () => {
+    nock('https://example.com').get('/.well-known/vct/vct-type').reply(200, { vct: 'https://example.com/vct-type' })
+
     const credential = {
-      vct: 'IdentityCredential',
+      vct: 'https://example.com/vct-type',
       given_name: 'John',
       family_name: 'Doe',
       email: 'johndoe@example.com',
@@ -129,7 +133,7 @@ describe('sd-jwt-vc end to end test', () => {
         },
         iat: expect.any(Number),
         iss: 'did:key:z6MktqtXNG8CDUY9PrrtoStFzeCnhpMmgxYL1gikcW3BzvNW',
-        vct: 'IdentityCredential',
+        vct: 'https://example.com/vct-type',
       },
       prettyClaims: {
         address: {
@@ -155,15 +159,20 @@ describe('sd-jwt-vc end to end test', () => {
         is_over_65: true,
         iss: 'did:key:z6MktqtXNG8CDUY9PrrtoStFzeCnhpMmgxYL1gikcW3BzvNW',
         phone_number: '+1-202-555-0101',
-        vct: 'IdentityCredential',
+        vct: 'https://example.com/vct-type',
       },
+      typeMetadata: undefined,
     })
 
     // Verify SD-JWT (does not require key binding)
-    const { verification } = await holder.sdJwtVc.verify({
+    const verificationResult = await holder.sdJwtVc.verify({
       compactSdJwtVc: compact,
+      fetchTypeMetadata: true,
     })
-    expect(verification.isValid).toBe(true)
+    expect(verificationResult.verification.isValid).toBe(true)
+    expect(verificationResult.sdJwtVc?.typeMetadata).toEqual({
+      vct: 'https://example.com/vct-type',
+    })
 
     // Store credential
     await holder.sdJwtVc.store(compact)
@@ -217,5 +226,7 @@ describe('sd-jwt-vc end to end test', () => {
     })
 
     expect(presentationVerification.isValid).toBeTruthy()
+
+    cleanAll()
   })
 })

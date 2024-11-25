@@ -3,8 +3,8 @@ import type { Key, Buffer } from '@credo-ts/core'
 import type { RPRegistrationMetadataPayload } from '@sphereon/did-auth-siop'
 import type { Router, Response } from 'express'
 
-import { getJwkFromKey, KeyType } from '@credo-ts/core'
-import { createEntityConfiguration } from '@openid-federation/core'
+import { getJwkFromJson, getJwkFromKey, JwsService, KeyType } from '@credo-ts/core'
+import { createEntityConfiguration, createEntityStatement, fetchEntityConfiguration } from '@openid-federation/core'
 import { LanguageTagUtils, removeNullUndefined } from '@sphereon/did-auth-siop'
 
 import { getRequestContext, sendErrorResponse } from '../../shared/router'
@@ -47,7 +47,10 @@ const createRPRegistrationMetadataPayload = (opts: any): RPRegistrationMetadataP
   return removeNullUndefined(rpRegistrationMetadataPayload)
 }
 
-export function configureFederationEndpoint(router: Router) {
+export function configureFederationEndpoint(
+  router: Router,
+  federationConfig: OpenId4VcVerifierModuleConfig['federation'] = {}
+) {
   // TODO: this whole result needs to be cached and the ttl should be the expires of this node
 
   // TODO: This will not work for multiple instances so we have to save it in the database.
@@ -97,6 +100,11 @@ export function configureFederationEndpoint(router: Router) {
         const alg = jwk.supportedSignatureAlgorithms[0]
         const kid = federationKey.fingerprint
 
+        const authorityHints = await federationConfig.getAuthorityHints?.(agentContext, {
+          verifierId: verifier.verifierId,
+          issuerEntityId: verifierEntityId,
+        })
+
         const entityConfiguration = await createEntityConfiguration({
           header: {
             kid,
@@ -111,10 +119,12 @@ export function configureFederationEndpoint(router: Router) {
             jwks: {
               keys: [{ kid, alg, ...jwk.toJson() }],
             },
+            authority_hints: authorityHints,
             metadata: {
               federation_entity: {
                 organization_name: rpMetadata.client_name,
                 logo_uri: rpMetadata.logo_uri,
+                federation_fetch_endpoint: `${verifierEntityId}/openid-federation/fetch`,
               },
               openid_relying_party: {
                 ...rpMetadata,
@@ -145,4 +155,101 @@ export function configureFederationEndpoint(router: Router) {
       next()
     }
   )
+
+  // TODO: Currently it will fetch everything in realtime and creates a entity statement without even checking if it is allowed.
+  router.get('/openid-federation/fetch', async (request: OpenId4VcVerificationRequest, response: Response, next) => {
+    const { agentContext, verifier } = getRequestContext(request)
+
+    const { sub } = request.query
+    if (!sub || typeof sub !== 'string') {
+      sendErrorResponse(response, next, agentContext.config.logger, 400, 'invalid_request', 'sub is required')
+      return
+    }
+
+    const verifierConfig = agentContext.dependencyManager.resolve(OpenId4VcVerifierModuleConfig)
+
+    const entityId = `${verifierConfig.baseUrl}/${verifier.verifierId}`
+
+    const isSubordinateEntity = await federationConfig.isSubordinateEntity?.(agentContext, {
+      verifierId: verifier.verifierId,
+      issuerEntityId: entityId,
+      subjectEntityId: sub,
+    })
+    if (!isSubordinateEntity) {
+      if (!federationConfig.isSubordinateEntity) {
+        agentContext.config.logger.warn(
+          'isSubordinateEntity hook is not provided for the federation so we cannot check if this entity is a subordinate entity of the issuer',
+          {
+            verifierId: verifier.verifierId,
+            issuerEntityId: entityId,
+            subjectEntityId: sub,
+          }
+        )
+      }
+
+      sendErrorResponse(
+        response,
+        next,
+        agentContext.config.logger,
+        403,
+        'forbidden',
+        'This entity is not a subordinate entity of the issuer'
+      )
+      return
+    }
+
+    const jwsService = agentContext.dependencyManager.resolve(JwsService)
+
+    const subjectEntityConfiguration = await fetchEntityConfiguration({
+      entityId: sub,
+      verifyJwtCallback: async ({ jwt, jwk }) => {
+        const res = await jwsService.verifyJws(agentContext, {
+          jws: jwt,
+          jwkResolver: () => getJwkFromJson(jwk),
+        })
+
+        return res.isValid
+      },
+    })
+
+    let federationKey = federationKeyMapping.get(verifier.verifierId)
+    if (!federationKey) {
+      federationKey = await agentContext.wallet.createKey({
+        keyType: KeyType.Ed25519,
+      })
+      federationKeyMapping.set(verifier.verifierId, federationKey)
+    }
+
+    const jwk = getJwkFromKey(federationKey)
+    const alg = jwk.supportedSignatureAlgorithms[0]
+    const kid = federationKey.fingerprint
+
+    const entityStatement = await createEntityStatement({
+      header: {
+        kid,
+        alg,
+        typ: 'entity-statement+jwt',
+      },
+      jwk: {
+        ...jwk.toJson(),
+        kid,
+      },
+      claims: {
+        sub: sub,
+        iss: entityId,
+        iat: new Date(),
+        exp: new Date(Date.now() + 1000 * 60 * 60 * 24), // 1 day TODO: Might needs to be a bit lower because a day is quite long for trust
+        jwks: {
+          keys: subjectEntityConfiguration.jwks.keys,
+        },
+      },
+      signJwtCallback: ({ toBeSigned }) =>
+        agentContext.wallet.sign({
+          data: toBeSigned as Buffer,
+          key: federationKey,
+        }),
+    })
+
+    response.writeHead(200, { 'Content-Type': 'application/entity-statement+jwt' }).end(entityStatement)
+  })
 }

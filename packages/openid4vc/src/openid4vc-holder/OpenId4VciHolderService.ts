@@ -404,6 +404,11 @@ export class OpenId4VciHolderService {
     // Else: use 1
     const batchSize =
       requestBatch === true ? metadata.credentialIssuer.batch_credential_issuance?.batch_size ?? 1 : requestBatch || 1
+    if (typeof requestBatch === 'number' && requestBatch > 1 && !metadata.credentialIssuer.batch_credential_issuance) {
+      throw new CredoError(
+        `Credential issuer '${metadata.credentialIssuer.credential_issuer}' does not support batch credential issuance using the 'proofs' request property. Onlt 'proof' supported.`
+      )
+    }
 
     for (const [offeredCredentialId, offeredCredentialConfiguration] of credentialConfigurationsToRequest) {
       // Get all options for the credential request (such as which kid to use, the signature algorithm, etc)
@@ -744,9 +749,11 @@ export class OpenId4VciHolderService {
 
       const sdJwtVcApi = agentContext.dependencyManager.resolve(SdJwtVcApi)
       const verificationResults = await Promise.all(
-        credentials.map((compactSdJwtVc) =>
+        credentials.map((compactSdJwtVc, index) =>
           sdJwtVcApi.verify({
             compactSdJwtVc,
+            // Only load and verify it for the first instance
+            fetchTypeMetadata: index === 0,
           })
         )
       )

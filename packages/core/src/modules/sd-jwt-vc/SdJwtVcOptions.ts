@@ -118,4 +118,11 @@ export type SdJwtVcVerifyOptions = {
 
   // TODO: update to requiredClaimFrame
   requiredClaimKeys?: Array<string>
+
+  /**
+   * Whether to fetch the `vct` type metadata if the `vct` is an https URL.
+   *
+   * It will will not influence the verification result if fetching of type metadata fails
+   */
+  fetchTypeMetadata?: boolean
 }

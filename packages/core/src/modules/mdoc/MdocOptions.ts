@@ -1,9 +1,9 @@
 import type { Mdoc } from './Mdoc'
 import type { Key } from '../../crypto/Key'
 import type { DifPresentationExchangeDefinition } from '../dif-presentation-exchange'
-import type { ValidityInfo, MdocNameSpaces } from '@animo-id/mdoc'
+import type { ValidityInfo } from '@animo-id/mdoc'
 
-export type { MdocNameSpaces } from '@animo-id/mdoc'
+export type MdocNameSpaces = Record<string, Record<string, unknown>>
 
 export interface MdocVerificationContext {
   /**
@@ -47,7 +47,7 @@ export type MdocSignOptions = {
   // eslint-disable-next-line @typescript-eslint/ban-types
   docType: 'org.iso.18013.5.1.mDL' | (string & {})
   validityInfo?: Partial<ValidityInfo>
-  namespaces: { [namespace: string]: Record<string, unknown> }
+  namespaces: MdocNameSpaces
 
   /**
    *

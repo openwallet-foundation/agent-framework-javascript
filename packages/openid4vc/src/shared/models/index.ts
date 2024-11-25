@@ -1,3 +1,4 @@
+import type { AccessTokenResponse } from '@animo-id/oauth2'
 import type {
   CredentialConfigurationSupported,
   CredentialConfigurationSupportedWithFormats,
@@ -29,6 +30,7 @@ export type OpenId4VciCredentialConfigurationsSupportedWithFormats = Record<
   OpenId4VciCredentialConfigurationSupportedWithFormats
 >
 
+export type OpenId4VciAccessTokenResponse = AccessTokenResponse
 export type OpenId4VciMetadata = IssuerMetadataResult
 
 export type OpenId4VciTxCode = CredentialOfferPreAuthorizedCodeGrantTxCode

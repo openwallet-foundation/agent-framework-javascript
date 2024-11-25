@@ -6,7 +6,7 @@ import type {
   VerifiablePresentation,
 } from '../models'
 
-import { default as jp } from 'jsonpath'
+import { JSONPath } from '@astronautlabs/jsonpath'
 
 import { CredoError } from '../../../error'
 import { MdocDeviceResponse } from '../../mdoc'
@@ -21,7 +21,7 @@ export function extractPresentationsWithDescriptorsFromSubmission(
   definition: DifPresentationExchangeDefinition
 ) {
   return submission.descriptor_map.map((descriptor) => {
-    const [presentation] = jp.query(presentations, descriptor.path) as [VerifiablePresentation | undefined]
+    const [presentation] = JSONPath.query(presentations, descriptor.path) as [VerifiablePresentation | undefined]
     const inputDescriptor = definition.input_descriptors.find(({ id }) => id === descriptor.id)
 
     if (!presentation) {
@@ -61,7 +61,7 @@ export function extractPresentationsWithDescriptorsFromSubmission(
         )
       }
 
-      const [verifiableCredential] = jp.query(
+      const [verifiableCredential] = JSONPath.query(
         // Path is `$.vp.verifiableCredential[]` in case of jwt vp
         presentation.claimFormat === ClaimFormat.JwtVp ? { vp: presentation } : presentation,
         descriptor.path_nested.path

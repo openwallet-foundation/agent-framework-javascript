@@ -1,6 +1,6 @@
 import type { OpenId4VcSiopAuthorizationEndpointConfig } from './router/authorizationEndpoint'
 import type { OpenId4VcSiopAuthorizationRequestEndpointConfig } from './router/authorizationRequestEndpoint'
-import type { Optional } from '@credo-ts/core'
+import type { AgentContext, Optional } from '@credo-ts/core'
 import type { Router } from 'express'
 
 import { importExpress } from '../shared/router'
@@ -24,6 +24,30 @@ export interface OpenId4VcVerifierModuleConfigOptions {
   endpoints?: {
     authorization?: Optional<OpenId4VcSiopAuthorizationEndpointConfig, 'endpointPath'>
     authorizationRequest?: Optional<OpenId4VcSiopAuthorizationRequestEndpointConfig, 'endpointPath'>
+  }
+
+  /**
+   * Configuration for the federation endpoint.
+   */
+  federation?: {
+    // TODO: Make this functions also compatible with the issuer side
+    isSubordinateEntity?: (
+      agentContext: AgentContext,
+      options: {
+        verifierId: string
+
+        issuerEntityId: string
+        subjectEntityId: string
+      }
+    ) => Promise<boolean>
+    getAuthorityHints?: (
+      agentContext: AgentContext,
+      options: {
+        verifierId: string
+
+        issuerEntityId: string
+      }
+    ) => Promise<string[] | undefined>
   }
 }
 
@@ -59,5 +83,9 @@ export class OpenId4VcVerifierModuleConfig {
       ...userOptions,
       endpointPath: userOptions?.endpointPath ?? '/authorize',
     }
+  }
+
+  public get federation() {
+    return this.options.federation
   }
 }

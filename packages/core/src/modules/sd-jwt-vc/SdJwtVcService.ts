@@ -10,15 +10,14 @@ import type {
 import type { JwkJson, Key } from '../../crypto'
 import type { Query, QueryOptions } from '../../storage/StorageService'
 import type { SDJwt } from '@sd-jwt/core'
-import type { Signer, Verifier, HasherSync, PresentationFrame, DisclosureFrame } from '@sd-jwt/types'
+import type { Signer, Verifier, PresentationFrame, DisclosureFrame } from '@sd-jwt/types'
 
-import { decodeSdJwtSync, getClaimsSync } from '@sd-jwt/decode'
 import { SDJwtVcInstance } from '@sd-jwt/sd-jwt-vc'
 import { uint8ArrayToBase64Url } from '@sd-jwt/utils'
 import { injectable } from 'tsyringe'
 
 import { AgentContext } from '../../agent'
-import { JwtPayload, Jwk, getJwkFromJson, getJwkFromKey, Hasher } from '../../crypto'
+import { JwtPayload, Jwk, getJwkFromJson, getJwkFromKey } from '../../crypto'
 import { CredoError } from '../../error'
 import { X509Service } from '../../modules/x509/X509Service'
 import { TypedArrayEncoder, nowInSeconds } from '../../utils'
@@ -28,7 +27,9 @@ import { DidResolverService, parseDid, getKeyFromVerificationMethod } from '../d
 import { X509Certificate, X509ModuleConfig } from '../x509'
 
 import { SdJwtVcError } from './SdJwtVcError'
+import { decodeSdJwtVc, sdJwtVcHasher } from './decodeSdJwtVc'
 import { SdJwtVcRecord, SdJwtVcRepository } from './repository'
+import { SdJwtVcTypeMetadata } from './typeMetadata'
 
 type SdJwtVcConfig = SDJwtVcInstance['userConfig']
 
@@ -42,6 +43,8 @@ export interface SdJwtVc<
   // TODO: payload type here is a lie, as it is the signed payload (so fields replaced with _sd)
   payload: Payload
   prettyClaims: Payload
+
+  typeMetadata?: SdJwtVcTypeMetadata
 }
 
 export interface CnfPayload {
@@ -134,18 +137,10 @@ export class SdJwtVcService {
   }
 
   public fromCompact<Header extends SdJwtVcHeader = SdJwtVcHeader, Payload extends SdJwtVcPayload = SdJwtVcPayload>(
-    compactSdJwtVc: string
+    compactSdJwtVc: string,
+    typeMetadata?: SdJwtVcTypeMetadata
   ): SdJwtVc<Header, Payload> {
-    // NOTE: we use decodeSdJwtSync so we can make this method sync
-    const { jwt, disclosures } = decodeSdJwtSync(compactSdJwtVc, this.hasher)
-    const prettyClaims = getClaimsSync(jwt.payload, disclosures, this.hasher)
-
-    return {
-      compact: compactSdJwtVc,
-      header: jwt.header as Header,
-      payload: jwt.payload as Payload,
-      prettyClaims: prettyClaims as Payload,
-    }
+    return decodeSdJwtVc(compactSdJwtVc, typeMetadata)
   }
 
   public async present<Payload extends SdJwtVcPayload = SdJwtVcPayload>(
@@ -196,18 +191,24 @@ export class SdJwtVcService {
 
   public async verify<Header extends SdJwtVcHeader = SdJwtVcHeader, Payload extends SdJwtVcPayload = SdJwtVcPayload>(
     agentContext: AgentContext,
-    { compactSdJwtVc, keyBinding, requiredClaimKeys }: SdJwtVcVerifyOptions
+    { compactSdJwtVc, keyBinding, requiredClaimKeys, fetchTypeMetadata }: SdJwtVcVerifyOptions
   ): Promise<
     | { isValid: true; verification: VerificationResult; sdJwtVc: SdJwtVc<Header, Payload> }
     | { isValid: false; verification: VerificationResult; sdJwtVc?: SdJwtVc<Header, Payload>; error: Error }
   > {
-    const sdjwt = new SDJwtVcInstance(this.getBaseSdJwtConfig(agentContext))
+    const sdjwt = new SDJwtVcInstance({
+      ...this.getBaseSdJwtConfig(agentContext),
+      // FIXME: will break if using url but no type metadata
+      // https://github.com/openwallet-foundation/sd-jwt-js/issues/258
+      // loadTypeMetadataFormat: false,
+    })
 
     const verificationResult: VerificationResult = {
       isValid: false,
     }
 
     let sdJwtVc: SDJwt
+    let _error: Error | undefined = undefined
 
     try {
       sdJwtVc = await sdjwt.decode(compactSdJwtVc)
@@ -224,7 +225,7 @@ export class SdJwtVcService {
       payload: sdJwtVc.jwt.payload as Payload,
       header: sdJwtVc.jwt.header as Header,
       compact: compactSdJwtVc,
-      prettyClaims: await sdJwtVc.getClaims(this.hasher),
+      prettyClaims: await sdJwtVc.getClaims(sdJwtVcHasher),
     } satisfies SdJwtVc<Header, Payload>
 
     try {
@@ -247,26 +248,18 @@ export class SdJwtVcService {
         verificationResult.areRequiredClaimsIncluded = true
         verificationResult.isStatusValid = true
       } catch (error) {
-        return {
-          verification: verificationResult,
-          error,
-          isValid: false,
-          sdJwtVc: returnSdJwtVc,
-        }
+        _error = error
+        verificationResult.isSignatureValid = false
+        verificationResult.areRequiredClaimsIncluded = false
+        verificationResult.isStatusValid = false
       }
 
       try {
         JwtPayload.fromJson(returnSdJwtVc.payload).validate()
         verificationResult.isValidJwtPayload = true
       } catch (error) {
+        _error = error
         verificationResult.isValidJwtPayload = false
-
-        return {
-          isValid: false,
-          error,
-          verification: verificationResult,
-          sdJwtVc: returnSdJwtVc,
-        }
       }
 
       // If keyBinding is present, verify the key binding
@@ -290,16 +283,28 @@ export class SdJwtVcService {
           verificationResult.containsRequiredVcProperties = true
         }
       } catch (error) {
+        _error = error
         verificationResult.isKeyBindingValid = false
         verificationResult.containsExpectedKeyBinding = false
-        verificationResult.isValid = false
+        verificationResult.containsRequiredVcProperties = false
+      }
 
-        return {
-          isValid: false,
-          error,
-          verification: verificationResult,
-          sdJwtVc: returnSdJwtVc,
+      try {
+        const vct = returnSdJwtVc.payload?.vct
+        if (fetchTypeMetadata && typeof vct === 'string' && vct.startsWith('https://')) {
+          // modify the uri based on https://www.ietf.org/archive/id/draft-ietf-oauth-sd-jwt-vc-04.html#section-6.3.1
+          const vctElements = vct.split('/')
+          vctElements.splice(3, 0, '.well-known/vct')
+          const vctUrl = vctElements.join('/')
+
+          const response = await agentContext.config.agentDependencies.fetch(vctUrl)
+          if (response.ok) {
+            const typeMetadata = await response.json()
+            returnSdJwtVc.typeMetadata = typeMetadata as SdJwtVcTypeMetadata
+          }
         }
+      } catch (error) {
+        // we allow vct without type metadata for now
       }
     } catch (error) {
       verificationResult.isValid = false
@@ -311,7 +316,19 @@ export class SdJwtVcService {
       }
     }
 
-    verificationResult.isValid = true
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { isValid: _, ...allVerifications } = verificationResult
+    verificationResult.isValid = Object.values(allVerifications).every((verification) => verification === true)
+
+    if (_error) {
+      return {
+        isValid: false,
+        error: _error,
+        sdJwtVc: returnSdJwtVc,
+        verification: verificationResult,
+      }
+    }
+
     return {
       isValid: true,
       verification: verificationResult,
@@ -595,14 +612,10 @@ export class SdJwtVcService {
 
   private getBaseSdJwtConfig(agentContext: AgentContext): SdJwtVcConfig {
     return {
-      hasher: this.hasher,
+      hasher: sdJwtVcHasher,
       statusListFetcher: this.getStatusListFetcher(agentContext),
       saltGenerator: agentContext.wallet.generateNonce,
     }
-  }
-
-  private get hasher(): HasherSync {
-    return Hasher.hash
   }
 
   private getStatusListFetcher(agentContext: AgentContext) {

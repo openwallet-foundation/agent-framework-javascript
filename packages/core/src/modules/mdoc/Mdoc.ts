@@ -80,18 +80,28 @@ export class Mdoc {
       throw new MdocError(`Cannot get 'device-namespaces from a IssuerSignedDocument. Must be a DeviceSignedDocument.`)
     }
 
-    return this.issuerSignedDocument.allDeviceSignedNamespaces
+    return Object.fromEntries(
+      Array.from(this.issuerSignedDocument.allDeviceSignedNamespaces.entries()).map(([namespace, value]) => [
+        namespace,
+        Object.fromEntries(Array.from(value.entries())),
+      ])
+    )
   }
 
   public get issuerSignedNamespaces(): MdocNameSpaces {
-    return this.issuerSignedDocument.allIssuerSignedNamespaces
+    return Object.fromEntries(
+      Array.from(this.issuerSignedDocument.allIssuerSignedNamespaces.entries()).map(([namespace, value]) => [
+        namespace,
+        Object.fromEntries(Array.from(value.entries())),
+      ])
+    )
   }
 
   public static async sign(agentContext: AgentContext, options: MdocSignOptions) {
     const { docType, validityInfo, namespaces, holderKey, issuerCertificate } = options
     const mdocContext = getMdocContext(agentContext)
 
-    const holderPublicJwk = await getJwkFromKey(holderKey)
+    const holderPublicJwk = getJwkFromKey(holderKey)
     const document = new Document(docType, mdocContext)
       .useDigestAlgorithm('SHA-256')
       .addValidityInfo(validityInfo)

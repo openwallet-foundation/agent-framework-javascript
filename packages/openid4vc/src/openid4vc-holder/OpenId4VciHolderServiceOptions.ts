@@ -1,5 +1,6 @@
 import type {
   OpenId4VcCredentialHolderBinding,
+  OpenId4VciAccessTokenResponse,
   OpenId4VciCredentialConfigurationsSupportedWithFormats,
 } from '../shared'
 import type { CredentialOfferObject, IssuerMetadataResult } from '@animo-id/oid4vci'
@@ -43,6 +44,8 @@ export type OpenId4VciRequestTokenResponse = {
   accessToken: string
   cNonce?: string
   dpop?: OpenId4VciDpopRequestOptions
+
+  accessTokenResponse: OpenId4VciAccessTokenResponse
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

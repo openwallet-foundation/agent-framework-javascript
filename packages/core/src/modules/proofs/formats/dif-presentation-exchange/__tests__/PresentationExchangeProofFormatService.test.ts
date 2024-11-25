@@ -2,7 +2,7 @@ import type { DifPresentationExchangeDefinitionV1 } from '../../../../dif-presen
 import type { ProofFormatService } from '../../ProofFormatService'
 import type { DifPresentationExchangeProofFormat } from '../DifPresentationExchangeProofFormat'
 
-import { PresentationSubmissionLocation } from '@sphereon/pex'
+import { PresentationSubmissionLocation } from '@animo-id/pex'
 
 import { getInMemoryAgentOptions } from '../../../../../../tests'
 import { Agent } from '../../../../../agent/Agent'

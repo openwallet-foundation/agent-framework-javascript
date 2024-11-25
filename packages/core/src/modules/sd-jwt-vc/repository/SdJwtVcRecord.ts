@@ -1,5 +1,7 @@
 import type { TagsBase } from '../../../storage/BaseRecord'
 import type { Constructable } from '../../../utils/mixins'
+import type { SdJwtVc } from '../SdJwtVcService'
+import type { SdJwtVcTypeMetadata } from '../typeMetadata'
 
 import { decodeSdJwtSync } from '@sd-jwt/decode'
 
@@ -7,6 +9,7 @@ import { Hasher, type JwaSignatureAlgorithm } from '../../../crypto'
 import { BaseRecord } from '../../../storage/BaseRecord'
 import { JsonTransformer } from '../../../utils'
 import { uuid } from '../../../utils/uuid'
+import { decodeSdJwtVc } from '../decodeSdJwtVc'
 
 export type DefaultSdJwtVcRecordTags = {
   vct: string
@@ -27,6 +30,8 @@ export type SdJwtVcRecordStorageProps = {
   createdAt?: Date
   tags?: TagsBase
   compactSdJwtVc: string
+
+  typeMetadata?: SdJwtVcTypeMetadata
 }
 
 export class SdJwtVcRecord extends BaseRecord<DefaultSdJwtVcRecordTags> {
@@ -36,8 +41,8 @@ export class SdJwtVcRecord extends BaseRecord<DefaultSdJwtVcRecordTags> {
   // We store the sdJwtVc in compact format.
   public compactSdJwtVc!: string
 
-  // TODO: should we also store the pretty claims so it's not needed to
-  // re-calculate the hashes each time? I think for now it's fine to re-calculate
+  public typeMetadata?: SdJwtVcTypeMetadata
+
   public constructor(props: SdJwtVcRecordStorageProps) {
     super()
 
@@ -45,8 +50,13 @@ export class SdJwtVcRecord extends BaseRecord<DefaultSdJwtVcRecordTags> {
       this.id = props.id ?? uuid()
       this.createdAt = props.createdAt ?? new Date()
       this.compactSdJwtVc = props.compactSdJwtVc
+      this.typeMetadata = props.typeMetadata
       this._tags = props.tags ?? {}
     }
+  }
+
+  public get sdJwtVc(): SdJwtVc {
+    return decodeSdJwtVc(this.compactSdJwtVc, this.typeMetadata)
   }
 
   public getTags() {
