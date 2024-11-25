@@ -4,6 +4,7 @@ import { BasicMessagesModule } from '../../modules/basic-messages'
 import { CacheModule } from '../../modules/cache'
 import { ConnectionsModule } from '../../modules/connections'
 import { CredentialsModule } from '../../modules/credentials'
+import { DcqlModule } from '../../modules/dcql'
 import { DidsModule } from '../../modules/dids'
 import { DifPresentationExchangeModule } from '../../modules/dif-presentation-exchange'
 import { DiscoverFeaturesModule } from '../../modules/discover-features'
@@ -67,6 +68,7 @@ describe('AgentModules', () => {
         messagePickup: expect.any(MessagePickupModule),
         basicMessages: expect.any(BasicMessagesModule),
         pex: expect.any(DifPresentationExchangeModule),
+        dcql: expect.any(DcqlModule),
         genericRecords: expect.any(GenericRecordsModule),
         discovery: expect.any(DiscoverFeaturesModule),
         dids: expect.any(DidsModule),
@@ -95,6 +97,7 @@ describe('AgentModules', () => {
         messagePickup: expect.any(MessagePickupModule),
         basicMessages: expect.any(BasicMessagesModule),
         pex: expect.any(DifPresentationExchangeModule),
+        dcql: expect.any(DcqlModule),
         genericRecords: expect.any(GenericRecordsModule),
         discovery: expect.any(DiscoverFeaturesModule),
         dids: expect.any(DidsModule),
@@ -126,6 +129,7 @@ describe('AgentModules', () => {
         messagePickup: expect.any(MessagePickupModule),
         basicMessages: expect.any(BasicMessagesModule),
         pex: expect.any(DifPresentationExchangeModule),
+        dcql: expect.any(DcqlModule),
         genericRecords: expect.any(GenericRecordsModule),
         discovery: expect.any(DiscoverFeaturesModule),
         dids: expect.any(DidsModule),

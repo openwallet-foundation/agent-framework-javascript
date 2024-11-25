@@ -27,12 +27,11 @@
   },
   "dependencies": {
     "@credo-ts/core": "workspace:*",
-    "@sphereon/did-auth-siop": "0.16.1-fix.173",
+    "@sphereon/did-auth-siop": "link:/../../../CODE/OID4VC/packages/siop-oid4vp",
     "@sphereon/oid4vc-common": "0.16.1-fix.173",
     "@sphereon/ssi-types": "0.30.2-next.135",
     "class-transformer": "^0.5.1",
     "rxjs": "^7.8.0",
-    "zod": "^3.23.8",
     "@animo-id/oid4vci": "0.1.4",
     "@animo-id/oauth2": "0.1.4"
   },

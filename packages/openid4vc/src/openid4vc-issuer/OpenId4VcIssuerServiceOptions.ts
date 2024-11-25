@@ -1,6 +1,7 @@
 import type { OpenId4VcIssuanceSessionRecord, OpenId4VcIssuerRecordProps } from './repository'
 import type {
   OpenId4VcSiopCreateAuthorizationRequestReturn,
+  OpenId4VcSiopVerifiedAuthorizationResponseDcql,
   OpenId4VcSiopVerifiedAuthorizationResponsePresentationExchange,
   OpenId4VcVerificationSessionRecord,
 } from '../openid4vc-verifier'
@@ -188,8 +189,16 @@ export interface OpenId4VciCredentialRequestToCredentialMapperOptions {
    */
   verification?: {
     session: OpenId4VcVerificationSessionRecord
-    presentationExchange: OpenId4VcSiopVerifiedAuthorizationResponsePresentationExchange
-  }
+  } & (
+    | {
+        presentationExchange: OpenId4VcSiopVerifiedAuthorizationResponsePresentationExchange
+        dcql?: never
+      }
+    | {
+        dcql: OpenId4VcSiopVerifiedAuthorizationResponseDcql
+        presentationExchange?: never
+      }
+  )
 
   /**
    * The issuance session associated with the credential request. You can extract the

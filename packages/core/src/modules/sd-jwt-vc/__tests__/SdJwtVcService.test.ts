@@ -17,6 +17,7 @@ import {
   expiredSdJwtVc,
   funkeX509,
   notBeforeInFutureSdJwtVc,
+  sdJwtVcPid,
   sdJwtVcWithSingleDisclosure,
   sdJwtVcWithSingleDisclosurePresentation,
   signatureInvalidSdJwtVc,
@@ -663,6 +664,39 @@ describe('SdJwtVcService', () => {
         cnf: {
           jwk: jwkJsonWithoutUse(getJwkFromKey(holderKey)),
         },
+      })
+    })
+  })
+
+  describe('SdJwtVcService.applyDisclosuresForPayload', () => {
+    test('Applies disclosures for given payload', async () => {
+      const presentation = sdJwtVcService.applyDisclosuresForPayload(sdJwtVcPid, {
+        given_name: 'ERIKA',
+        birthdate: '1964-08-12',
+        family_name: 'MUSTERMANN',
+      })
+
+      expect(presentation.prettyClaims).toStrictEqual({
+        place_of_birth: {},
+        address: {},
+        issuing_country: 'DE',
+        vct: 'https://example.bmi.bund.de/credential/pid/1.0',
+        issuing_authority: 'DE',
+        iss: 'https://demo.pid-issuer.bundesdruckerei.de/c1',
+        cnf: {
+          jwk: {
+            kty: 'EC',
+            crv: 'P-256',
+            x: 'NeX_ZniwxDOJD_Kyqf678V-Yx3f3-DZ0yD9XerpFmcc',
+            y: 'gpo5H0zWaPM9yc7M2rex4IZ6Geb9J2842T3t6X8frAM',
+          },
+        },
+        exp: 1733709514,
+        iat: 1732499914,
+        age_equal_or_over: {},
+        given_name: 'ERIKA',
+        birthdate: '1964-08-12',
+        family_name: 'MUSTERMANN',
       })
     })
   })

@@ -26,6 +26,7 @@
   },
   "dependencies": {
     "@digitalcredentials/jsonld": "^6.0.0",
+    "dcql": "^0.2.16",
     "@digitalcredentials/jsonld-signatures": "^9.4.0",
     "@digitalcredentials/vc": "^6.0.1",
     "@multiformats/base-x": "^4.0.1",
@@ -37,6 +38,7 @@
     "@peculiar/x509": "^1.11.0",
     "@animo-id/mdoc": "0.2.39",
     "@sd-jwt/core": "^0.7.0",
+    "@sd-jwt/present": "^0.7.0",
     "@sd-jwt/decode": "^0.7.0",
     "@sd-jwt/jwt-status-list": "^0.7.0",
     "@sd-jwt/sd-jwt-vc": "^0.7.0",

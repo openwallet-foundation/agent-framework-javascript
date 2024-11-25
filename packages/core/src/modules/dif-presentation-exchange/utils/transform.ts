@@ -1,5 +1,7 @@
 import type { AgentContext } from '../../../agent'
+import type { MdocRecord } from '../../mdoc'
 import type { SdJwtVcRecord } from '../../sd-jwt-vc'
+import type { W3cCredentialRecord } from '../../vc'
 import type { W3cJsonPresentation } from '../../vc/models/presentation/W3cJsonPresentation'
 import type { VerifiablePresentation } from '../models'
 import type {
@@ -10,35 +12,20 @@ import type {
 
 import { Jwt } from '../../../crypto'
 import { JsonTransformer } from '../../../utils'
-import { MdocDeviceResponse, MdocRecord } from '../../mdoc'
+import { MdocDeviceResponse } from '../../mdoc'
 import { SdJwtVcApi } from '../../sd-jwt-vc'
-import { W3cCredentialRecord, W3cJsonLdVerifiablePresentation, W3cJwtVerifiablePresentation } from '../../vc'
+import { W3cJsonLdVerifiablePresentation, W3cJwtVerifiablePresentation } from '../../vc'
 
 export function getSphereonOriginalVerifiableCredential(
   credentialRecord: W3cCredentialRecord | SdJwtVcRecord | MdocRecord
 ): SphereonOriginalVerifiableCredential {
-  if (credentialRecord instanceof W3cCredentialRecord) {
-    return credentialRecord.credential.encoded as SphereonOriginalVerifiableCredential
-  } else if (credentialRecord instanceof MdocRecord) {
-    return credentialRecord.base64Url
-  } else {
-    return credentialRecord.compactSdJwtVc
-  }
+  return credentialRecord.encoded as SphereonOriginalVerifiableCredential
 }
 
 export function getSphereonOriginalVerifiablePresentation(
   verifiablePresentation: VerifiablePresentation
 ): SphereonOriginalVerifiablePresentation {
-  if (
-    verifiablePresentation instanceof W3cJwtVerifiablePresentation ||
-    verifiablePresentation instanceof W3cJsonLdVerifiablePresentation
-  ) {
-    return verifiablePresentation.encoded as SphereonOriginalVerifiablePresentation
-  } else if (verifiablePresentation instanceof MdocDeviceResponse) {
-    return verifiablePresentation.base64Url
-  } else {
-    return verifiablePresentation.compact
-  }
+  return verifiablePresentation.encoded as SphereonOriginalVerifiablePresentation
 }
 
 // TODO: we might want to move this to some generic vc transformation util

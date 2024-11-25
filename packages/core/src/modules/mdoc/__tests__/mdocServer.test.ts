@@ -25,6 +25,13 @@ describe('mdoc service test', () => {
     expect(mdoc.alg).toBe('ES256')
   })
 
+  test('can get device key', async () => {
+    const mdoc = Mdoc.fromBase64Url(sprindFunkeTestVectorBase64Url)
+    const deviceKey = mdoc.deviceKey
+    expect(deviceKey?.keyType).toBe(KeyType.P256)
+    expect(deviceKey?.fingerprint).toBe('zDnaeq8nbXthvXNTYAzxdyvdWXgm5ev5xLEUtjZpfj1YtQ5g2')
+  })
+
   test('can get doctype', async () => {
     const mdoc = Mdoc.fromBase64Url(sprindFunkeTestVectorBase64Url)
     expect(mdoc.docType).toBe('eu.europa.ec.eudi.pid.1')

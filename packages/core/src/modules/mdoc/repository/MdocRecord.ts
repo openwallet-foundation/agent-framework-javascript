@@ -40,6 +40,20 @@ export class MdocRecord extends BaseRecord<DefaultMdocRecordTags> {
     }
   }
 
+  /**
+   * credential is convenience method added to all credential records
+   */
+  public get credential(): Mdoc {
+    return Mdoc.fromBase64Url(this.base64Url)
+  }
+
+  /**
+   * encoded is convenience method added to all credential records
+   */
+  public get encoded(): string {
+    return this.base64Url
+  }
+
   public getTags() {
     const mdoc = Mdoc.fromBase64Url(this.base64Url)
     const docType = mdoc.docType

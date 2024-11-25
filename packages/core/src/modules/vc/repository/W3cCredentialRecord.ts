@@ -43,6 +43,13 @@ export class W3cCredentialRecord extends BaseRecord<DefaultW3cCredentialTags, Cu
   @W3cVerifiableCredentialTransformer()
   public credential!: W3cVerifiableCredential
 
+  /**
+   * encoded is convenience method added to all credential records
+   */
+  public get encoded() {
+    return this.credential.encoded
+  }
+
   public constructor(props: W3cCredentialRecordOptions) {
     super()
     if (props) {

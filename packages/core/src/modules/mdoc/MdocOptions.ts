@@ -32,6 +32,20 @@ export type MdocDeviceResponseOpenId4VpOptions = {
   sessionTranscriptOptions: MdocOpenId4VpSessionTranscriptOptions
 }
 
+export type MdocDocRequest = {
+  itemsRequestData: {
+    docType: string
+    nameSpaces: Record<string, Record<string, boolean>>
+  }
+}
+
+export type MdocDcqlDeviceResponseOpenId4VpOptions = {
+  mdoc: Mdoc
+  docRequest: MdocDocRequest
+  deviceNameSpaces?: MdocNameSpaces
+  sessionTranscriptOptions: MdocOpenId4VpSessionTranscriptOptions
+}
+
 export type MdocDeviceResponseVerifyOptions = {
   trustedCertificates?: [string, ...string[]]
   sessionTranscriptOptions: MdocOpenId4VpSessionTranscriptOptions

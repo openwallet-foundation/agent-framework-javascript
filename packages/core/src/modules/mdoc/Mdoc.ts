@@ -1,8 +1,10 @@
 import type { MdocSignOptions, MdocNameSpaces, MdocVerifyOptions } from './MdocOptions'
 import type { AgentContext } from '../../agent'
+import type { JwkJson, Key } from '../../crypto'
 import type { IssuerSignedDocument } from '@animo-id/mdoc'
 
 import {
+  COSEKey,
   DeviceSignedDocument,
   Document,
   Verifier,
@@ -11,7 +13,8 @@ import {
   parseIssuerSigned,
 } from '@animo-id/mdoc'
 
-import { getJwkFromKey, JwaSignatureAlgorithm } from '../../crypto'
+import { getJwkFromJson, getJwkFromKey, JwaSignatureAlgorithm } from '../../crypto'
+import { ClaimFormat } from '../vc'
 import { X509Certificate, X509ModuleConfig } from '../x509'
 
 import { TypedArrayEncoder } from './../../utils'
@@ -27,6 +30,20 @@ export class Mdoc {
   private constructor(private issuerSignedDocument: IssuerSignedDocument) {
     const issuerSigned = issuerSignedDocument.prepare().get('issuerSigned')
     this.base64Url = TypedArrayEncoder.toBase64URL(cborEncode(issuerSigned))
+  }
+
+  /**
+   * claim format is convenience method added to all credential instances
+   */
+  public get claimFormat() {
+    return ClaimFormat.MsoMdoc as const
+  }
+
+  /**
+   * Encoded is convenience method added to all credential instances
+   */
+  public get encoded() {
+    return this.base64Url
   }
 
   public static fromBase64Url(mdocBase64Url: string, expectedDocType?: string): Mdoc {
@@ -58,6 +75,16 @@ export class Mdoc {
 
   public get docType(): string {
     return this.issuerSignedDocument.docType
+  }
+
+  /**
+   * Get the device key to which the mdoc is bound
+   */
+  public get deviceKey(): Key | null {
+    const deviceKeyRaw = this.issuerSignedDocument.issuerSigned.issuerAuth.decodedPayload.deviceKeyInfo?.deviceKey
+    if (!deviceKeyRaw) return null
+
+    return getJwkFromJson(COSEKey.import(deviceKeyRaw).toJWK() as JwkJson).key
   }
 
   public get alg(): JwaSignatureAlgorithm {

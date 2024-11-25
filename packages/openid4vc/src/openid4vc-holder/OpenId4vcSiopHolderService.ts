@@ -7,6 +7,7 @@ import type { AgentContext, JwkJson, VerifiablePresentation } from '@credo-ts/co
 import type {
   AuthorizationResponsePayload,
   PresentationExchangeResponseOpts,
+  DcqlQueryResponseOpts,
   RequestObjectPayload,
   VerifiedAuthorizationRequest,
 } from '@sphereon/did-auth-siop'
@@ -26,6 +27,7 @@ import {
   injectable,
   parseDid,
   MdocDeviceResponse,
+  DcqlService,
 } from '@credo-ts/core'
 import { OP, ResponseIss, ResponseMode, ResponseType, SupportedVersion, VPTokenLocation } from '@sphereon/did-auth-siop'
 
@@ -34,7 +36,10 @@ import { getCreateJwtCallback, getVerifyJwtCallback, openIdTokenIssuerToJwtIssue
 
 @injectable()
 export class OpenId4VcSiopHolderService {
-  public constructor(private presentationExchangeService: DifPresentationExchangeService) {}
+  public constructor(
+    private presentationExchangeService: DifPresentationExchangeService,
+    private dcqlService: DcqlService
+  ) {}
 
   public async resolveAuthorizationRequest(
     agentContext: AgentContext,
@@ -58,6 +63,7 @@ export class OpenId4VcSiopHolderService {
     }
 
     const presentationDefinition = verifiedAuthorizationRequest.presentationDefinitions?.[0]?.definition
+    const dcqlQuery = verifiedAuthorizationRequest.dcqlQuery
 
     return {
       authorizationRequest: verifiedAuthorizationRequest,
@@ -72,6 +78,12 @@ export class OpenId4VcSiopHolderService {
             ),
           }
         : undefined,
+
+      dcql: dcqlQuery
+        ? {
+            queryResult: await this.dcqlService.getCredentialsForRequest(agentContext, dcqlQuery),
+          }
+        : undefined,
     }
   }
 
@@ -79,21 +91,18 @@ export class OpenId4VcSiopHolderService {
     agentContext: AgentContext,
     options: OpenId4VcSiopAcceptAuthorizationRequestOptions
   ) {
-    const { authorizationRequest, presentationExchange } = options
+    const { authorizationRequest, presentationExchange, dcql } = options
     let openIdTokenIssuer = options.openIdTokenIssuer
     let presentationExchangeOptions: PresentationExchangeResponseOpts | undefined = undefined
+    let dcqlOptions: DcqlQueryResponseOpts | undefined = undefined
 
     const wantsIdToken = await authorizationRequest.authorizationRequest.containsResponseType(ResponseType.ID_TOKEN)
     const authorizationResponseNonce = await agentContext.wallet.generateNonce()
 
-    // Handle presentation exchange part
-    if (authorizationRequest.presentationDefinitions && authorizationRequest.presentationDefinitions.length > 0) {
-      if (!presentationExchange) {
-        throw new CredoError(
-          'Authorization request included presentation definition. `presentationExchange` MUST be supplied to accept authorization requests.'
-        )
-      }
-
+    if (
+      (authorizationRequest.presentationDefinitions && authorizationRequest.presentationDefinitions.length > 0) ||
+      authorizationRequest.dcqlQuery
+    ) {
       const nonce = await authorizationRequest.authorizationRequest.getMergedProperty<string>('nonce')
       if (!nonce) {
         throw new CredoError("Unable to extract 'nonce' from authorization request")
@@ -111,32 +120,75 @@ export class OpenId4VcSiopHolderService {
         throw new CredoError("Unable to extract 'response_uri' from authorization request")
       }
 
-      const { verifiablePresentations, presentationSubmission } =
-        await this.presentationExchangeService.createPresentation(agentContext, {
-          credentialsForInputDescriptor: presentationExchange.credentials,
-          presentationDefinition: authorizationRequest.presentationDefinitions[0].definition,
+      if (authorizationRequest.dcqlQuery) {
+        if (!dcql) {
+          throw new CredoError(
+            'Authorization request included dcql query. `dcql` MUST be supplied to accept authorization requests.'
+          )
+        }
+
+        const dcqlPresentation = await this.dcqlService.createPresentation(agentContext, {
+          credentialQueryToCredential: dcql.credentials,
           challenge: nonce,
           domain: clientId,
-          presentationSubmissionLocation: DifPresentationExchangeSubmissionLocation.EXTERNAL,
           openid4vp: {
             mdocGeneratedNonce: authorizationResponseNonce,
             responseUri,
           },
         })
 
-      presentationExchangeOptions = {
-        verifiablePresentations: verifiablePresentations.map((vp) => getSphereonVerifiablePresentation(vp)),
-        presentationSubmission,
-        vpTokenLocation: VPTokenLocation.AUTHORIZATION_RESPONSE,
-      }
+        dcqlOptions = {
+          dcqlPresentation: this.dcqlService.getEncodedPresentations(dcqlPresentation),
+        }
 
-      if (wantsIdToken && !openIdTokenIssuer) {
-        openIdTokenIssuer = this.getOpenIdTokenIssuerFromVerifiablePresentation(verifiablePresentations[0])
+        if (wantsIdToken && !openIdTokenIssuer) {
+          const nonMdocPresentation = Object.values(dcqlPresentation).find(
+            (presentation) => presentation instanceof MdocDeviceResponse === false
+          )
+
+          if (nonMdocPresentation) {
+            openIdTokenIssuer = this.getOpenIdTokenIssuerFromVerifiablePresentation(nonMdocPresentation)
+          }
+        }
+      } else if (
+        authorizationRequest.presentationDefinitions &&
+        authorizationRequest.presentationDefinitions.length > 0
+      ) {
+        if (!presentationExchange) {
+          throw new CredoError(
+            'Authorization request included presentation definition. `presentationExchange` MUST be supplied to accept authorization requests.'
+          )
+        }
+
+        const { verifiablePresentations, presentationSubmission } =
+          await this.presentationExchangeService.createPresentation(agentContext, {
+            credentialsForInputDescriptor: presentationExchange.credentials,
+            presentationDefinition: authorizationRequest.presentationDefinitions[0].definition,
+            challenge: nonce,
+            domain: clientId,
+            presentationSubmissionLocation: DifPresentationExchangeSubmissionLocation.EXTERNAL,
+            openid4vp: {
+              mdocGeneratedNonce: authorizationResponseNonce,
+              responseUri,
+            },
+          })
+
+        if (wantsIdToken && !openIdTokenIssuer) {
+          openIdTokenIssuer = this.getOpenIdTokenIssuerFromVerifiablePresentation(verifiablePresentations[0])
+        }
+
+        presentationExchangeOptions = {
+          verifiablePresentations: verifiablePresentations.map((vp) => getSphereonVerifiablePresentation(vp)),
+          presentationSubmission,
+          vpTokenLocation: VPTokenLocation.AUTHORIZATION_RESPONSE,
+        }
       }
     } else if (options.presentationExchange) {
       throw new CredoError(
         '`presentationExchange` was supplied, but no presentation definition was found in the presentation request.'
       )
+    } else if (options.dcql) {
+      throw new CredoError('`dcql` was supplied, but no dcql_query was found in the presentation request.')
     }
 
     if (wantsIdToken) {
@@ -160,6 +212,7 @@ export class OpenId4VcSiopHolderService {
       {
         jwtIssuer,
         presentationExchange: presentationExchangeOptions,
+        dcqlQuery: dcqlOptions,
         // https://openid.net/specs/openid-connect-self-issued-v2-1_0.html#name-aud-of-a-request-object
         audience: authorizationRequest.authorizationRequestPayload.client_id,
       }

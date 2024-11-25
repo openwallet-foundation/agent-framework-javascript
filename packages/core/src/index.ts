@@ -65,6 +65,7 @@ export * from './modules/cache'
 export * from './modules/dif-presentation-exchange'
 export * from './modules/sd-jwt-vc'
 export * from './modules/mdoc'
+export * from './modules/dcql'
 export {
   JsonEncoder,
   JsonTransformer,

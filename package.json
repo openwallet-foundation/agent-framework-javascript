@@ -71,7 +71,9 @@
   },
   "resolutions": {
     "@types/node": "18.18.8",
-    "undici": "^6.20.1"
+    "undici": "^6.20.1",
+    "@sphereon/jarm": "0.16.1-fix.173",
+    "@sphereon/oid4vc-common": "0.16.1-fix.173"
   },
   "engines": {
     "node": ">=18"

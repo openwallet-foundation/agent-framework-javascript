@@ -6,6 +6,7 @@ import { BasicMessagesModule } from '../modules/basic-messages'
 import { CacheModule } from '../modules/cache'
 import { ConnectionsModule } from '../modules/connections'
 import { CredentialsModule } from '../modules/credentials'
+import { DcqlModule } from '../modules/dcql'
 import { DidsModule } from '../modules/dids'
 import { DifPresentationExchangeModule } from '../modules/dif-presentation-exchange'
 import { DiscoverFeaturesModule } from '../modules/discover-features'
@@ -136,6 +137,7 @@ function getDefaultAgentModules() {
     w3cCredentials: () => new W3cCredentialsModule(),
     cache: () => new CacheModule(),
     pex: () => new DifPresentationExchangeModule(),
+    dcql: () => new DcqlModule(),
     sdJwtVc: () => new SdJwtVcModule(),
     x509: () => new X509Module(),
     mdoc: () => new MdocModule(),

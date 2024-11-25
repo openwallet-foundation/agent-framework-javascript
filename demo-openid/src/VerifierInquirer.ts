@@ -3,7 +3,7 @@ import { textSync } from 'figlet'
 
 import { BaseInquirer } from './BaseInquirer'
 import { Title, purpleText } from './OutputClass'
-import { Verifier, presentationDefinitions } from './Verifier'
+import { Verifier, dcqls, presentationDefinitions } from './Verifier'
 
 export const runVerifier = async () => {
   clear()
@@ -49,11 +49,15 @@ export class VerifierInquirer extends BaseInquirer {
   }
 
   public async createProofRequest() {
-    const presentationDefinitionId = await this.pickOne(presentationDefinitions.map((p) => p.id))
+    const presentationDefinitionId = await this.pickOne([
+      ...presentationDefinitions.map((p) => p.id),
+      ...dcqls.map((d) => d.id),
+    ])
     const presentationDefinition = presentationDefinitions.find((p) => p.id === presentationDefinitionId)
-    if (!presentationDefinition) throw new Error('No presentation definition found')
+    const dcql = dcqls.find((dcql) => dcql.id === presentationDefinitionId)?.dcql
+    if (!presentationDefinition && !dcql) throw new Error('No presentation definition found')
 
-    const proofRequest = await this.verifier.createProofRequest(presentationDefinition)
+    const proofRequest = await this.verifier.createProofRequest({ presentationDefinition, dcql })
 
     console.log(purpleText(`Proof request for the presentation of an ${presentationDefinitionId}.\n'${proofRequest}'`))
   }
