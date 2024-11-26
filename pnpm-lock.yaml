@@ -730,8 +730,8 @@ importers:
         specifier: workspace:*
         version: link:../core
       '@openid-federation/core':
-        specifier: 0.1.1-alpha.15
-        version: 0.1.1-alpha.15
+        specifier: 0.1.1-alpha.17
+        version: 0.1.1-alpha.17
       '@sphereon/did-auth-siop':
         specifier: 0.16.1-fix.173
         version: 0.16.1-fix.173(ts-node@10.9.2(@swc/core@1.7.40)(@types/node@18.18.8)(typescript@5.5.4))(typescript@5.5.4)
@@ -2689,8 +2689,8 @@ packages:
   '@open-draft/until@2.1.0':
     resolution: {integrity: sha512-U69T3ItWHvLwGg5eJ0n3I62nWuE6ilHlmz7zM0npLBRvPRd7e6NYmg54vvRtP5mZG7kZqZCFVdsTWo7BPtBujg==}
 
-  '@openid-federation/core@0.1.1-alpha.15':
-    resolution: {integrity: sha512-Q+GQfMpmP2zFtRdDFx6R9qBpyaWFlBVEZtbAEN9pA5H6AipuD90xZ25spAfBnQIsg3Q0QNhwjuI4kr/kbtJB4w==}
+  '@openid-federation/core@0.1.1-alpha.17':
+    resolution: {integrity: sha512-Bn5JaQzQnrQ2koPisiITHN69eOEewvs26EPyD4tp5XoR6Kdh9sy2f3w4hYV4MSaDwRorpRF7ttN6PGK1piMTng==}
 
   '@peculiar/asn1-cms@2.3.13':
     resolution: {integrity: sha512-joqu8A7KR2G85oLPq+vB+NFr2ro7Ls4ol13Zcse/giPSzUNN0n2k3v8kMpf6QdGUhI13e5SzQYN8AKP8sJ8v4w==}
@@ -10945,7 +10945,7 @@ snapshots:
 
   '@open-draft/until@2.1.0': {}
 
-  '@openid-federation/core@0.1.1-alpha.15':
+  '@openid-federation/core@0.1.1-alpha.17':
     dependencies:
       buffer: 6.0.3
       zod: 3.23.8
