@@ -626,6 +626,11 @@ export class OpenId4VcSiopVerifierService {
 
     if (clientIdScheme) {
       builder.withClientIdScheme(clientIdScheme)
+
+      if (clientIdScheme === 'entity_id') {
+        // @ts-expect-error - This is something in the new OIDVC package but is't used yet in this credo version
+        builder.withEntityId(clientId)
+      }
     }
 
     if (presentationDefinition) {
