@@ -22,7 +22,7 @@ const createRPRegistrationMetadataPayload = (opts: any): RPRegistrationMetadataP
     subject_types_supported: opts.subjectTypesSupported,
     subject_syntax_types_supported: opts.subject_syntax_types_supported || ['did:web:', 'did:ion:'],
     vp_formats: opts.vpFormatsSupported,
-    client_name: opts.clientName,
+    client_name: opts.client_name,
     logo_uri: opts.logo_uri,
     tos_uri: opts.tos_uri,
     client_purpose: opts.clientPurpose,
