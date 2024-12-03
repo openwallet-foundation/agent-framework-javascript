@@ -1,4 +1,4 @@
-import type { CredentialStatus } from './W3cJsonCredentialStatus'
+import type { W3cCredentialStatusOptions } from './status-list/W3cCredentialStatus'
 import type { JsonObject } from '../../../../types'
 import type { SingleOrArray } from '../../../../utils'
 
@@ -10,6 +10,6 @@ export interface W3cJsonCredential {
   issuanceDate: string
   expirationDate?: string
   credentialSubject: SingleOrArray<JsonObject>
-  credentialStatus?: SingleOrArray<CredentialStatus>
+  credentialStatus?: SingleOrArray<W3cCredentialStatusOptions>
   [key: string]: unknown
 }

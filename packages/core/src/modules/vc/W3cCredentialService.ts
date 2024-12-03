@@ -22,6 +22,7 @@ import type { Query, QueryOptions } from '../../storage/StorageService'
 import { CredoError } from '../../error'
 import { injectable } from '../../plugins'
 
+import { RevokeCredentialOption } from './W3cCredentialServiceOptions'
 import { CREDENTIALS_CONTEXT_V1_URL } from './constants'
 import { W3cJsonLdVerifiableCredential } from './data-integrity'
 import { W3cJsonLdCredentialService } from './data-integrity/W3cJsonLdCredentialService'
@@ -184,6 +185,35 @@ export class W3cCredentialService {
     await this.w3cCredentialRepository.save(agentContext, w3cCredentialRecord)
 
     return w3cCredentialRecord
+  }
+
+  /**
+   * Revoke a credential by issuer
+   * associated with the credential record.
+   *
+   * @param credentialRecordId The id of the credential record for which to revoke the credential
+   * @returns Revoke credential notification message
+   *
+   */
+  public async revokeCredential<Format extends ClaimFormat.JwtVp | ClaimFormat.LdpVp>(
+    agentContext: AgentContext,
+    options: RevokeCredentialOption
+  ) {
+    const credentialRecod = await this.getCredentialRecordById(agentContext, options.credentialRecordId)
+    if (!credentialRecod) {
+      throw new CredoError(`Credential with id ${options.credentialRecordId} not found`)
+    }
+    const tags = credentialRecod.getTags()
+
+    if (tags.claimFormat === ClaimFormat.JwtVc) {
+      const revoked = await this.w3cJwtCredentialService.revokeCredential(agentContext, options)
+      return revoked as unknown as W3cVerifiablePresentation<Format>
+    } else if (tags.claimFormat === ClaimFormat.LdpVc) {
+      const revoked = await this.w3cJsonLdCredentialService.revokeCredential(agentContext, options)
+      return revoked as unknown as W3cVerifiablePresentation<Format>
+    } else {
+      throw new CredoError(`Unsupported format in options. Format must be either 'jwt_vp' or 'ldp_vp'`)
+    }
   }
 
   public async removeCredentialRecord(agentContext: AgentContext, id: string) {

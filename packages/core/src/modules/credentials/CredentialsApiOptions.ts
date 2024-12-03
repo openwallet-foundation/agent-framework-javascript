@@ -173,28 +173,3 @@ export interface DeclineCredentialOfferOptions {
    */
   problemReportDescription?: string
 }
-
-/**
- * Interface for CredentialsApi.revokeCredential. revoke a jsonld credential by Issuer.
- */
-export interface RevokeCredentialOption {
-  credentialRecordId: string
-}
-
-export interface CredentialSubject {
-  id: string
-  type: string
-  encodedList: string
-  statusPurpose: string
-}
-
-export interface Credential {
-  credentialSubject: CredentialSubject
-}
-
-/**
- * Interface for bit string credential. Representing the bit string credential status.
- */
-export interface BitStringCredential {
-  credential: Credential
-}

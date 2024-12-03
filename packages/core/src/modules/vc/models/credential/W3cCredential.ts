@@ -13,9 +13,9 @@ import { CREDENTIALS_CONTEXT_V1_URL, VERIFIABLE_CREDENTIAL_TYPE } from '../../co
 import { IsCredentialJsonLdContext } from '../../validators'
 
 import { W3cCredentialSchema } from './W3cCredentialSchema'
-import { W3cCredentialStatus } from './W3cCredentialStatus'
 import { IsW3cCredentialSubject, W3cCredentialSubject, W3cCredentialSubjectTransformer } from './W3cCredentialSubject'
 import { IsW3cIssuer, W3cIssuer, W3cIssuerTransformer } from './W3cIssuer'
+import { W3cCredentialStatus } from './status-list/W3cCredentialStatus'
 
 export interface W3cCredentialOptions {
   context?: Array<string | JsonObject>

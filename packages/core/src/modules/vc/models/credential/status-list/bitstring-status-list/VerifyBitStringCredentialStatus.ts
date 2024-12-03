@@ -1,11 +1,10 @@
-import type { AgentContext } from '../../../agent/context'
-import type { W3cJsonCredential } from '../models/credential/W3cJsonCredential'
-import type { BitStringStatusListCredential } from '../models/credential/W3cJsonCredentialStatus'
+import type { BitStringStatusListCredentialStatus, BitStringStatusListCredential } from './BitStringStatusList'
+import type { AgentContext } from '../../../../../../agent/context'
 
 import * as pako from 'pako'
 
-import { CredoError } from '../../../error'
-import { validateStatus } from '../models/credential/W3cCredentialStatus'
+import { CredoError } from '../../../../../../error'
+import { validateStatus } from '../W3cCredentialStatus'
 
 // Function to fetch and parse the bit string status list credential
 const fetchBitStringStatusListCredential = async (
@@ -25,7 +24,10 @@ const fetchBitStringStatusListCredential = async (
   }
 }
 
-export const verifyBitStringCredentialStatus = async (credential: W3cJsonCredential, agentContext: AgentContext) => {
+export const verifyBitStringCredentialStatus = async (
+  credential: BitStringStatusListCredentialStatus,
+  agentContext: AgentContext
+) => {
   const { credentialStatus } = credential
 
   if (Array.isArray(credentialStatus)) {
@@ -50,7 +52,7 @@ export const verifyBitStringCredentialStatus = async (credential: W3cJsonCredent
   )
 
   // Decode the encoded bit string
-  const encodedBitString = bitStringStatusListCredential.credential.credentialSubject.encodedList
+  const encodedBitString = bitStringStatusListCredential.credentialSubject.encodedList
   const compressedBuffer = Uint8Array.from(atob(encodedBitString), (char) => char.charCodeAt(0))
 
   // Decompress the bit string using pako
