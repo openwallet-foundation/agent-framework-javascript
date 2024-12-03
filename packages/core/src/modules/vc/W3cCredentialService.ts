@@ -212,7 +212,7 @@ export class W3cCredentialService {
       const revoked = await this.w3cJsonLdCredentialService.revokeCredential(agentContext, options)
       return revoked as unknown as W3cVerifiablePresentation<Format>
     } else {
-      throw new CredoError(`Unsupported format in options. Format must be either 'jwt_vp' or 'ldp_vp'`)
+      throw new CredoError(`Unsupported format in options. Format must be either 'jwt_vc' or 'ldp_vc'`)
     }
   }
 
