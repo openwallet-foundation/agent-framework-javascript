@@ -24,8 +24,6 @@ import type { CredentialExchangeRecord } from './repository/CredentialExchangeRe
 import type { AgentMessage } from '../../agent/AgentMessage'
 import type { Query, QueryOptions } from '../../storage/StorageService'
 
-import * as pako from 'pako'
-
 import { AgentContext } from '../../agent'
 import { MessageSender } from '../../agent/MessageSender'
 import { getOutboundMessageContext } from '../../agent/getOutboundMessageContext'
@@ -34,7 +32,6 @@ import { CredoError } from '../../error'
 import { Logger } from '../../logger'
 import { inject, injectable } from '../../plugins'
 import { DidCommMessageRepository } from '../../storage/didcomm/DidCommMessageRepository'
-import { Buffer } from '../../utils'
 import { ConnectionService } from '../connections/services'
 import { RoutingService } from '../routing/services/RoutingService'
 
@@ -706,22 +703,5 @@ export class CredentialsApi<CPs extends CredentialProtocol[]> implements Credent
     const credentialExchangeRecord = await this.getById(credentialExchangeId)
 
     return this.getProtocol(credentialExchangeRecord.protocolVersion)
-  }
-
-  private async encodeBitString(bitString: string): Promise<string> {
-    // Convert the bitString to a Uint8Array
-    const buffer = new TextEncoder().encode(bitString)
-    const compressedBuffer = pako.gzip(buffer)
-    // Convert the compressed buffer to a base64 string
-    return Buffer.from(compressedBuffer).toString('base64')
-  }
-
-  private async decodeBitSting(bitString: string): Promise<string> {
-    // Decode base64 string to Uint8Array
-    const compressedBuffer = Uint8Array.from(atob(bitString), (c) => c.charCodeAt(0))
-
-    // Decompress using pako
-    const decompressedBuffer = pako.ungzip(compressedBuffer, { to: 'string' })
-    return decompressedBuffer
   }
 }
