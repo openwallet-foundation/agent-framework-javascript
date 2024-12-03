@@ -209,6 +209,6 @@ export interface StoreCredentialOptions {
 /**
  * Interface for W3cCredentialsApi.revokeCredential. revoke a w3c credential.
  */
-export interface RevokeCredentialOption {
+export interface RevokeCredentialOptions {
   credentialRecordId: string
 }

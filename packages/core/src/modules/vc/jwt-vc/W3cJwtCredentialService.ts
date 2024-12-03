@@ -2,7 +2,7 @@ import type { AgentContext } from '../../../agent/context'
 import type { VerifyJwsResult } from '../../../crypto/JwsService'
 import type { DidPurpose, VerificationMethod } from '../../dids'
 import type {
-  RevokeCredentialOption,
+  RevokeCredentialOptions,
   W3cJwtSignCredentialOptions,
   W3cJwtSignPresentationOptions,
   W3cJwtVerifyCredentialOptions,
@@ -542,7 +542,7 @@ export class W3cJwtCredentialService {
 
   // temporarily disable no unused var
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  public async revokeCredential(_agentContext: AgentContext, _options: RevokeCredentialOption) {
+  public async revokeCredential(_agentContext: AgentContext, _options: RevokeCredentialOptions) {
     // revoke jwt cred
     throw new CredoError(`Revocation support not implemented for jwtVc`)
   }

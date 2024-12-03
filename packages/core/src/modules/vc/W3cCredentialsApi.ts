@@ -1,5 +1,5 @@
 import type {
-  RevokeCredentialOption,
+  RevokeCredentialOptions,
   StoreCredentialOptions,
   W3cCreatePresentationOptions,
   W3cSignCredentialOptions,
@@ -49,7 +49,7 @@ export class W3cCredentialsApi {
 
   // Revoke Credential Methods
   public async revokeCredential(
-    options: RevokeCredentialOption
+    options: RevokeCredentialOptions
   ): Promise<W3cJwtVerifiablePresentation | W3cJsonLdVerifiablePresentation> {
     return this.w3cCredentialService.revokeCredential(this.agentContext, options)
   }

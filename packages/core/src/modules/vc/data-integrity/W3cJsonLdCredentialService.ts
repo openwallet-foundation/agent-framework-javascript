@@ -3,7 +3,7 @@ import type { AgentContext } from '../../../agent/context'
 import type { Key } from '../../../crypto/Key'
 import type { SingleOrArray } from '../../../utils'
 import type {
-  RevokeCredentialOption,
+  RevokeCredentialOptions,
   W3cJsonLdSignCredentialOptions,
   W3cJsonLdSignPresentationOptions,
   W3cJsonLdVerifyCredentialOptions,
@@ -334,7 +334,7 @@ export class W3cJsonLdCredentialService {
 
   // temporarily disable no unused var
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  public async revokeCredential(_agentContext: AgentContext, _options: RevokeCredentialOption) {
+  public async revokeCredential(_agentContext: AgentContext, _options: RevokeCredentialOptions) {
     // revoke jwt cred
     throw new CredoError(`Revocation support not implemented for JsonLd`)
   }
