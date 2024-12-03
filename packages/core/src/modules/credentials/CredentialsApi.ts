@@ -64,6 +64,7 @@ export interface CredentialsApi<CPs extends CredentialProtocol[]> {
 
   // Send Credential revocation notification Methods
   sendRevocationNotification(options: SendRevocationNotificationOptions): Promise<void>
+
   // out of band
   createOffer(options: CreateCredentialOfferOptions<CPs>): Promise<{
     message: AgentMessage

@@ -44,8 +44,6 @@ interface BaseOptions {
   goal?: string
 }
 
-export type JsonLdRevocationStatus = '0' | '1'
-
 /**
  * Interface for CredentialsApi.proposeCredential. Will send a proposal.
  */
