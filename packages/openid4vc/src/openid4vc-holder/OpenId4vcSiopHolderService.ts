@@ -1,8 +1,6 @@
 import type {
   OpenId4VcSiopAcceptAuthorizationRequestOptions,
   OpenId4VcSiopFetchEntityConfigurationOptions,
-  OpenId4VcSiopGetOpenIdProviderOptions,
-  OpenId4VcSiopResolveAuthorizationRequestOptions,
   OpenId4VcSiopResolvedAuthorizationRequest,
   OpenId4VcSiopResolveTrustChainsOptions,
 } from './OpenId4vcSiopHolderServiceOptions'
@@ -47,12 +45,9 @@ export class OpenId4VcSiopHolderService {
 
   public async resolveAuthorizationRequest(
     agentContext: AgentContext,
-    requestJwtOrUri: string,
-    options: OpenId4VcSiopResolveAuthorizationRequestOptions = {}
+    requestJwtOrUri: string
   ): Promise<OpenId4VcSiopResolvedAuthorizationRequest> {
-    const openidProvider = await this.getOpenIdProvider(agentContext, {
-      federation: options.federation,
-    })
+    const openidProvider = await this.getOpenIdProvider(agentContext)
 
     // parsing happens automatically in verifyAuthorizationRequest
     const verifiedAuthorizationRequest = await openidProvider.verifyAuthorizationRequest(requestJwtOrUri)
@@ -93,10 +88,14 @@ export class OpenId4VcSiopHolderService {
       if (!entityConfiguration) throw new CredoError(`Unable to fetch entity configuration for entityId '${clientId}'`)
 
       const openidRelyingPartyMetadata = entityConfiguration.metadata?.openid_relying_party
+
       // When the metadata is present in the federation we want to use that instead of what is passed with the request
       if (openidRelyingPartyMetadata) {
         verifiedAuthorizationRequest.authorizationRequestPayload.client_metadata = openidRelyingPartyMetadata
+        verifiedAuthorizationRequest.authorizationRequest.payload.client_metadata = openidRelyingPartyMetadata
       }
+
+      // TODO: Do we want to do something with the real chain of do we want to give the user the possibility to do that somewhere else with the risk of being forgotten or that it doesn't have enough information at that place?
     }
 
     return {
@@ -284,7 +283,7 @@ export class OpenId4VcSiopHolderService {
     } as const
   }
 
-  private async getOpenIdProvider(agentContext: AgentContext, options: OpenId4VcSiopGetOpenIdProviderOptions = {}) {
+  private async getOpenIdProvider(agentContext: AgentContext) {
     const builder = OP.builder()
       .withExpiresIn(6000)
       .withIssuer(ResponseIss.SELF_ISSUED_V2)
@@ -295,11 +294,7 @@ export class OpenId4VcSiopHolderService {
         SupportedVersion.SIOPv2_D12_OID4VP_D20,
       ])
       .withCreateJwtCallback(getCreateJwtCallback(agentContext))
-      .withVerifyJwtCallback(
-        getVerifyJwtCallback(agentContext, {
-          federation: options.federation,
-        })
-      )
+      .withVerifyJwtCallback(getVerifyJwtCallback(agentContext))
       .withHasher(Hasher.hash)
 
     const openidProvider = builder.build()

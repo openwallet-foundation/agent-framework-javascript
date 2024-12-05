@@ -16,7 +16,7 @@ import {
   getJwkFromKey,
   getKeyFromVerificationMethod,
 } from '@credo-ts/core'
-import { fetchEntityConfiguration, resolveTrustChains } from '@openid-federation/core'
+import { fetchEntityConfiguration } from '@openid-federation/core'
 
 /**
  * Returns the JWA Signature Algorithms that are supported by the wallet.
@@ -53,16 +53,7 @@ export async function getKeyFromDid(
   return getKeyFromVerificationMethod(verificationMethod)
 }
 
-type VerifyJwtCallbackOptions = {
-  federation?: {
-    trustedEntityIds?: string[]
-  }
-}
-
-export function getVerifyJwtCallback(
-  agentContext: AgentContext,
-  options: VerifyJwtCallbackOptions = {}
-): VerifyJwtCallback {
+export function getVerifyJwtCallback(agentContext: AgentContext): VerifyJwtCallback {
   const logger = agentContext.config.logger
 
   return async (jwtVerifier, jwt) => {
@@ -83,15 +74,9 @@ export function getVerifyJwtCallback(
 
     if (jwtVerifier.method === 'openid-federation') {
       const { entityId } = jwtVerifier
-      const trustedEntityIds = options.federation?.trustedEntityIds
-      if (!trustedEntityIds) {
-        logger.error('No trusted entity ids provided but is required for the "openid-federation" method.')
-        return false
-      }
 
-      const validTrustChains = await resolveTrustChains({
+      const entityConfiguration = await fetchEntityConfiguration({
         entityId,
-        trustAnchorEntityIds: trustedEntityIds,
         verifyJwtCallback: async ({ jwt, jwk }) => {
           const res = await jwsService.verifyJws(agentContext, {
             jws: jwt,
@@ -101,30 +86,27 @@ export function getVerifyJwtCallback(
           return res.isValid
         },
       })
-      // When the chain is already invalid we can return false immediately
-      if (validTrustChains.length === 0) {
-        logger.error(`${entityId} is not part of a trusted federation.`)
-        return false
-      }
 
-      // Pick the first valid trust chain for validation of the leaf entity jwks
-      const { leafEntityConfiguration } = validTrustChains[0]
-      // TODO: No support yet for signed jwks and external jwks
-      const rpSigningKeys = leafEntityConfiguration?.metadata?.openid_relying_party?.jwks?.keys
+      // TODO: Not really sure if we can use the kid of the jwt header for finding the federation key. And if it even has a kid in the jwt header.
+      const kid = jwt.header.kid
+      if (!kid) throw new CredoError('No kid found in the jwt header.')
+
+      const rpSigningKeys = entityConfiguration.metadata?.openid_relying_party?.jwks?.keys
       if (!rpSigningKeys || rpSigningKeys.length === 0)
         throw new CredoError('No rp signing keys found in the entity configuration.')
 
-      const res = await jwsService.verifyJws(agentContext, {
+      const jwk = rpSigningKeys.find((key) => key.kid === kid)
+      if (!jwk) throw new CredoError(`No rp signing key found in the entity configuration with kid: ${kid}.`)
+
+      const result = await jwsService.verifyJws(agentContext, {
         jws: jwt.raw,
-        jwkResolver: () => getJwkFromJson(rpSigningKeys[0]),
+        jwkResolver: () => getJwkFromJson(jwk),
       })
-      if (!res.isValid) {
+      if (!result.isValid) {
         logger.error(`${entityId} does not match the expected signing key.`)
       }
 
-      // TODO: There is no check yet for the policies
-
-      return res.isValid
+      return result.isValid
     }
 
     throw new Error(`Unsupported jwt verifier method: '${jwtVerifier.method}'`)

@@ -52,24 +52,6 @@ export interface OpenId4VcSiopAcceptAuthorizationRequestOptions {
   // TODO: Not sure if this also needs the federation because the validation of the authorization is already done with the ResolveAuthorizationRequest
 }
 
-export interface OpenId4VcSiopResolveAuthorizationRequestOptions {
-  federation?: {
-    /**
-     * The entity IDs of the trusted issuers.
-     */
-    trustedEntityIds?: string[]
-  }
-}
-
-export interface OpenId4VcSiopGetOpenIdProviderOptions {
-  federation?: {
-    /**
-     * The entity IDs of the trusted issuers.
-     */
-    trustedEntityIds?: string[]
-  }
-}
-
 export interface OpenId4VcSiopResolveTrustChainsOptions {
   entityId: string
   trustAnchorEntityIds: [string, ...string[]]
