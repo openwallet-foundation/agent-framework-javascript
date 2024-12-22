@@ -1,7 +1,7 @@
 import type { JsonObject } from '../../../../types'
 import type { SingleOrArray } from '../../../../utils'
 import type { W3cIssuerOptions } from '../../../vc/models/credential/W3cIssuer'
-import type { W3cCredentialStatusOptions } from '../../../vc/models/credential/status-list/W3cCredentialStatus'
+import type { W3cCredentialStatusOptions } from '../../../vc/models/credential/w3c-credential-status/W3cCredentialStatus'
 import type { CredentialFormat } from '../CredentialFormat'
 
 export interface JsonCredential {

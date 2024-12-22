@@ -19,7 +19,7 @@ import { asArray, JsonTransformer } from '../../../utils'
 import { VerificationMethod } from '../../dids'
 import { getKeyFromVerificationMethod } from '../../dids/domain/key-type'
 import { W3cCredentialsModuleConfig } from '../W3cCredentialsModuleConfig'
-import { validateStatus } from '../models/credential/status-list/W3cCredentialStatus'
+import { validateStatus } from '../models/credential/w3c-credential-status/W3cCredentialStatus'
 import { w3cDate } from '../util'
 
 import { SignatureSuiteRegistry } from './SignatureSuiteRegistry'

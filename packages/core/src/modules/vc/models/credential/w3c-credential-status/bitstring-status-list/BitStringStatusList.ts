@@ -1,7 +1,7 @@
 import { Type } from 'class-transformer'
 import { IsEnum, IsNumber, IsString } from 'class-validator'
 
-import { JsonLdCredentialDetail, W3cCredentialSubject } from '../../../../../../..'
+import { JsonLdCredentialDetail, W3cCredentialSubject } from '../../../../../..'
 import { W3cCredential } from '../../W3cCredential'
 import { W3cCredentialStatus } from '../W3cCredentialStatus'
 
