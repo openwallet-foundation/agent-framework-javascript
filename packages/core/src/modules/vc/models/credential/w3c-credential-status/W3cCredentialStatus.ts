@@ -1,13 +1,20 @@
 import { plainToInstance } from 'class-transformer'
-import { IsString, validateOrReject } from 'class-validator'
+import { IsEnum, IsString, validateOrReject } from 'class-validator'
 
 import { AgentContext } from '../../../../../agent/context'
 import { CredoError } from '../../../../../error'
 import { IsUri } from '../../../../../utils/validators'
 
+import { BitStringStatusListEntry } from './bitstring-status-list/BitStringStatusList'
+import { verifyBitStringCredentialStatus } from './bitstring-status-list/VerifyBitStringCredentialStatus'
+
 export interface W3cCredentialStatusOptions {
   id: string
   type: string
+}
+
+export enum W3cCredentialStatusSupportedTypes {
+  BitstringStatusListEntry = 'BitstringStatusListEntry',
 }
 
 export class W3cCredentialStatus {
@@ -23,6 +30,7 @@ export class W3cCredentialStatus {
   public id!: string
 
   @IsString()
+  @IsEnum(W3cCredentialStatusSupportedTypes, { message: 'Invalid credential status type' })
   public type!: string
 }
 
@@ -31,15 +39,43 @@ export const validateStatus = async (
   status: W3cCredentialStatus | W3cCredentialStatus[],
   agentContext: AgentContext
 ): Promise<boolean> => {
-  const entry = plainToInstance(W3cCredentialStatus, status)
+  let entry
+
+  if (Array.isArray(status)) {
+    agentContext.config.logger.debug('Credential status type is array')
+    throw new CredoError(
+      'Invalid credential status type. Currently only a single credentialStatus is supported per credential'
+    )
+  } else entry = status
+
+  switch (entry.type) {
+    case W3cCredentialStatusSupportedTypes.BitstringStatusListEntry:
+      agentContext.config.logger.debug('Credential status type is BitstringStatusListEntry')
+      entry = plainToInstance(BitStringStatusListEntry, entry)
+      break
+    default:
+      throw new CredoError(
+        `Invalid credential status type. Supported types are: ${Object.values(W3cCredentialStatusSupportedTypes).join(
+          ', '
+        )}`
+      )
+  }
 
   try {
     await validateOrReject(entry)
+    switch (entry.type) {
+      case W3cCredentialStatusSupportedTypes.BitstringStatusListEntry:
+        await verifyBitStringCredentialStatus(entry, agentContext)
+        break
+      default:
+        throw new CredoError(
+          `Invalid credential status type. Supported types are: ${Object.values(W3cCredentialStatusSupportedTypes).join(
+            ', '
+          )}`
+        )
+    }
     return true
   } catch (errors) {
-    agentContext.config.logger.debug(`Credential status validation failed: ${errors}`, {
-      stack: errors,
-    })
-    throw new CredoError(`Invalid credential status type: ${errors}`)
+    throw new CredoError(`Error while validating credential status`, errors)
   }
 }

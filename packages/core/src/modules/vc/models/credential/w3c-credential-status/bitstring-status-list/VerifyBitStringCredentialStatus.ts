@@ -1,10 +1,9 @@
-import type { BitStringStatusListCredentialStatus, BitStringStatusListCredential } from './BitStringStatusList'
+import type { BitStringStatusListCredential, BitStringStatusListEntry } from './BitStringStatusList'
 import type { AgentContext } from '../../../../../../agent/context'
 
 import * as pako from 'pako'
 
 import { CredoError } from '../../../../../../error'
-import { validateStatus } from '../W3cCredentialStatus'
 
 // Function to fetch and parse the bit string status list credential
 const fetchBitStringStatusListCredential = async (
@@ -14,7 +13,7 @@ const fetchBitStringStatusListCredential = async (
   const response = await agentContext.config.agentDependencies.fetch(url, { method: 'GET' })
 
   if (!response.ok) {
-    throw new CredoError(`Failed to fetch bit string status list. HTTP Status: ${response.status}`)
+    throw new CredoError(`Failed to fetch BitStringStatusListCredential status list. HTTP Status: ${response.status}`)
   }
 
   try {
@@ -25,24 +24,14 @@ const fetchBitStringStatusListCredential = async (
 }
 
 export const verifyBitStringCredentialStatus = async (
-  credential: BitStringStatusListCredentialStatus,
+  credentialStatus: BitStringStatusListEntry,
   agentContext: AgentContext
 ) => {
-  const { credentialStatus } = credential
-
   if (Array.isArray(credentialStatus)) {
-    throw new CredoError('Verifying credential status as an array for JSON-LD credentials is currently not supported')
-  }
-
-  if (!credentialStatus || credentialStatus.statusListIndex === undefined) {
-    throw new CredoError('Invalid credential status format')
-  }
-
-  // Validate credentialStatus using the class-based approach
-  const isValid = await validateStatus(credentialStatus, agentContext)
-
-  if (!isValid) {
-    throw new CredoError('Invalid credential status type. Expected BitstringStatusList')
+    agentContext.config.logger.debug('Credential status type is array')
+    throw new CredoError(
+      'Invalid credential status type. Currently only a single BitstringStatusListEntry is supported per credential'
+    )
   }
 
   // Fetch the bit string status list credential

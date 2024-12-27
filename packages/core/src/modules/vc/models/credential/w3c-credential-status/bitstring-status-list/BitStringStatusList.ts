@@ -2,13 +2,13 @@ import { Type } from 'class-transformer'
 import { IsEnum, IsNumber, IsString } from 'class-validator'
 
 import { JsonLdCredentialDetail, W3cCredentialSubject } from '../../../../../..'
-import { W3cCredential } from '../../W3cCredential'
+import { W3cCredential, W3cCredentialOptions } from '../../W3cCredential'
 import { W3cCredentialStatus } from '../W3cCredentialStatus'
 
 // The purpose can be anything apart from this as well
 export enum BitstringStatusListCredentialStatusPurpose {
-  'revocation' = 'revocation',
-  'suspension' = 'suspension',
+  Revocation = 'revocation',
+  Suspension = 'suspension',
 }
 
 export interface BitStringStatusListMessageOptions {
@@ -36,16 +36,23 @@ export class BitStringStatusListMessage {
   [key: string]: unknown | undefined
 }
 
+/**
+ * Status list Entry, used to check status of a credential being issued or verified during presentaton.
+ *
+ * @see https://www.w3.org/TR/vc-bitstring-status-list/#bitstringstatuslistentry
+ */
 export class BitStringStatusListEntry extends W3cCredentialStatus {
-  public constructor(options: {
-    id: string
-    serviceEndpoint: string
-    recipientKeys: string[]
-    routingKeys?: string[]
-    accept?: string[]
-    priority?: number
-  }) {
+  public constructor(options: IBitStringStatusListEntryOptions) {
     super({ ...options, type: BitStringStatusListEntry.type })
+
+    if (options) {
+      this.statusPurpose = options.statusPurpose
+      this.statusListCredential = options.statusListCredential
+      this.statusListIndex = options.statusListIndex
+
+      if (options.statusSize) this.statusSize = options.statusSize
+      if (options.statusMessage) this.statusMessage = options.statusMessage
+    }
   }
   public static type = 'BitstringStatusListEntry'
 
@@ -75,12 +82,11 @@ export interface BitStringStatusListStatusMessage {
   [key: string]: unknown
 }
 
-export interface IBitStringStatusListCredentialStatus {
+export interface IBitStringStatusListEntryOptions {
   id: string
-  // Since currenlty we are only trying to support 'BitStringStatusListEntry'
   type: 'BitstringStatusListEntry'
   statusPurpose: BitstringStatusListCredentialStatusPurpose
-  // Unique identifier for the specific credential
+  // Unique identifier for specific credential
   statusListIndex: string
   // Must be url referencing to a VC of type 'BitstringStatusListCredential'
   statusListCredential: string
@@ -105,26 +111,31 @@ export class BitStringStatusListCredentialDetail extends JsonLdCredentialDetail 
   public credential!: BitStringStatusListCredentialStatus
 }
 
+/**
+ * StatusListCredential describes the format of the verifiable credential that encapsulates the status list.
+ *
+ * @see https://www.w3.org/TR/vc-bitstring-status-list/#bitstringstatuslistcredential
+ */
 export class BitStringStatusListCredential extends W3cCredential {
-  public constructor(options: {
-    id: string
-    serviceEndpoint: string
-    recipientKeys: string[]
-    routingKeys?: string[] | undefined
-    accept?: string[]
-    priority?: number
-    issuer: string
-    issuanceDate: string
-    credentialSubject: BitStringStatusListCredentialSubject
-  }) {
+  public constructor(options: IBitStringStatusListCredentialOptions) {
     super({
       ...options,
-      type: ['VerifiableCredential', BitStringStatusListEntry.type],
+      type: BitStringStatusListCredential.type,
     })
+
+    if (options) {
+      this.credentialSubject = options.credentialSubject
+    }
   }
+  public static type = ['VerifiableCredential', 'BitstringStatusListCredential']
 
   @IsString()
   public credentialSubject!: BitStringStatusListCredentialSubject
+}
+
+export interface IBitStringStatusListCredentialOptions extends Omit<W3cCredentialOptions, 'credentialStatus'> {
+  type: ['VerifiableCredential', 'BitstringStatusListCredential']
+  credentialSubject: BitStringStatusListCredentialSubject
 }
 
 // Define an interface for `credentialSubject`
