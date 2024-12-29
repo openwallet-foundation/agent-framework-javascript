@@ -1,7 +1,7 @@
 import type { BitStringStatusListCredential, BitStringStatusListEntry } from './BitStringStatusList'
 import type { AgentContext } from '../../../../../../agent/context'
 
-import * as pako from 'pako'
+import { ungzip } from 'pako'
 
 import { CredoError } from '../../../../../../error'
 
@@ -45,7 +45,7 @@ export const verifyBitStringCredentialStatus = async (
   const compressedBuffer = Uint8Array.from(atob(encodedBitString), (char) => char.charCodeAt(0))
 
   // Decompress the bit string using pako
-  const decodedBitString = pako.ungzip(compressedBuffer, { to: 'string' })
+  const decodedBitString = ungzip(compressedBuffer, { to: 'string' })
   const statusListIndex = Number(credentialStatus.statusListIndex)
 
   // Ensure the statusListIndex is within bounds
