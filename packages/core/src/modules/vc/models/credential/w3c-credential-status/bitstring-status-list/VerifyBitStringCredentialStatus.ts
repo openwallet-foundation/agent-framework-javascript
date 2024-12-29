@@ -55,7 +55,10 @@ export const verifyBitStringCredentialStatus = async (
 
   // Check if the credential is revoked
   if (decodedBitString[statusListIndex] === '1') {
-    throw new CredoError(`Credential at index ${credentialStatus.statusListIndex} is revoked.`)
+    // To do: The error can be updated once we add support for status messages
+    throw new CredoError(
+      `Credential at index ${credentialStatus.statusListIndex} is in ${bitStringStatusListCredential.credentialSubject.statusPurpose} state.`
+    )
   }
 
   return true
