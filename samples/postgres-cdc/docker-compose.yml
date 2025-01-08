@@ -1,0 +1,26 @@
+version: '3'
+
+services:
+  postgres:
+    build: .
+    image: pgsql-cdc/latest
+    container_name: cdc-pgsql
+    platform: linux/amd64
+    ports:
+      - 5432:5432
+    volumes:
+      - ./postgres-data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - CDC_DB_NAME=test_db
+      - REDIS_HOST=host.docker.internal
+      - REDIS_PORT=6379
+      - REDIS_CHANNEL=test_db_changes
+
+  redis:
+    image: redis:7.2.3
+    container_name: cdc-redis
+    platform: linux/amd64
+    ports:
+      - 6379:6379
