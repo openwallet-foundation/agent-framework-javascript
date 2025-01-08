@@ -53,7 +53,7 @@ jobs:
       - name: Checkout credo-ts
         uses: actions/checkout@v4
 
-      - uses: pnpm/action-setup@v2
+      - uses: pnpm/action-setup@v4
         with:
           version: 9.1.0
 
@@ -101,7 +101,7 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
 
-      - uses: pnpm/action-setup@v2
+      - uses: pnpm/action-setup@v4
         with:
           version: 9.1.0
 
@@ -112,7 +112,7 @@ jobs:
           echo "STORE_PATH=$(pnpm store path)" >> $GITHUB_OUTPUT
 
       - name: pnpm cache
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: ${{ steps.pnpm-cache-path.outputs.STORE_PATH }}
           key: ${{ runner.os }}-${{ steps.setup-node.outputs.node-version }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
@@ -127,7 +127,7 @@ jobs:
 
       # Upload coverage for shard
       - run: mv coverage/coverage-final.json coverage/${{ matrix.shard }}.json
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v4.4.0
         with:
           name: coverage-artifacts-${{ matrix.node-version }}
           path: coverage/${{ matrix.shard }}.json
@@ -156,7 +156,7 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
 
-      - uses: pnpm/action-setup@v2
+      - uses: pnpm/action-setup@v4
         with:
           version: 9.1.0
 
@@ -167,7 +167,7 @@ jobs:
           echo "STORE_PATH=$(pnpm store path)" >> $GITHUB_OUTPUT
 
       - name: pnpm cache
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: ${{ steps.pnpm-cache-path.outputs.STORE_PATH }}
           key: ${{ runner.os }}-${{ steps.setup-node.outputs.node-version }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
@@ -182,7 +182,7 @@ jobs:
 
       # Upload coverage for e2e
       - run: mv coverage/coverage-final.json coverage/e2e.json
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v4.4.0
         with:
           name: coverage-artifacts-${{ matrix.node-version }}
           path: coverage/e2e.json
