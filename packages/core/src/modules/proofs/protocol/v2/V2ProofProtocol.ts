@@ -117,7 +117,7 @@ export class V2ProofProtocol<PFs extends ProofFormatService[] = ProofFormatServi
     }
 
     const proofRecord = new ProofExchangeRecord({
-      connectionId: connectionRecord.id,
+      connectionId: connectionRecord?.id,
       threadId: uuid(),
       parentThreadId,
       state: ProofState.ProposalSent,
@@ -422,6 +422,13 @@ export class V2ProofProtocol<PFs extends ProofFormatService[] = ProofFormatServi
       role: ProofRole.Prover,
       connectionId: connection?.id,
     })
+
+    if (!proofRecord) {
+      // Proof request bound to a proofRecord by threadId: proof proposal in OOB msg
+      // TODO integrate with oob module
+      proofRecord = await this.findByThreadAndConnectionId(messageContext.agentContext, requestMessage.threadId)
+      if (proofRecord) proofRecord.connectionId = connection?.id
+    }
 
     const formatServices = this.getFormatServicesFromMessage(requestMessage.formats)
     if (formatServices.length === 0) {

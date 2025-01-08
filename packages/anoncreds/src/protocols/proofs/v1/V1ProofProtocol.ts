@@ -136,7 +136,7 @@ export class V1ProofProtocol extends BaseProofProtocol implements ProofProtocol<
 
     // Create record
     const proofRecord = new ProofExchangeRecord({
-      connectionId: connectionRecord.id,
+      connectionId: connectionRecord?.id,
       threadId: message.threadId,
       parentThreadId: message.thread?.parentThreadId,
       state: ProofState.ProposalSent,
@@ -431,6 +431,13 @@ export class V1ProofProtocol extends BaseProofProtocol implements ProofProtocol<
       role: ProofRole.Prover,
       connectionId: connection?.id,
     })
+
+    if (!proofRecord) {
+      // Proof request bound to a proofRecord by threadId: proof proposal in OOB msg
+      // TODO integrate with oob module
+      proofRecord = await this.findByThreadAndConnectionId(messageContext.agentContext, proofRequestMessage.threadId)
+      if (proofRecord) proofRecord.connectionId = connection?.id
+    }
 
     const requestAttachment = proofRequestMessage.getRequestAttachmentById(INDY_PROOF_REQUEST_ATTACHMENT_ID)
     if (!requestAttachment) {
