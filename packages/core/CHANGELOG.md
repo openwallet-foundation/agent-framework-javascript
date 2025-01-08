@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.6.0
+
+### Minor Changes
+
+- 14673b1: Remove dependency on `abort-controller` library. Abort Controller has been supported on all platforms for quite some time already.
+- 5f08bc6: feat: allow dynamicaly providing x509 certificates for all types of verifications
+
+### Patch Changes
+
+- 607659a: feat: fetch sd-jwt type metadata
+
 ## 0.5.13
 
 ### Patch Changes
