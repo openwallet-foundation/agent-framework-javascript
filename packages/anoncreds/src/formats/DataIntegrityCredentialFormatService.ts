@@ -3,18 +3,25 @@ import type { AnonCredsIssuerService, AnonCredsHolderService } from '../services
 import type { AnonCredsClaimRecord } from '../utils/credential'
 import type { AnonCredsCredentialMetadata, AnonCredsCredentialRequestMetadata } from '../utils/metadata'
 import type {
+  AgentContext,
+  JsonObject,
+  JwaSignatureAlgorithm,
+  JwsDetachedFormat,
+  VerificationMethod,
+  W3cCredentialRecord,
+} from '@credo-ts/core'
+import type {
+  W3C_VC_DATA_MODEL_VERSION,
+  DataIntegrityCredential,
   DataIntegrityCredentialRequest,
   AnonCredsLinkSecretBindingMethod,
   DidCommSignedAttachmentBindingMethod,
   DataIntegrityCredentialRequestBindingProof,
-  W3C_VC_DATA_MODEL_VERSION,
-  DataIntegrityCredential,
   AnonCredsLinkSecretDataIntegrityBindingProof,
   DidCommSignedAttachmentDataIntegrityBindingProof,
   DataIntegrityOfferCredentialFormat,
   DataIntegrityCredentialFormat,
   CredentialFormatService,
-  AgentContext,
   CredentialFormatCreateProposalOptions,
   CredentialFormatCreateProposalReturn,
   CredentialFormatProcessOptions,
@@ -31,38 +38,35 @@ import type {
   CredentialFormatAutoRespondCredentialOptions,
   CredentialExchangeRecord,
   CredentialPreviewAttributeOptions,
-  JsonObject,
-  JwaSignatureAlgorithm,
-  JwsDetachedFormat,
-  VerificationMethod,
-  W3cCredentialRecord,
-} from '@credo-ts/core'
+} from '@credo-ts/didcomm'
 
 import {
-  ProblemReportError,
-  CredentialFormatSpec,
-  Attachment,
   JsonEncoder,
-  CredentialProblemReportReason,
   JsonTransformer,
   W3cCredential,
   DidsApi,
   W3cCredentialService,
   W3cJsonLdVerifiableCredential,
   getJwkClassFromKeyType,
-  AttachmentData,
   JwsService,
   getKeyFromVerificationMethod,
   getJwkFromKey,
   ClaimFormat,
   JwtPayload,
   SignatureSuiteRegistry,
-  CredentialPreviewAttribute,
   CredoError,
   deepEquality,
-  DataIntegrityCredentialOffer,
   W3cCredentialSubject,
 } from '@credo-ts/core'
+import {
+  ProblemReportError,
+  CredentialFormatSpec,
+  Attachment,
+  CredentialProblemReportReason,
+  AttachmentData,
+  CredentialPreviewAttribute,
+  DataIntegrityCredentialOffer,
+} from '@credo-ts/didcomm'
 
 import {
   AnonCredsCredentialDefinitionRepository,

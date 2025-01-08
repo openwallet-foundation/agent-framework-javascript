@@ -3,6 +3,7 @@ import path from 'path'
 
 import { InMemoryStorageService } from '../../../../../../tests/InMemoryStorageService'
 import { RegisteredAskarTestWallet } from '../../../../../askar/tests/helpers'
+import { getDefaultDidcommModules } from '../../../../../didcomm/src/util/modules'
 import { agentDependencies } from '../../../../tests/helpers'
 import { Agent } from '../../../agent/Agent'
 import { InjectionSymbols } from '../../../constants'
@@ -108,12 +109,14 @@ describe('UpdateAssistant | v0.4 - v0.5', () => {
     // If we register the AskarModule it will register the storage service, but we use in memory storage here
     dependencyManager.registerContextScoped(InjectionSymbols.Wallet, RegisteredAskarTestWallet)
 
+    // We need core DIDComm modules for this update to fully work
     const agent = new Agent(
       {
         config: {
           label: 'Test Agent',
           walletConfig,
         },
+        modules: getDefaultDidcommModules(),
         dependencies: agentDependencies,
       },
       dependencyManager
@@ -171,12 +174,14 @@ describe('UpdateAssistant | v0.4 - v0.5', () => {
     // If we register the AskarModule it will register the storage service, but we use in memory storage here
     dependencyManager.registerContextScoped(InjectionSymbols.Wallet, RegisteredAskarTestWallet)
 
+    // We need core DIDComm modules for this update to fully work
     const agent = new Agent(
       {
         config: {
           label: 'Test Agent',
           walletConfig,
         },
+        modules: getDefaultDidcommModules(),
         dependencies: agentDependencies,
       },
       dependencyManager

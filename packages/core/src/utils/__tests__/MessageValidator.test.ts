@@ -1,5 +1,5 @@
+import { ConnectionInvitationMessage } from '../../../../didcomm/src/modules/connections'
 import { ClassValidationError } from '../../error/ClassValidationError'
-import { ConnectionInvitationMessage } from '../../modules/connections'
 import { MessageValidator } from '../MessageValidator'
 
 describe('MessageValidator', () => {

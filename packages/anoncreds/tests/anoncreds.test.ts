@@ -74,6 +74,7 @@ const agent = new Agent(
   getInMemoryAgentOptions(
     'credo-anoncreds-package',
     {},
+    {},
     {
       anoncreds: new AnonCredsModule({
         autoCreateLinkSecret: false,

@@ -1,6 +1,6 @@
 import type { DrpcErrorCode } from '../models'
 
-import { IsValidMessageType, parseMessageType, AgentMessage } from '@credo-ts/core'
+import { IsValidMessageType, parseMessageType, AgentMessage } from '@credo-ts/didcomm'
 import { Expose } from 'class-transformer'
 
 import { IsValidDrpcResponse } from '../models'

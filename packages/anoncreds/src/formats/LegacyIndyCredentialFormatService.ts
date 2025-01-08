@@ -2,9 +2,9 @@ import type { LegacyIndyCredentialFormat, LegacyIndyCredentialProposalFormat } f
 import type { AnonCredsCredential, AnonCredsCredentialOffer, AnonCredsCredentialRequest } from '../models'
 import type { AnonCredsIssuerService, AnonCredsHolderService } from '../services'
 import type { AnonCredsCredentialMetadata, AnonCredsCredentialRequestMetadata } from '../utils/metadata'
+import type { AgentContext } from '@credo-ts/core'
 import type {
   CredentialFormatService,
-  AgentContext,
   CredentialFormatCreateProposalOptions,
   CredentialFormatCreateProposalReturn,
   CredentialFormatProcessOptions,
@@ -22,18 +22,10 @@ import type {
   CredentialExchangeRecord,
   CredentialPreviewAttributeOptions,
   LinkedAttachment,
-} from '@credo-ts/core'
+} from '@credo-ts/didcomm'
 
-import {
-  ProblemReportError,
-  MessageValidator,
-  CredentialFormatSpec,
-  CredoError,
-  Attachment,
-  JsonEncoder,
-  CredentialProblemReportReason,
-  JsonTransformer,
-} from '@credo-ts/core'
+import { MessageValidator, CredoError, JsonEncoder, JsonTransformer } from '@credo-ts/core'
+import { ProblemReportError, CredentialFormatSpec, Attachment, CredentialProblemReportReason } from '@credo-ts/didcomm'
 
 import { AnonCredsCredentialProposal } from '../models/AnonCredsCredentialProposal'
 import { AnonCredsIssuerServiceSymbol, AnonCredsHolderServiceSymbol } from '../services'

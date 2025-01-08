@@ -1,5 +1,5 @@
 import type { V1CredentialProtocol } from '../V1CredentialProtocol'
-import type { MessageHandler, MessageHandlerInboundMessage } from '@credo-ts/core'
+import type { MessageHandler, MessageHandlerInboundMessage } from '@credo-ts/didcomm'
 
 import { V1CredentialAckMessage } from '../messages'
 

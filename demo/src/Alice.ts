@@ -1,4 +1,4 @@
-import type { ConnectionRecord, CredentialExchangeRecord, ProofExchangeRecord } from '@credo-ts/core'
+import type { ConnectionRecord, CredentialExchangeRecord, ProofExchangeRecord } from '@credo-ts/didcomm'
 
 import { BaseAgent } from './BaseAgent'
 import { greenText, Output, redText } from './OutputClass'
@@ -22,11 +22,11 @@ export class Alice extends BaseAgent {
     if (!this.connectionRecordFaberId) {
       throw Error(redText(Output.MissingConnectionRecord))
     }
-    return await this.agent.connections.getById(this.connectionRecordFaberId)
+    return await this.agent.modules.connections.getById(this.connectionRecordFaberId)
   }
 
   private async receiveConnectionRequest(invitationUrl: string) {
-    const { connectionRecord } = await this.agent.oob.receiveInvitationFromUrl(invitationUrl)
+    const { connectionRecord } = await this.agent.modules.oob.receiveInvitationFromUrl(invitationUrl)
     if (!connectionRecord) {
       throw new Error(redText(Output.NoConnectionRecordFromOutOfBand))
     }
@@ -34,7 +34,7 @@ export class Alice extends BaseAgent {
   }
 
   private async waitForConnection(connectionRecord: ConnectionRecord) {
-    connectionRecord = await this.agent.connections.returnWhenIsConnected(connectionRecord.id)
+    connectionRecord = await this.agent.modules.connections.returnWhenIsConnected(connectionRecord.id)
     this.connected = true
     console.log(greenText(Output.ConnectionEstablished))
     return connectionRecord.id
@@ -46,17 +46,17 @@ export class Alice extends BaseAgent {
   }
 
   public async acceptCredentialOffer(credentialRecord: CredentialExchangeRecord) {
-    await this.agent.credentials.acceptOffer({
+    await this.agent.modules.credentials.acceptOffer({
       credentialRecordId: credentialRecord.id,
     })
   }
 
   public async acceptProofRequest(proofRecord: ProofExchangeRecord) {
-    const requestedCredentials = await this.agent.proofs.selectCredentialsForRequest({
+    const requestedCredentials = await this.agent.modules.proofs.selectCredentialsForRequest({
       proofRecordId: proofRecord.id,
     })
 
-    await this.agent.proofs.acceptRequest({
+    await this.agent.modules.proofs.acceptRequest({
       proofRecordId: proofRecord.id,
       proofFormats: requestedCredentials.proofFormats,
     })
@@ -65,7 +65,7 @@ export class Alice extends BaseAgent {
 
   public async sendMessage(message: string) {
     const connectionRecord = await this.getConnectionRecord()
-    await this.agent.basicMessages.sendMessage(connectionRecord.id, message)
+    await this.agent.modules.basicMessages.sendMessage(connectionRecord.id, message)
   }
 
   public async exit() {

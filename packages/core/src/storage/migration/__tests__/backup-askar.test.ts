@@ -5,17 +5,18 @@ import { readFileSync, unlinkSync } from 'fs'
 import path from 'path'
 
 import { askarModule } from '../../../../../askar/tests/helpers'
+import { CredentialExchangeRecord, CredentialRepository } from '../../../../../didcomm/src/modules/credentials'
 import { getAgentOptions, getAskarWalletConfig } from '../../../../tests/helpers'
 import { Agent } from '../../../agent/Agent'
 import { InjectionSymbols } from '../../../constants'
 import { CredoError } from '../../../error'
-import { CredentialExchangeRecord, CredentialRepository } from '../../../modules/credentials'
 import { JsonTransformer } from '../../../utils'
 import { StorageUpdateService } from '../StorageUpdateService'
 import { UpdateAssistant } from '../UpdateAssistant'
 
 const agentOptions = getAgentOptions(
   'UpdateAssistant | Backup | Aries Askar',
+  {},
   {
     walletConfig: getAskarWalletConfig('UpdateAssistant | Backup | Aries Askar', { inMemory: false }),
   },

@@ -1,6 +1,6 @@
-import type { ProblemReportMessageOptions } from '@credo-ts/core'
+import type { ProblemReportMessageOptions } from '@credo-ts/didcomm'
 
-import { IsValidMessageType, parseMessageType, ProblemReportMessage } from '@credo-ts/core'
+import { IsValidMessageType, parseMessageType, ProblemReportMessage } from '@credo-ts/didcomm'
 
 export type ActionMenuProblemReportMessageOptions = ProblemReportMessageOptions
 

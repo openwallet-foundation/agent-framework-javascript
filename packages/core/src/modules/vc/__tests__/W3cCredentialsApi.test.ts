@@ -11,6 +11,7 @@ import { W3cCredentialRepository } from '../repository'
 const agentOptions = getInMemoryAgentOptions(
   'W3cCredentialsApi',
   {},
+  {},
   {
     w3cCredentials: new W3cCredentialsModule({
       documentLoader: customDocumentLoader,

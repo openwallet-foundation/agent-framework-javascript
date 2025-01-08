@@ -9,12 +9,18 @@ import { SubjectOutboundTransport } from '../../../tests/transport/SubjectOutbou
 
 import { askarPostgresStorageConfig, e2eTest, getAskarPostgresAgentOptions } from './helpers'
 
-const alicePostgresAgentOptions = getAskarPostgresAgentOptions('AgentsAlice', askarPostgresStorageConfig, {
-  endpoints: ['rxjs:alice'],
-})
-const bobPostgresAgentOptions = getAskarPostgresAgentOptions('AgentsBob', askarPostgresStorageConfig, {
-  endpoints: ['rxjs:bob'],
-})
+const alicePostgresAgentOptions = getAskarPostgresAgentOptions(
+  'AgentsAlice',
+  { endpoints: ['rxjs:alice'] },
+  askarPostgresStorageConfig
+)
+const bobPostgresAgentOptions = getAskarPostgresAgentOptions(
+  'AgentsBob',
+  {
+    endpoints: ['rxjs:bob'],
+  },
+  askarPostgresStorageConfig
+)
 
 describe('Askar Postgres agents', () => {
   let aliceAgent: Agent
@@ -42,13 +48,13 @@ describe('Askar Postgres agents', () => {
     }
 
     aliceAgent = new Agent(alicePostgresAgentOptions)
-    aliceAgent.registerInboundTransport(new SubjectInboundTransport(aliceMessages))
-    aliceAgent.registerOutboundTransport(new SubjectOutboundTransport(subjectMap))
+    aliceAgent.modules.didcomm.registerInboundTransport(new SubjectInboundTransport(aliceMessages))
+    aliceAgent.modules.didcomm.registerOutboundTransport(new SubjectOutboundTransport(subjectMap))
     await aliceAgent.initialize()
 
     bobAgent = new Agent(bobPostgresAgentOptions)
-    bobAgent.registerInboundTransport(new SubjectInboundTransport(bobMessages))
-    bobAgent.registerOutboundTransport(new SubjectOutboundTransport(subjectMap))
+    bobAgent.modules.didcomm.registerInboundTransport(new SubjectInboundTransport(bobMessages))
+    bobAgent.modules.didcomm.registerOutboundTransport(new SubjectOutboundTransport(subjectMap))
     await bobAgent.initialize()
 
     await e2eTest(aliceAgent, bobAgent)

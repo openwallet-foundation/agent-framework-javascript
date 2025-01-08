@@ -1,24 +1,23 @@
 import type { LegacyIndyCredentialFormatService } from '../../../formats'
+import type { AgentContext } from '@credo-ts/core'
 import type {
-  AgentContext,
   AgentMessage,
-  DependencyManager,
-  FeatureRegistry,
   CredentialProtocolOptions,
   InboundMessageContext,
   ProblemReportMessage,
   ExtractCredentialFormats,
   CredentialProtocol,
-} from '@credo-ts/core'
+  FeatureRegistry,
+  MessageHandlerRegistry,
+} from '@credo-ts/didcomm'
 
+import { CredoError, JsonTransformer, utils } from '@credo-ts/core'
 import {
   CredentialRole,
   Protocol,
   CredentialRepository,
-  CredoError,
   CredentialExchangeRecord,
   CredentialState,
-  JsonTransformer,
   ConnectionService,
   Attachment,
   AttachmentData,
@@ -26,12 +25,11 @@ import {
   CredentialProblemReportReason,
   CredentialsModuleConfig,
   AutoAcceptCredential,
-  utils,
   DidCommMessageRepository,
   DidCommMessageRole,
   BaseCredentialProtocol,
   isLinkedAttachment,
-} from '@credo-ts/core'
+} from '@credo-ts/didcomm'
 
 import { AnonCredsCredentialProposal } from '../../../models/AnonCredsCredentialProposal'
 import { composeCredentialAutoAccept, areCredentialPreviewAttributesEqual } from '../../../utils'
@@ -82,9 +80,9 @@ export class V1CredentialProtocol
   /**
    * Registers the protocol implementation (handlers, feature registry) on the agent.
    */
-  public register(dependencyManager: DependencyManager, featureRegistry: FeatureRegistry) {
+  public register(messageHandlerRegistry: MessageHandlerRegistry, featureRegistry: FeatureRegistry) {
     // Register message handlers for the Issue Credential V1 Protocol
-    dependencyManager.registerMessageHandlers([
+    messageHandlerRegistry.registerMessageHandlers([
       new V1ProposeCredentialHandler(this),
       new V1OfferCredentialHandler(this),
       new V1RequestCredentialHandler(this),

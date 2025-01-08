@@ -1,4 +1,4 @@
-import type { CredentialPreviewAttributeOptions } from '@credo-ts/core'
+import type { CredentialPreviewAttributeOptions } from '@credo-ts/didcomm'
 
 export function areCredentialPreviewAttributesEqual(
   firstAttributes: CredentialPreviewAttributeOptions[],

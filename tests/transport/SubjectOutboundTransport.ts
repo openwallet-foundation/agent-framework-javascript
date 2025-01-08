@@ -1,14 +1,16 @@
 import type { SubjectMessage } from './SubjectInboundTransport'
-import type { OutboundPackage, OutboundTransport, Agent, Logger } from '@credo-ts/core'
+import type { Logger, AgentContext } from '@credo-ts/core'
+import type { OutboundPackage, OutboundTransport } from '@credo-ts/didcomm'
 
 import { takeUntil, Subject, take } from 'rxjs'
 
-import { MessageReceiver, InjectionSymbols, CredoError } from '@credo-ts/core'
+import { InjectionSymbols, CredoError } from '@credo-ts/core'
+import { MessageReceiver } from '@credo-ts/didcomm'
 
 export class SubjectOutboundTransport implements OutboundTransport {
   private logger!: Logger
   private subjectMap: { [key: string]: Subject<SubjectMessage> | undefined }
-  private agent!: Agent
+  private agentContext!: AgentContext
   private stop$!: Subject<boolean>
 
   public supportedSchemes = ['rxjs', 'wss']
@@ -17,11 +19,11 @@ export class SubjectOutboundTransport implements OutboundTransport {
     this.subjectMap = subjectMap
   }
 
-  public async start(agent: Agent): Promise<void> {
-    this.agent = agent
+  public async start(agentContext: AgentContext): Promise<void> {
+    this.agentContext = agentContext
 
-    this.logger = agent.dependencyManager.resolve(InjectionSymbols.Logger)
-    this.stop$ = agent.dependencyManager.resolve(InjectionSymbols.Stop$)
+    this.logger = agentContext.dependencyManager.resolve(InjectionSymbols.Logger)
+    this.stop$ = agentContext.dependencyManager.resolve(InjectionSymbols.Stop$)
   }
 
   public async stop(): Promise<void> {
@@ -29,7 +31,7 @@ export class SubjectOutboundTransport implements OutboundTransport {
   }
 
   public async sendMessage(outboundPackage: OutboundPackage) {
-    const messageReceiver = this.agent.dependencyManager.resolve(MessageReceiver)
+    const messageReceiver = this.agentContext.dependencyManager.resolve(MessageReceiver)
     this.logger.debug(`Sending outbound message to endpoint ${outboundPackage.endpoint}`, {
       endpoint: outboundPackage.endpoint,
     })

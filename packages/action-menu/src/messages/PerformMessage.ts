@@ -1,4 +1,4 @@
-import { AgentMessage, IsValidMessageType, parseMessageType } from '@credo-ts/core'
+import { AgentMessage, IsValidMessageType, parseMessageType } from '@credo-ts/didcomm'
 import { IsOptional, IsString } from 'class-validator'
 
 /**

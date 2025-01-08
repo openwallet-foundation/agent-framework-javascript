@@ -7,7 +7,8 @@ import type {
 } from './ActionMenuServiceOptions'
 import type { ActionMenuStateChangedEvent } from '../ActionMenuEvents'
 import type { ActionMenuProblemReportMessage } from '../messages'
-import type { AgentContext, InboundMessageContext, Logger, Query, QueryOptions } from '@credo-ts/core'
+import type { AgentContext, Logger, Query, QueryOptions } from '@credo-ts/core'
+import type { InboundMessageContext } from '@credo-ts/didcomm'
 
 import { AgentConfig, EventEmitter, CredoError, injectable } from '@credo-ts/core'
 

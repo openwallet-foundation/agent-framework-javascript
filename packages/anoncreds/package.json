@@ -28,6 +28,7 @@
   "dependencies": {
     "@astronautlabs/jsonpath": "^1.1.2",
     "@credo-ts/core": "workspace:*",
+    "@credo-ts/didcomm": "workspace:*",
     "@sphereon/pex-models": "^2.3.1",
     "big-integer": "^1.6.51",
     "bn.js": "^5.2.1",

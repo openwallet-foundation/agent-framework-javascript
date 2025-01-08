@@ -2,19 +2,11 @@ import type { Module, DependencyManager, ApiModule } from '../plugins'
 import type { IsAny } from '../types'
 import type { Constructor } from '../utils/mixins'
 
-import { BasicMessagesModule } from '../modules/basic-messages'
 import { CacheModule } from '../modules/cache'
-import { ConnectionsModule } from '../modules/connections'
-import { CredentialsModule } from '../modules/credentials'
 import { DidsModule } from '../modules/dids'
 import { DifPresentationExchangeModule } from '../modules/dif-presentation-exchange'
-import { DiscoverFeaturesModule } from '../modules/discover-features'
 import { GenericRecordsModule } from '../modules/generic-records'
 import { MdocModule } from '../modules/mdoc/MdocModule'
-import { MessagePickupModule } from '../modules/message-pickup'
-import { OutOfBandModule } from '../modules/oob'
-import { ProofsModule } from '../modules/proofs'
-import { MediationRecipientModule, MediatorModule } from '../modules/routing'
 import { SdJwtVcModule } from '../modules/sd-jwt-vc'
 import { W3cCredentialsModule } from '../modules/vc'
 import { X509Module } from '../modules/x509'
@@ -32,18 +24,7 @@ export type EmptyModuleMap = {}
  * Default modules can be optionally defined to provide custom configuration. This type makes it so that it is not
  * possible to use a different key for the default modules
  */
-export type AgentModulesInput = Partial<DefaultAgentModulesInput> & ModulesMap
-
-/**
- * Defines the input type for the default agent modules. This is overwritten as we
- * want the input type to allow for generics to be passed in for the credentials module.
- */
-export type DefaultAgentModulesInput = Omit<DefaultAgentModules, 'credentials' | 'proofs'> & {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  credentials: CredentialsModule<any>
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  proofs: ProofsModule<any>
-}
+export type AgentModulesInput = ModulesMap
 
 /**
  * Type that represents the default agent modules. This is the {@link ModulesMap} variant for the default modules in the framework.
@@ -121,18 +102,9 @@ export type CustomOrDefaultApi<
  */
 function getDefaultAgentModules() {
   return {
-    connections: () => new ConnectionsModule(),
-    credentials: () => new CredentialsModule(),
-    proofs: () => new ProofsModule(),
-    mediator: () => new MediatorModule(),
-    mediationRecipient: () => new MediationRecipientModule(),
-    messagePickup: () => new MessagePickupModule(),
-    basicMessages: () => new BasicMessagesModule(),
     genericRecords: () => new GenericRecordsModule(),
-    discovery: () => new DiscoverFeaturesModule(),
     dids: () => new DidsModule(),
     wallet: () => new WalletModule(),
-    oob: () => new OutOfBandModule(),
     w3cCredentials: () => new W3cCredentialsModule(),
     cache: () => new CacheModule(),
     pex: () => new DifPresentationExchangeModule(),

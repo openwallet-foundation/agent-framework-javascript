@@ -332,8 +332,8 @@ describe('V1 Proofs - Connectionless - Indy', () => {
       domain: 'https://a-domain.com',
     })
 
-    for (const transport of faberAgent.outboundTransports) {
-      await faberAgent.unregisterOutboundTransport(transport)
+    for (const transport of faberAgent.didcomm.outboundTransports) {
+      await faberAgent.didcomm.unregisterOutboundTransport(transport)
     }
 
     await aliceAgent.oob.receiveInvitationFromUrl(invitationUrl)
@@ -364,6 +364,7 @@ describe('V1 Proofs - Connectionless - Indy', () => {
       {
         endpoints: ['rxjs:mediator'],
       },
+      {},
       {
         mediator: new MediatorModule({
           autoAcceptMediationRequests: true,
@@ -376,8 +377,8 @@ describe('V1 Proofs - Connectionless - Indy', () => {
 
     // Initialize mediator
     const mediatorAgent = new Agent(mediatorAgentOptions)
-    mediatorAgent.registerOutboundTransport(new SubjectOutboundTransport(subjectMap))
-    mediatorAgent.registerInboundTransport(new SubjectInboundTransport(mediatorMessages))
+    mediatorAgent.didcomm.registerOutboundTransport(new SubjectOutboundTransport(subjectMap))
+    mediatorAgent.didcomm.registerInboundTransport(new SubjectInboundTransport(mediatorMessages))
     await mediatorAgent.initialize()
 
     const faberMediationOutOfBandRecord = await mediatorAgent.oob.createInvitation({
@@ -392,6 +393,7 @@ describe('V1 Proofs - Connectionless - Indy', () => {
 
     const faberAgentOptions = getInMemoryAgentOptions(
       `Connectionless proofs with mediator Faber-${unique}`,
+      {},
       {},
       {
         ...getAnonCredsIndyModules({
@@ -409,6 +411,7 @@ describe('V1 Proofs - Connectionless - Indy', () => {
     const aliceAgentOptions = getInMemoryAgentOptions(
       `Connectionless proofs with mediator Alice-${unique}`,
       {},
+      {},
       {
         ...getAnonCredsIndyModules({
           autoAcceptProofs: AutoAcceptProof.Always,
@@ -423,11 +426,11 @@ describe('V1 Proofs - Connectionless - Indy', () => {
     )
 
     const faberAgent = new Agent(faberAgentOptions)
-    faberAgent.registerOutboundTransport(new SubjectOutboundTransport(subjectMap))
+    faberAgent.didcomm.registerOutboundTransport(new SubjectOutboundTransport(subjectMap))
     await faberAgent.initialize()
 
     const aliceAgent = new Agent(aliceAgentOptions)
-    aliceAgent.registerOutboundTransport(new SubjectOutboundTransport(subjectMap))
+    aliceAgent.didcomm.registerOutboundTransport(new SubjectOutboundTransport(subjectMap))
     await aliceAgent.initialize()
 
     const [faberReplay, aliceReplay] = setupEventReplaySubjects(

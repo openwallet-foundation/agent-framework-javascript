@@ -9,7 +9,7 @@ import type {
   AnonCredsRequestedPredicateMatch,
   AnonCredsSelectedCredentials,
 } from '../models'
-import type { ProofFormat } from '@credo-ts/core'
+import type { ProofFormat } from '@credo-ts/didcomm'
 
 export interface AnonCredsPresentationPreviewAttribute {
   name: string

@@ -1,4 +1,4 @@
-import type { ResolvedDidCommService } from '../../../didcomm'
+import type { ResolvedDidCommService } from '../../../../../../didcomm/src'
 
 import { convertPublicKeyToX25519 } from '@stablelib/ed25519'
 

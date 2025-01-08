@@ -1,7 +1,7 @@
 import type { V1ProofProtocol } from '../V1ProofProtocol'
-import type { MessageHandler, MessageHandlerInboundMessage, ProofExchangeRecord } from '@credo-ts/core'
+import type { MessageHandler, MessageHandlerInboundMessage, ProofExchangeRecord } from '@credo-ts/didcomm'
 
-import { OutboundMessageContext } from '@credo-ts/core'
+import { OutboundMessageContext } from '@credo-ts/didcomm'
 
 import { V1ProposePresentationMessage } from '../messages'
 

@@ -1,14 +1,8 @@
-import type {
-  Agent,
-  InboundTransport,
-  Logger,
-  TransportSession,
-  EncryptedMessage,
-  AgentContext,
-  AgentMessageReceivedEvent,
-} from '@credo-ts/core'
+import type { Logger, AgentContext } from '@credo-ts/core'
+import type { InboundTransport, TransportSession, EncryptedMessage, AgentMessageReceivedEvent } from '@credo-ts/didcomm'
 
-import { CredoError, TransportService, utils, AgentEventTypes } from '@credo-ts/core'
+import { CredoError, utils, EventEmitter } from '@credo-ts/core'
+import { TransportService, AgentEventTypes, DidCommModuleConfig } from '@credo-ts/didcomm'
 // eslint-disable-next-line import/no-named-as-default
 import WebSocket, { Server } from 'ws'
 
@@ -23,12 +17,13 @@ export class WsInboundTransport implements InboundTransport {
     this.socketServer = server ?? new Server({ port })
   }
 
-  public async start(agent: Agent) {
-    const transportService = agent.dependencyManager.resolve(TransportService)
+  public async start(agentContext: AgentContext) {
+    const transportService = agentContext.dependencyManager.resolve(TransportService)
 
-    this.logger = agent.config.logger
+    this.logger = agentContext.config.logger
 
-    const wsEndpoint = agent.config.endpoints.find((e) => e.startsWith('ws'))
+    const didcommConfig = agentContext.dependencyManager.resolve(DidCommModuleConfig)
+    const wsEndpoint = didcommConfig.endpoints.find((e) => e.startsWith('ws'))
     this.logger.debug(`Starting WS inbound transport`, {
       endpoint: wsEndpoint,
     })
@@ -41,7 +36,7 @@ export class WsInboundTransport implements InboundTransport {
         this.logger.debug(`Saving new socket with id ${socketId}.`)
         this.socketIds[socketId] = socket
         const session = new WebSocketTransportSession(socketId, socket, this.logger)
-        this.listenOnWebSocketMessages(agent, socket, session)
+        this.listenOnWebSocketMessages(agentContext, socket, session)
         socket.on('close', () => {
           this.logger.debug('Socket closed.')
           transportService.removeSession(session)
@@ -65,14 +60,15 @@ export class WsInboundTransport implements InboundTransport {
     })
   }
 
-  private listenOnWebSocketMessages(agent: Agent, socket: WebSocket, session: TransportSession) {
+  private listenOnWebSocketMessages(agentContext: AgentContext, socket: WebSocket, session: TransportSession) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     socket.addEventListener('message', async (event: any) => {
       this.logger.debug('WebSocket message event received.', { url: event.target.url })
       try {
         const encryptedMessage = JSON.parse(event.data) as EncryptedMessage
 
-        agent.events.emit<AgentMessageReceivedEvent>(agent.context, {
+        const eventEmitter = agentContext.dependencyManager.resolve(EventEmitter)
+        eventEmitter.emit<AgentMessageReceivedEvent>(agentContext, {
           type: AgentEventTypes.AgentMessageReceived,
           payload: {
             message: encryptedMessage,

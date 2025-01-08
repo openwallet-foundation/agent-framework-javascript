@@ -1,9 +1,6 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 import {
   Agent,
-  BasicMessageRecord,
-  BasicMessageRepository,
-  BasicMessageRole,
   KeyDerivationMethod,
   TypedArrayEncoder,
   utils,
@@ -14,6 +11,8 @@ import {
 import { Store } from '@hyperledger/aries-askar-shared'
 import { tmpdir } from 'os'
 import path from 'path'
+
+import { BasicMessageRecord, BasicMessageRepository, BasicMessageRole } from '../..//didcomm'
 
 import { getAskarSqliteAgentOptions } from './helpers'
 

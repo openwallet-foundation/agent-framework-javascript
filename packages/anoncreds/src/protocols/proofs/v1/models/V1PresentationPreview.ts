@@ -1,4 +1,5 @@
-import { JsonTransformer, IsValidMessageType, replaceLegacyDidSovPrefix, parseMessageType } from '@credo-ts/core'
+import { JsonTransformer } from '@credo-ts/core'
+import { IsValidMessageType, replaceLegacyDidSovPrefix, parseMessageType } from '@credo-ts/didcomm'
 import { Expose, Transform, Type } from 'class-transformer'
 import {
   IsIn,

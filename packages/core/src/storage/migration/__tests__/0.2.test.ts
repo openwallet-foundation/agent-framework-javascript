@@ -3,7 +3,9 @@ import path from 'path'
 
 import { InMemoryStorageService } from '../../../../../../tests/InMemoryStorageService'
 import { RegisteredAskarTestWallet } from '../../../../../askar/tests/helpers'
-import { Agent, MediatorRoutingRecord } from '../../../../src'
+import { MediatorRoutingRecord } from '../../../../../didcomm/src/modules'
+import { getDefaultDidcommModules } from '../../../../../didcomm/src/util/modules'
+import { Agent } from '../../../../src'
 import { agentDependencies } from '../../../../tests/helpers'
 import { InjectionSymbols } from '../../../constants'
 import { DependencyManager } from '../../../plugins'
@@ -42,6 +44,7 @@ describe('UpdateAssistant | v0.2 - v0.3.1', () => {
           walletConfig,
         },
         dependencies: agentDependencies,
+        modules: getDefaultDidcommModules(),
       },
       dependencyManager
     )
@@ -112,6 +115,7 @@ describe('UpdateAssistant | v0.2 - v0.3.1', () => {
           walletConfig,
           autoUpdateStorageOnStartup: true,
         },
+        modules: getDefaultDidcommModules(),
         dependencies: agentDependencies,
       },
       dependencyManager
@@ -163,6 +167,7 @@ describe('UpdateAssistant | v0.2 - v0.3.1', () => {
           autoUpdateStorageOnStartup: true,
         },
         dependencies: agentDependencies,
+        modules: getDefaultDidcommModules(),
       },
       dependencyManager
     )

@@ -1,10 +1,9 @@
-import type { V2IssueCredentialMessage } from '../../core/src/modules/credentials/protocol/v2/messages/V2IssueCredentialMessage'
+import type { V2IssueCredentialMessage } from '../../core/src/modules/didcomm'
 import type { EventReplaySubject, JsonLdTestsAgent } from '../../core/tests'
 
 import { TypedArrayEncoder } from '../../core/src'
 import { KeyType } from '../../core/src/crypto'
-import { CredentialState } from '../../core/src/modules/credentials/models'
-import { CredentialExchangeRecord } from '../../core/src/modules/credentials/repository/CredentialExchangeRecord'
+import { CredentialState, CredentialExchangeRecord } from '../../core/src/modules/didcomm'
 import { CREDENTIALS_CONTEXT_V1_URL, SECURITY_CONTEXT_BBS_URL } from '../../core/src/modules/vc'
 import { JsonTransformer } from '../../core/src/utils/JsonTransformer'
 import { waitForCredentialRecordSubject, setupJsonLdTests, testLogger } from '../../core/tests'

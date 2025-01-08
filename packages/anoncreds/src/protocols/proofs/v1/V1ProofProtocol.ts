@@ -1,38 +1,34 @@
 import type { LegacyIndyProofFormatService } from '../../../formats'
+import type { AgentContext } from '@credo-ts/core'
 import type {
   ProofProtocol,
-  DependencyManager,
-  FeatureRegistry,
-  AgentContext,
   ProofProtocolOptions,
   InboundMessageContext,
   AgentMessage,
   ProblemReportMessage,
   GetProofFormatDataReturn,
   ProofFormat,
-} from '@credo-ts/core'
+  FeatureRegistry,
+  MessageHandlerRegistry,
+} from '@credo-ts/didcomm'
 
+import { CredoError, JsonEncoder, JsonTransformer, MessageValidator, utils } from '@credo-ts/core'
 import {
   ProofRole,
   BaseProofProtocol,
   Protocol,
   ProofRepository,
   DidCommMessageRepository,
-  CredoError,
-  MessageValidator,
   ProofExchangeRecord,
   ProofState,
   DidCommMessageRole,
   ConnectionService,
   Attachment,
-  JsonTransformer,
   PresentationProblemReportReason,
   AckStatus,
   ProofsModuleConfig,
   AutoAcceptProof,
-  JsonEncoder,
-  utils,
-} from '@credo-ts/core'
+} from '@credo-ts/didcomm'
 
 import { composeProofAutoAccept, createRequestFromPreview } from '../../../utils'
 
@@ -77,9 +73,9 @@ export class V1ProofProtocol extends BaseProofProtocol implements ProofProtocol<
   /**
    * Registers the protocol implementation (handlers, feature registry) on the agent.
    */
-  public register(dependencyManager: DependencyManager, featureRegistry: FeatureRegistry) {
+  public register(messageHandlerRegistry: MessageHandlerRegistry, featureRegistry: FeatureRegistry) {
     // Register message handlers for the Issue Credential V1 Protocol
-    dependencyManager.registerMessageHandlers([
+    messageHandlerRegistry.registerMessageHandlers([
       new V1ProposePresentationHandler(this),
       new V1RequestPresentationHandler(this),
       new V1PresentationHandler(this),

@@ -1,4 +1,4 @@
-import type { CredentialExchangeRecord, ProofExchangeRecord } from '@credo-ts/core'
+import type { CredentialExchangeRecord, ProofExchangeRecord } from '@credo-ts/didcomm'
 
 import { clear } from 'console'
 import { textSync } from 'figlet'
@@ -72,7 +72,7 @@ export class AliceInquirer extends BaseInquirer {
   public async acceptCredentialOffer(credentialRecord: CredentialExchangeRecord) {
     const confirm = await prompt([this.inquireConfirmation(Title.CredentialOfferTitle)])
     if (confirm.options === ConfirmOptions.No) {
-      await this.alice.agent.credentials.declineOffer(credentialRecord.id)
+      await this.alice.agent.modules.credentials.declineOffer(credentialRecord.id)
     } else if (confirm.options === ConfirmOptions.Yes) {
       await this.alice.acceptCredentialOffer(credentialRecord)
     }
@@ -81,7 +81,7 @@ export class AliceInquirer extends BaseInquirer {
   public async acceptProofRequest(proofRecord: ProofExchangeRecord) {
     const confirm = await prompt([this.inquireConfirmation(Title.ProofRequestTitle)])
     if (confirm.options === ConfirmOptions.No) {
-      await this.alice.agent.proofs.declineRequest({ proofRecordId: proofRecord.id })
+      await this.alice.agent.modules.proofs.declineRequest({ proofRecordId: proofRecord.id })
     } else if (confirm.options === ConfirmOptions.Yes) {
       await this.alice.acceptProofRequest(proofRecord)
     }

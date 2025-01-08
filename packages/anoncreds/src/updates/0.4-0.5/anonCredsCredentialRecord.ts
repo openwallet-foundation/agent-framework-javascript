@@ -2,13 +2,8 @@ import type { AnonCredsHolderService } from '../../services'
 import type { W3cAnonCredsCredentialMetadata } from '../../utils/metadata'
 import type { AgentContext, BaseAgent } from '@credo-ts/core'
 
-import {
-  CacheModuleConfig,
-  CredentialRepository,
-  CredoError,
-  W3cCredentialRepository,
-  W3cCredentialService,
-} from '@credo-ts/core'
+import { CacheModuleConfig, CredoError, W3cCredentialRepository, W3cCredentialService } from '@credo-ts/core'
+import { CredentialRepository } from '@credo-ts/didcomm'
 
 import { AnonCredsCredentialRepository, type AnonCredsCredentialRecord } from '../../repository'
 import { AnonCredsHolderServiceSymbol } from '../../services'

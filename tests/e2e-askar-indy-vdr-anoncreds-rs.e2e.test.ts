@@ -11,16 +11,17 @@ import { e2eTest } from './e2e-test'
 import { SubjectInboundTransport } from './transport/SubjectInboundTransport'
 import { SubjectOutboundTransport } from './transport/SubjectOutboundTransport'
 
+import { Agent } from '@credo-ts/core'
 import {
-  Agent,
   AutoAcceptCredential,
   MediatorModule,
   MediatorPickupStrategy,
   MediationRecipientModule,
-} from '@credo-ts/core'
+} from '@credo-ts/didcomm'
 
 const recipientAgentOptions = getAgentOptions(
   'E2E Askar Subject Recipient',
+  {},
   {},
   {
     ...getAnonCredsModules({
@@ -37,6 +38,7 @@ const mediatorAgentOptions = getAgentOptions(
   {
     endpoints: ['rxjs:mediator'],
   },
+  {},
   {
     ...getAnonCredsModules({
       autoAcceptCredentials: AutoAcceptCredential.ContentApproved,
@@ -50,6 +52,7 @@ const senderAgentOptions = getAgentOptions(
   {
     endpoints: ['rxjs:sender'],
   },
+  {},
   {
     ...getAnonCredsModules({
       autoAcceptCredentials: AutoAcceptCredential.ContentApproved,
@@ -92,17 +95,17 @@ describe('E2E Askar-AnonCredsRS-IndyVDR Subject tests', () => {
     }
 
     // Recipient Setup
-    recipientAgent.registerOutboundTransport(new SubjectOutboundTransport(subjectMap))
+    recipientAgent.modules.didcomm.registerOutboundTransport(new SubjectOutboundTransport(subjectMap))
     await recipientAgent.initialize()
 
     // Mediator Setup
-    mediatorAgent.registerOutboundTransport(new SubjectOutboundTransport(subjectMap))
-    mediatorAgent.registerInboundTransport(new SubjectInboundTransport(mediatorMessages))
+    mediatorAgent.modules.didcomm.registerOutboundTransport(new SubjectOutboundTransport(subjectMap))
+    mediatorAgent.modules.didcomm.registerInboundTransport(new SubjectInboundTransport(mediatorMessages))
     await mediatorAgent.initialize()
 
     // Sender Setup
-    senderAgent.registerOutboundTransport(new SubjectOutboundTransport(subjectMap))
-    senderAgent.registerInboundTransport(new SubjectInboundTransport(senderMessages))
+    senderAgent.modules.didcomm.registerOutboundTransport(new SubjectOutboundTransport(subjectMap))
+    senderAgent.modules.didcomm.registerInboundTransport(new SubjectInboundTransport(senderMessages))
     await senderAgent.initialize()
 
     await e2eTest({

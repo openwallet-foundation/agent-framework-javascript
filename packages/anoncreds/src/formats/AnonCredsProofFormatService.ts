@@ -7,9 +7,9 @@ import type {
   AnonCredsProofRequest,
 } from '../models'
 import type { AnonCredsHolderService, AnonCredsVerifierService } from '../services'
+import type { AgentContext } from '@credo-ts/core'
 import type {
   ProofFormatService,
-  AgentContext,
   ProofFormatCreateReturn,
   FormatCreateRequestOptions,
   ProofFormatCreateProposalOptions,
@@ -24,9 +24,10 @@ import type {
   ProofFormatAutoRespondProposalOptions,
   ProofFormatAutoRespondRequestOptions,
   ProofFormatAutoRespondPresentationOptions,
-} from '@credo-ts/core'
+} from '@credo-ts/didcomm'
 
-import { CredoError, Attachment, AttachmentData, JsonEncoder, ProofFormatSpec, JsonTransformer } from '@credo-ts/core'
+import { CredoError, JsonEncoder, JsonTransformer } from '@credo-ts/core'
+import { Attachment, AttachmentData, ProofFormatSpec } from '@credo-ts/didcomm'
 
 import { AnonCredsProofRequest as AnonCredsProofRequestClass } from '../models/AnonCredsProofRequest'
 import { AnonCredsVerifierServiceSymbol, AnonCredsHolderServiceSymbol } from '../services'

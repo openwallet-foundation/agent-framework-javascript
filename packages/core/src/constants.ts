@@ -9,5 +9,3 @@ export const InjectionSymbols = {
   Wallet: Symbol('Wallet'),
   WebCrypto: Symbol('WebCrypto'),
 }
-
-export const DID_COMM_TRANSPORT_QUEUE = 'didcomm:transport/queue'

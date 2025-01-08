@@ -28,9 +28,7 @@ import {
 } from '@credo-ts/core'
 import { Subject } from 'rxjs'
 
-import { ConnectionService } from '../../../../../../core/src/modules/connections/services/ConnectionService'
-import { CredentialRepository } from '../../../../../../core/src/modules/credentials/repository/CredentialRepository'
-import { DidCommMessageRepository } from '../../../../../../core/src/storage/didcomm/DidCommMessageRepository'
+import { ConnectionService, CredentialRepository, DidCommMessageRepository } from '../../../../../../didcomm/src'
 import { getMockConnection, getAgentConfig, getAgentContext, mockFunction } from '../../../../../../core/tests/helpers'
 import { LegacyIndyCredentialFormatService } from '../../../../formats/LegacyIndyCredentialFormatService'
 import { convertAttributesToCredentialValues } from '../../../../utils/credential'

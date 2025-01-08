@@ -1,6 +1,6 @@
 export { JwsService } from './JwsService'
 
-export { JwsDetachedFormat, JwsProtectedHeaderOptions } from './JwsTypes'
+export { JwsDetachedFormat, JwsFlattenedDetachedFormat, JwsGeneralFormat, JwsProtectedHeaderOptions } from './JwsTypes'
 export * from './keyUtils'
 
 export { KeyBackend } from './KeyBackend'

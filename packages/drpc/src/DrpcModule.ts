@@ -1,6 +1,7 @@
-import type { FeatureRegistry, DependencyManager, Module } from '@credo-ts/core'
+import type { AgentContext, DependencyManager, Module } from '@credo-ts/core'
 
-import { Protocol, AgentConfig } from '@credo-ts/core'
+import { AgentConfig } from '@credo-ts/core'
+import { FeatureRegistry, Protocol } from '@credo-ts/didcomm'
 
 import { DrpcApi } from './DrpcApi'
 import { DrpcRole } from './models/DrpcRole'
@@ -13,7 +14,7 @@ export class DrpcModule implements Module {
   /**
    * Registers the dependencies of the drpc message module on the dependency manager.
    */
-  public register(dependencyManager: DependencyManager, featureRegistry: FeatureRegistry) {
+  public register(dependencyManager: DependencyManager) {
     // Warn about experimental module
     dependencyManager
       .resolve(AgentConfig)
@@ -26,8 +27,11 @@ export class DrpcModule implements Module {
 
     // Repositories
     dependencyManager.registerSingleton(DrpcRepository)
+  }
 
-    // Features
+  public async initialize(agentContext: AgentContext): Promise<void> {
+    const featureRegistry = agentContext.dependencyManager.resolve(FeatureRegistry)
+
     featureRegistry.register(
       new Protocol({
         id: 'https://didcomm.org/drpc/1.0',

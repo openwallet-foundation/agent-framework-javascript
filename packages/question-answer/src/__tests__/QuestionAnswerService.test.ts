@@ -1,7 +1,8 @@
 import type { AgentConfig, AgentContext, Repository, Wallet } from '@credo-ts/core'
 import type { QuestionAnswerStateChangedEvent, ValidResponse } from '@credo-ts/question-answer'
 
-import { EventEmitter, InboundMessageContext, DidExchangeState } from '@credo-ts/core'
+import { EventEmitter } from '@credo-ts/core'
+import { InboundMessageContext, DidExchangeState } from '@credo-ts/didcomm'
 import { agentDependencies } from '@credo-ts/node'
 import { Subject } from 'rxjs'
 

@@ -1,13 +1,9 @@
 import type { ModulesMap } from '../agent/AgentModules'
-import type { MessageHandler } from '../agent/MessageHandler'
-import type { MessageHandlerMiddleware } from '../agent/MessageHandlerMiddleware'
 import type { Constructor } from '../utils/mixins'
 import type { DependencyContainer } from 'tsyringe'
 
 import { container as rootContainer, InjectionToken, Lifecycle } from 'tsyringe'
 
-import { FeatureRegistry } from '../agent/FeatureRegistry'
-import { MessageHandlerRegistry } from '../agent/MessageHandlerRegistry'
 import { CredoError } from '../error'
 
 export { InjectionToken }
@@ -25,8 +21,6 @@ export class DependencyManager {
   }
 
   public registerModules(modules: ModulesMap) {
-    const featureRegistry = this.resolve(FeatureRegistry)
-
     for (const [moduleKey, module] of Object.entries(modules)) {
       if (this.registeredModules[moduleKey]) {
         throw new CredoError(
@@ -38,44 +32,12 @@ export class DependencyManager {
       if (module.api) {
         this.registerContextScoped(module.api)
       }
-      module.register(this, featureRegistry)
+      try {
+        module.register(this)
+      } catch (error) {
+        throw new CredoError(`Cannot register ${moduleKey}: ${error}`)
+      }
     }
-  }
-
-  public registerMessageHandlers(messageHandlers: MessageHandler[]) {
-    const messageHandlerRegistry = this.resolve(MessageHandlerRegistry)
-
-    for (const messageHandler of messageHandlers) {
-      messageHandlerRegistry.registerMessageHandler(messageHandler)
-    }
-  }
-
-  public registerMessageHandlerMiddleware(messageHandlerMiddleware: MessageHandlerMiddleware) {
-    const messageHandlerRegistry = this.resolve(MessageHandlerRegistry)
-
-    messageHandlerRegistry.registerMessageHandlerMiddleware(messageHandlerMiddleware)
-  }
-
-  public get fallbackMessageHandler() {
-    const messageHandlerRegistry = this.resolve(MessageHandlerRegistry)
-
-    return messageHandlerRegistry.fallbackMessageHandler
-  }
-
-  public get messageHandlerMiddlewares() {
-    const messageHandlerRegistry = this.resolve(MessageHandlerRegistry)
-
-    return messageHandlerRegistry.messageHandlerMiddlewares
-  }
-
-  /**
-   * Sets the fallback message handler, the message handler that will be called if no handler
-   * is registered for an incoming message type.
-   */
-  public setFallbackMessageHandler(fallbackMessageHandler: MessageHandler['handle']) {
-    const messageHandlerRegistry = this.resolve(MessageHandlerRegistry)
-
-    messageHandlerRegistry.setFallbackMessageHandler(fallbackMessageHandler)
   }
 
   public registerSingleton<T>(from: InjectionToken<T>, to: InjectionToken<T>): void

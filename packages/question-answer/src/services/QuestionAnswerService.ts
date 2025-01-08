@@ -1,6 +1,7 @@
 import type { QuestionAnswerStateChangedEvent } from '../QuestionAnswerEvents'
 import type { ValidResponse } from '../models'
-import type { AgentContext, InboundMessageContext, Query, QueryOptions } from '@credo-ts/core'
+import type { AgentContext, Query, QueryOptions } from '@credo-ts/core'
+import type { InboundMessageContext } from '@credo-ts/didcomm'
 
 import { CredoError, EventEmitter, inject, injectable, InjectionSymbols, Logger } from '@credo-ts/core'
 

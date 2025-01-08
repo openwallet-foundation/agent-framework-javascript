@@ -1,11 +1,5 @@
-import {
-  DependencyManager,
-  InjectionSymbols,
-  Agent,
-  UpdateAssistant,
-  utils,
-  MediatorRoutingRecord,
-} from '@credo-ts/core'
+import { DependencyManager, InjectionSymbols, Agent, UpdateAssistant, utils } from '@credo-ts/core'
+import { MediatorRoutingRecord } from '@credo-ts/didcomm'
 import { agentDependencies } from '@credo-ts/node'
 import { readFileSync } from 'fs'
 import path from 'path'

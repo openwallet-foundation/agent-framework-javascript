@@ -7,7 +7,7 @@ import { CheqdAnonCredsRegistry } from '../src/anoncreds'
 
 import { cheqdPayerSeeds, getCheqdModules } from './setupCheqdModule'
 
-const agent = new Agent(getInMemoryAgentOptions('cheqdAnonCredsRegistry', {}, getCheqdModules(cheqdPayerSeeds[2])))
+const agent = new Agent(getInMemoryAgentOptions('cheqdAnonCredsRegistry', {}, {}, getCheqdModules(cheqdPayerSeeds[2])))
 
 const cheqdAnonCredsRegistry = new CheqdAnonCredsRegistry()
 

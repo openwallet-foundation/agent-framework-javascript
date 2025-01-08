@@ -20,6 +20,7 @@
   },
   "dependencies": {
     "@credo-ts/core": "workspace:*",
+    "@credo-ts/didcomm": "workspace:*",
     "@credo-ts/node": "workspace:*",
     "@credo-ts/askar": "workspace:*",
     "class-validator": "0.14.1",

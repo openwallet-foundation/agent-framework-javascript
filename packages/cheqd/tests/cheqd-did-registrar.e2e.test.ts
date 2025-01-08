@@ -18,7 +18,7 @@ import { getInMemoryAgentOptions } from '../../core/tests/helpers'
 import { validService } from './setup'
 import { cheqdPayerSeeds, getCheqdModules } from './setupCheqdModule'
 
-const agentOptions = getInMemoryAgentOptions('Faber Dids Registrar', {}, getCheqdModules(cheqdPayerSeeds[0]))
+const agentOptions = getInMemoryAgentOptions('Faber Dids Registrar', {}, {}, getCheqdModules(cheqdPayerSeeds[0]))
 
 describe('Cheqd DID registrar', () => {
   let agent: Agent<ReturnType<typeof getCheqdModules>>

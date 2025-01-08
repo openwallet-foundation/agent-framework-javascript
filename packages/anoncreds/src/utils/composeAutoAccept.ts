@@ -1,4 +1,4 @@
-import { AutoAcceptCredential, AutoAcceptProof } from '@credo-ts/core'
+import { AutoAcceptCredential, AutoAcceptProof } from '@credo-ts/didcomm'
 
 /**
  * Returns the credential auto accept config based on priority:

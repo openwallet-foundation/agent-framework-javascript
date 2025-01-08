@@ -1,6 +1,8 @@
 import type { InitConfig } from '@credo-ts/core'
+import type { DidCommModuleConfigOptions } from '@credo-ts/didcomm'
 
-import { ConnectionsModule, OutOfBandRecord, Agent, CacheModule, InMemoryLruCache } from '@credo-ts/core'
+import { Agent, CacheModule, InMemoryLruCache } from '@credo-ts/core'
+import { ConnectionsModule, OutOfBandRecord, DidCommModule } from '@credo-ts/didcomm'
 import { agentDependencies } from '@credo-ts/node'
 
 import { InMemoryWalletModule } from '../../../tests/InMemoryWalletModule'
@@ -17,6 +19,9 @@ const agent1Config: InitConfig = {
     key: `tenants e2e agent 1`,
   },
   logger: testLogger,
+}
+
+const agent1DidcommConfig: DidCommModuleConfigOptions = {
   endpoints: ['rxjs:tenant-agent1'],
 }
 
@@ -27,6 +32,9 @@ const agent2Config: InitConfig = {
     key: `tenants e2e agent 2`,
   },
   logger: testLogger,
+}
+
+const agent2DidcommConfig: DidCommModuleConfigOptions = {
   endpoints: ['rxjs:tenant-agent2'],
 }
 
@@ -34,6 +42,7 @@ const agent2Config: InitConfig = {
 const agent1 = new Agent({
   config: agent1Config,
   modules: {
+    didcomm: new DidCommModule(agent1DidcommConfig),
     tenants: new TenantsModule(),
     inMemory: new InMemoryWalletModule(),
     connections: new ConnectionsModule({
@@ -49,6 +58,7 @@ const agent1 = new Agent({
 const agent2 = new Agent({
   config: agent2Config,
   modules: {
+    didcomm: new DidCommModule(agent2DidcommConfig),
     tenants: new TenantsModule(),
     inMemory: new InMemoryWalletModule(),
     connections: new ConnectionsModule({
@@ -65,16 +75,16 @@ const agent2 = new Agent({
 const agent1InboundTransport = new SubjectInboundTransport()
 const agent2InboundTransport = new SubjectInboundTransport()
 
-agent1.registerInboundTransport(agent1InboundTransport)
-agent2.registerInboundTransport(agent2InboundTransport)
+agent1.modules.didcomm.registerInboundTransport(agent1InboundTransport)
+agent2.modules.didcomm.registerInboundTransport(agent2InboundTransport)
 
-agent1.registerOutboundTransport(
+agent1.modules.didcomm.registerOutboundTransport(
   new SubjectOutboundTransport({
     'rxjs:tenant-agent1': agent1InboundTransport.ourSubject,
     'rxjs:tenant-agent2': agent2InboundTransport.ourSubject,
   })
 )
-agent2.registerOutboundTransport(
+agent2.modules.didcomm.registerOutboundTransport(
   new SubjectOutboundTransport({
     'rxjs:tenant-agent1': agent1InboundTransport.ourSubject,
     'rxjs:tenant-agent2': agent2InboundTransport.ourSubject,
@@ -162,27 +172,27 @@ describe('Tenants E2E', () => {
     })
 
     // Create and receive oob invitation in scope of tenants
-    const outOfBandRecord = await tenantAgent1.oob.createInvitation()
-    const { connectionRecord: tenant2ConnectionRecord } = await tenantAgent2.oob.receiveInvitation(
+    const outOfBandRecord = await tenantAgent1.modules.oob.createInvitation()
+    const { connectionRecord: tenant2ConnectionRecord } = await tenantAgent2.modules.oob.receiveInvitation(
       outOfBandRecord.outOfBandInvitation
     )
 
     // Retrieve all oob records for the base and tenant agent, only the
     // tenant agent should have a record.
-    const baseAgentOutOfBandRecords = await agent1.oob.getAll()
-    const tenantAgent1OutOfBandRecords = await tenantAgent1.oob.getAll()
-    const tenantAgent2OutOfBandRecords = await tenantAgent2.oob.getAll()
+    const baseAgentOutOfBandRecords = await agent1.modules.oob.getAll()
+    const tenantAgent1OutOfBandRecords = await tenantAgent1.modules.oob.getAll()
+    const tenantAgent2OutOfBandRecords = await tenantAgent2.modules.oob.getAll()
 
     expect(baseAgentOutOfBandRecords.length).toBe(0)
     expect(tenantAgent1OutOfBandRecords.length).toBe(1)
     expect(tenantAgent2OutOfBandRecords.length).toBe(1)
 
     if (!tenant2ConnectionRecord) throw new Error('Receive invitation did not return connection record')
-    await tenantAgent2.connections.returnWhenIsConnected(tenant2ConnectionRecord.id)
+    await tenantAgent2.modules.connections.returnWhenIsConnected(tenant2ConnectionRecord.id)
 
     // Find the connection record for the created oob invitation
-    const [connectionRecord] = await tenantAgent1.connections.findAllByOutOfBandId(outOfBandRecord.id)
-    await tenantAgent1.connections.returnWhenIsConnected(connectionRecord.id)
+    const [connectionRecord] = await tenantAgent1.modules.connections.findAllByOutOfBandId(outOfBandRecord.id)
+    await tenantAgent1.modules.connections.returnWhenIsConnected(connectionRecord.id)
 
     await tenantAgent1.endSession()
     await tenantAgent2.endSession()
@@ -213,17 +223,17 @@ describe('Tenants E2E', () => {
     })
 
     // Create and receive oob invitation in scope of tenants
-    const outOfBandRecord = await tenantAgent1.oob.createInvitation()
-    const { connectionRecord: tenant2ConnectionRecord } = await tenantAgent2.oob.receiveInvitation(
+    const outOfBandRecord = await tenantAgent1.modules.oob.createInvitation()
+    const { connectionRecord: tenant2ConnectionRecord } = await tenantAgent2.modules.oob.receiveInvitation(
       outOfBandRecord.outOfBandInvitation
     )
 
     if (!tenant2ConnectionRecord) throw new Error('Receive invitation did not return connection record')
-    await tenantAgent2.connections.returnWhenIsConnected(tenant2ConnectionRecord.id)
+    await tenantAgent2.modules.connections.returnWhenIsConnected(tenant2ConnectionRecord.id)
 
     // Find the connection record for the created oob invitation
-    const [connectionRecord] = await tenantAgent1.connections.findAllByOutOfBandId(outOfBandRecord.id)
-    await tenantAgent1.connections.returnWhenIsConnected(connectionRecord.id)
+    const [connectionRecord] = await tenantAgent1.modules.connections.findAllByOutOfBandId(outOfBandRecord.id)
+    await tenantAgent1.modules.connections.returnWhenIsConnected(connectionRecord.id)
 
     await tenantAgent1.endSession()
     await tenantAgent2.endSession()
@@ -241,7 +251,7 @@ describe('Tenants E2E', () => {
     })
 
     await agent1.modules.tenants.withTenantAgent({ tenantId: tenantRecord.id }, async (tenantAgent) => {
-      const outOfBandRecord = await tenantAgent.oob.createInvitation()
+      const outOfBandRecord = await tenantAgent.modules.oob.createInvitation()
 
       expect(outOfBandRecord).toBeInstanceOf(OutOfBandRecord)
       expect(tenantAgent.context.contextCorrelationId).toBe(tenantRecord.id)
@@ -252,15 +262,15 @@ describe('Tenants E2E', () => {
   })
 
   test('fallback middleware for the tenant manager propagated to the tenant', async () => {
-    expect(agent1.dependencyManager.fallbackMessageHandler).toBeUndefined()
+    expect(agent1.modules.didcomm.fallbackMessageHandler).toBeUndefined()
 
     const fallbackFunction = async () => {
       // empty
     }
 
-    agent1.dependencyManager.setFallbackMessageHandler(fallbackFunction)
+    agent1.modules.didcomm.setFallbackMessageHandler(fallbackFunction)
 
-    expect(agent1.dependencyManager.fallbackMessageHandler).toBe(fallbackFunction)
+    expect(agent1.modules.didcomm.fallbackMessageHandler).toBe(fallbackFunction)
 
     const tenantRecord = await agent1.modules.tenants.createTenant({
       config: {
@@ -272,7 +282,7 @@ describe('Tenants E2E', () => {
       tenantId: tenantRecord.id,
     })
 
-    expect(tenantAgent.dependencyManager.fallbackMessageHandler).toBe(fallbackFunction)
+    expect(tenantAgent.modules.didcomm.fallbackMessageHandler).toBe(fallbackFunction)
 
     await tenantAgent.endSession()
   })

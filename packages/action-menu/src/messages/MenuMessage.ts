@@ -1,6 +1,6 @@
 import type { ActionMenuOptionOptions } from '../models'
 
-import { AgentMessage, IsValidMessageType, parseMessageType } from '@credo-ts/core'
+import { AgentMessage, IsValidMessageType, parseMessageType } from '@credo-ts/didcomm'
 import { Expose, Type } from 'class-transformer'
 import { IsInstance, IsOptional, IsString } from 'class-validator'
 

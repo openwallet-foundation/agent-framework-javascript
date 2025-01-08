@@ -1,11 +1,13 @@
 import type { InitConfig } from '@credo-ts/core'
 
-import { ConnectionsModule, Agent } from '@credo-ts/core'
+import { Agent } from '@credo-ts/core'
+import { ConnectionsModule } from '@credo-ts/didcomm'
 import { agentDependencies } from '@credo-ts/node'
 
 import { InMemoryWalletModule } from '../../../tests/InMemoryWalletModule'
 import { uuid } from '../../core/src/utils/uuid'
 import { testLogger } from '../../core/tests'
+import { getDefaultDidcommModules } from '../../didcomm/src/util/modules'
 
 import { TenantsModule } from '@credo-ts/tenants'
 
@@ -16,7 +18,6 @@ const agentConfig: InitConfig = {
     key: `tenant sessions e2e agent 1`,
   },
   logger: testLogger,
-  endpoints: ['rxjs:tenant-agent1'],
 }
 
 // Create multi-tenant agent
@@ -24,6 +25,7 @@ const agent = new Agent({
   config: agentConfig,
   dependencies: agentDependencies,
   modules: {
+    ...getDefaultDidcommModules({ endpoints: ['rxjs:tenant-agent1'] }),
     tenants: new TenantsModule({ sessionAcquireTimeout: 10000 }),
     inMemory: new InMemoryWalletModule(),
     connections: new ConnectionsModule({

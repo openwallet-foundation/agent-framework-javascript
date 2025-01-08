@@ -1,16 +1,16 @@
+import type { AgentContext } from '@credo-ts/core'
 import type {
   InboundTransport,
-  Agent,
   TransportSession,
   EncryptedMessage,
-  AgentContext,
   AgentMessageReceivedEvent,
   AgentMessageProcessedEvent,
-} from '@credo-ts/core'
+} from '@credo-ts/didcomm'
 import type { Express, Request, Response } from 'express'
 import type { Server } from 'http'
 
-import { DidCommMimeType, CredoError, TransportService, utils, AgentEventTypes } from '@credo-ts/core'
+import { CredoError, utils, EventEmitter } from '@credo-ts/core'
+import { DidCommMimeType, TransportService, AgentEventTypes, DidCommModuleConfig } from '@credo-ts/didcomm'
 import express, { text } from 'express'
 import { filter, firstValueFrom, ReplaySubject, timeout } from 'rxjs'
 
@@ -48,10 +48,10 @@ export class HttpInboundTransport implements InboundTransport {
     this.app.use(text({ type: supportedContentTypes, limit: '5mb' }))
   }
 
-  public async start(agent: Agent) {
-    const transportService = agent.dependencyManager.resolve(TransportService)
+  public async start(agentContext: AgentContext) {
+    const transportService = agentContext.dependencyManager.resolve(TransportService)
 
-    agent.config.logger.debug(`Starting HTTP inbound transport`, {
+    agentContext.config.logger.debug(`Starting HTTP inbound transport`, {
       port: this.port,
     })
 
@@ -73,7 +73,8 @@ export class HttpInboundTransport implements InboundTransport {
         const message = req.body
         const encryptedMessage = JSON.parse(message) as EncryptedMessage
 
-        const observable = agent.events.observable<AgentMessageProcessedEvent>(AgentEventTypes.AgentMessageProcessed)
+        const eventEmitter = agentContext.dependencyManager.resolve(EventEmitter)
+        const observable = eventEmitter.observable<AgentMessageProcessedEvent>(AgentEventTypes.AgentMessageProcessed)
         const subject = new ReplaySubject(1)
 
         observable
@@ -87,7 +88,7 @@ export class HttpInboundTransport implements InboundTransport {
           )
           .subscribe(subject)
 
-        agent.events.emit<AgentMessageReceivedEvent>(agent.context, {
+        eventEmitter.emit<AgentMessageReceivedEvent>(agentContext, {
           type: AgentEventTypes.AgentMessageReceived,
           payload: {
             message: encryptedMessage,
@@ -103,7 +104,7 @@ export class HttpInboundTransport implements InboundTransport {
           res.status(200).end()
         }
       } catch (error) {
-        agent.config.logger.error(`Error processing inbound message: ${error.message}`, error)
+        agentContext.config.logger.error(`Error processing inbound message: ${error.message}`, error)
 
         if (!res.headersSent) {
           res.status(500).send('Error processing message')
@@ -145,7 +146,8 @@ export class HttpTransportSession implements TransportSession {
     }
 
     // By default we take the agent config's default DIDComm content-type
-    let responseMimeType = agentContext.config.didCommMimeType as string
+    const didcommConfig = agentContext.dependencyManager.resolve(DidCommModuleConfig)
+    let responseMimeType = didcommConfig.didCommMimeType as string
 
     // However, if the request mime-type is a mime-type that is supported by us, we use that
     // to minimize the chance of interoperability issues

@@ -27,6 +27,7 @@
   },
   "dependencies": {
     "@credo-ts/core": "workspace:*",
+    "@credo-ts/didcomm": "workspace:*",
     "class-transformer": "^0.5.1",
     "class-validator": "0.14.1"
   },

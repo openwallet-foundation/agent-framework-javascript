@@ -1,11 +1,16 @@
-import type { AgentMessageProcessedEvent } from '../src/agent/Events'
+import type { AgentMessageProcessedEvent } from '../../didcomm/src'
 
 import { filter, firstValueFrom, timeout } from 'rxjs'
 
-import { parseMessageType, MessageSender, AgentMessage, IsValidMessageType } from '../src'
+import {
+  AgentEventTypes,
+  OutboundMessageContext,
+  parseMessageType,
+  MessageSender,
+  AgentMessage,
+  IsValidMessageType,
+} from '../../didcomm/src'
 import { Agent } from '../src/agent/Agent'
-import { AgentEventTypes } from '../src/agent/Events'
-import { OutboundMessageContext } from '../src/agent/models'
 
 import { getInMemoryAgentOptions } from './helpers'
 import { setupSubjectTransports } from './transport'
@@ -35,13 +40,13 @@ describe('multi version protocols', () => {
 
     // Register the test handler with the v1.3 version of the message
     const mockHandle = jest.fn()
-    aliceAgent.dependencyManager.registerMessageHandlers([{ supportedMessages: [TestMessageV13], handle: mockHandle }])
+    aliceAgent.modules.didcomm.registerMessageHandlers([{ supportedMessages: [TestMessageV13], handle: mockHandle }])
 
     await aliceAgent.initialize()
     await bobAgent.initialize()
 
-    const { outOfBandInvitation, id } = await aliceAgent.oob.createInvitation()
-    let { connectionRecord: bobConnection } = await bobAgent.oob.receiveInvitation(outOfBandInvitation, {
+    const { outOfBandInvitation, id } = await aliceAgent.modules.oob.createInvitation()
+    let { connectionRecord: bobConnection } = await bobAgent.modules.oob.receiveInvitation(outOfBandInvitation, {
       autoAcceptConnection: true,
       autoAcceptInvitation: true,
     })
@@ -50,10 +55,10 @@ describe('multi version protocols', () => {
       throw new Error('No connection for bob')
     }
 
-    bobConnection = await bobAgent.connections.returnWhenIsConnected(bobConnection.id)
+    bobConnection = await bobAgent.modules.connections.returnWhenIsConnected(bobConnection.id)
 
-    let [aliceConnection] = await aliceAgent.connections.findAllByOutOfBandId(id)
-    aliceConnection = await aliceAgent.connections.returnWhenIsConnected(aliceConnection.id)
+    let [aliceConnection] = await aliceAgent.modules.connections.findAllByOutOfBandId(id)
+    aliceConnection = await aliceAgent.modules.connections.returnWhenIsConnected(aliceConnection.id)
 
     expect(aliceConnection).toBeConnectedWith(bobConnection)
     expect(bobConnection).toBeConnectedWith(aliceConnection)

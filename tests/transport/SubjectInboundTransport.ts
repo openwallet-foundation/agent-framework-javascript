@@ -1,13 +1,12 @@
-import type { InboundTransport, Agent, AgentContext } from '../../packages/core/src'
-import type { TransportSession } from '../../packages/core/src/agent/TransportService'
-import type { EncryptedMessage } from '../../packages/core/src/types'
+import type { AgentContext } from '../../packages/core/src'
+import type { InboundTransport, EncryptedMessage, TransportSession } from '../../packages/didcomm/src'
 import type { Subscription } from 'rxjs'
 
 import { Subject } from 'rxjs'
 
-import { MessageReceiver } from '../../packages/core/src'
-import { TransportService } from '../../packages/core/src/agent/TransportService'
+import { EventEmitter } from '../../packages/core/src'
 import { uuid } from '../../packages/core/src/utils/uuid'
+import { MessageReceiver, TransportService } from '../../packages/didcomm/src'
 
 export type SubjectMessage = { message: EncryptedMessage; replySubject?: Subject<SubjectMessage> }
 
@@ -19,7 +18,7 @@ export class SubjectInboundTransport implements InboundTransport {
     this.ourSubject = ourSubject
   }
 
-  public async start(agent: Agent) {
+  public async start(agent: AgentContext) {
     this.subscribe(agent)
   }
 
@@ -27,10 +26,11 @@ export class SubjectInboundTransport implements InboundTransport {
     this.subscription?.unsubscribe()
   }
 
-  private subscribe(agent: Agent) {
-    const logger = agent.config.logger
-    const transportService = agent.dependencyManager.resolve(TransportService)
-    const messageReceiver = agent.dependencyManager.resolve(MessageReceiver)
+  private subscribe(agentContext: AgentContext) {
+    const logger = agentContext.config.logger
+    const transportService = agentContext.dependencyManager.resolve(TransportService)
+    const messageReceiver = agentContext.dependencyManager.resolve(MessageReceiver)
+    const eventEmitter = agentContext.dependencyManager.resolve(EventEmitter)
 
     this.subscription = this.ourSubject.subscribe({
       next: async ({ message, replySubject }: SubjectMessage) => {
@@ -53,7 +53,7 @@ export class SubjectInboundTransport implements InboundTransport {
         try {
           await messageReceiver.receiveMessage(message, { session })
         } catch (error) {
-          agent.events.emit(agent.context, {
+          eventEmitter.emit(agentContext, {
             type: 'AgentReceiveMessageError',
             payload: error,
           })

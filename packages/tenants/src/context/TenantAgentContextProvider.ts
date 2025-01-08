@@ -1,10 +1,6 @@
 import type { TenantRecord } from '../repository'
-import type {
-  AgentContextProvider,
-  RoutingCreatedEvent,
-  EncryptedMessage,
-  UpdateAssistantUpdateOptions,
-} from '@credo-ts/core'
+import type { AgentContextProvider, UpdateAssistantUpdateOptions } from '@credo-ts/core'
+import type { RoutingCreatedEvent, EncryptedMessage } from '@credo-ts/didcomm'
 
 import {
   isStorageUpToDate,
@@ -15,14 +11,13 @@ import {
   EventEmitter,
   inject,
   Logger,
-  RoutingEventTypes,
   InjectionSymbols,
   KeyType,
   Key,
-  isValidJweStructure,
   JsonEncoder,
   isJsonObject,
 } from '@credo-ts/core'
+import { RoutingEventTypes, isValidJweStructure } from '@credo-ts/didcomm'
 
 import { TenantAgent } from '../TenantAgent'
 import { TenantRecordService } from '../services'

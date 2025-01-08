@@ -1,9 +1,8 @@
 import type { DrpcRequestObject } from '../messages'
 
-import { DidExchangeState } from '@credo-ts/core'
+import { DidExchangeState, InboundMessageContext } from '@credo-ts/didcomm'
 
 import { EventEmitter } from '../../../core/src/agent/EventEmitter'
-import { InboundMessageContext } from '../../../core/src/agent/models/InboundMessageContext'
 import { getAgentContext, getMockConnection } from '../../../core/tests/helpers'
 import { DrpcRequestMessage } from '../messages'
 import { DrpcRole } from '../models/DrpcRole'

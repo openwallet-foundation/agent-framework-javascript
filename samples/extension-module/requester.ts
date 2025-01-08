@@ -40,8 +40,8 @@ const run = async () => {
   })
 
   // Register transports
-  agent.registerOutboundTransport(wsOutboundTransport)
-  agent.registerOutboundTransport(httpOutboundTransport)
+  agent.didcomm.registerOutboundTransport(wsOutboundTransport)
+  agent.didcomm.registerOutboundTransport(httpOutboundTransport)
 
   // Now agent will handle messages and events from Dummy protocol
 

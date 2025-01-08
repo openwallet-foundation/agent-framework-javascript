@@ -13,7 +13,7 @@ import {
 
 const agentOptions = getInMemoryAgentOptions('DidsApi')
 
-const agent = new Agent(agentOptions)
+const agent: Agent = new Agent(agentOptions)
 
 describe('DidsApi', () => {
   beforeAll(async () => {
@@ -231,7 +231,7 @@ describe('DidsApi', () => {
   })
 
   test('create and resolve did:peer:4 in short and long form', async () => {
-    const routing = await agent.mediationRecipient.getRouting({})
+    const routing = await agent.modules.mediationRecipient.getRouting({})
     const didDocument = createPeerDidDocumentFromServices([
       {
         id: 'didcomm',

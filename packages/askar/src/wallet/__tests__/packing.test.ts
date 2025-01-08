@@ -1,9 +1,10 @@
 import type { WalletConfig } from '@credo-ts/core'
 
-import { JsonTransformer, BasicMessage, KeyType, SigningProviderRegistry, KeyDerivationMethod } from '@credo-ts/core'
+import { JsonTransformer, KeyType, SigningProviderRegistry, KeyDerivationMethod } from '@credo-ts/core'
 
 import { agentDependencies } from '../../../../core/tests/helpers'
 import testLogger from '../../../../core/tests/logger'
+import { BasicMessage } from '../../../../didcomm'
 import { AskarWallet } from '../AskarWallet'
 
 // use raw key derivation method to speed up wallet creating / opening / closing between tests

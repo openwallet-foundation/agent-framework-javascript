@@ -1,6 +1,6 @@
-import type { AckMessageOptions } from '@credo-ts/core'
+import type { AckMessageOptions } from '@credo-ts/didcomm'
 
-import { AckMessage, IsValidMessageType, parseMessageType } from '@credo-ts/core'
+import { AckMessage, IsValidMessageType, parseMessageType } from '@credo-ts/didcomm'
 
 export class V1PresentationAckMessage extends AckMessage {
   public readonly allowDidSovPrefix = true

@@ -1,10 +1,11 @@
-import type { V0_1ToV0_2UpdateConfig } from '../updates/0.1-0.2'
+import type { V0_1ToV0_2UpdateConfig } from '../../../../src'
 
 import { readFileSync } from 'fs'
 import path from 'path'
 
 import { InMemoryStorageService } from '../../../../../../tests/InMemoryStorageService'
 import { RegisteredAskarTestWallet } from '../../../../../askar/tests/helpers'
+import { getDefaultDidcommModules } from '../../../../../didcomm/src/util/modules'
 import { Agent } from '../../../../src'
 import { agentDependencies as dependencies } from '../../../../tests/helpers'
 import { InjectionSymbols } from '../../../constants'
@@ -45,6 +46,7 @@ describe('UpdateAssistant | v0.1 - v0.2', () => {
         {
           config: { label: 'Test Agent', walletConfig },
           dependencies,
+          modules: getDefaultDidcommModules(),
         },
         dependencyManager
       )
@@ -108,6 +110,7 @@ describe('UpdateAssistant | v0.1 - v0.2', () => {
       {
         config: { label: 'Test Agent', walletConfig },
         dependencies,
+        modules: getDefaultDidcommModules(),
       },
       dependencyManager
     )
@@ -171,6 +174,7 @@ describe('UpdateAssistant | v0.1 - v0.2', () => {
       {
         config: { label: 'Test Agent', walletConfig, autoUpdateStorageOnStartup: true },
         dependencies,
+        modules: getDefaultDidcommModules(),
       },
       dependencyManager
     )
@@ -237,6 +241,7 @@ describe('UpdateAssistant | v0.1 - v0.2', () => {
           walletConfig,
           autoUpdateStorageOnStartup: true,
         },
+        modules: getDefaultDidcommModules(),
         dependencies,
       },
       dependencyManager

@@ -2,14 +2,8 @@ import type { AnonCredsTestsAgent } from '../../anoncreds/tests/anoncredsSetup'
 import type { EventReplaySubject } from '../../core/tests'
 import type { DifPresentationExchangeDefinitionV2 } from '@credo-ts/core'
 
-import {
-  AutoAcceptCredential,
-  CredentialExchangeRecord,
-  CredentialState,
-  ProofState,
-  W3cCredential,
-  W3cCredentialSubject,
-} from '@credo-ts/core'
+import { W3cCredential, W3cCredentialSubject } from '@credo-ts/core'
+import { AutoAcceptCredential, CredentialExchangeRecord, CredentialState, ProofState } from '@credo-ts/didcomm'
 
 import { InMemoryAnonCredsRegistry } from '../../anoncreds/tests/InMemoryAnonCredsRegistry'
 import { setupAnonCredsTests } from '../../anoncreds/tests/anoncredsSetup'

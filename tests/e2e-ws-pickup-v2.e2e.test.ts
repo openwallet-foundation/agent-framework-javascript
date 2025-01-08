@@ -2,19 +2,19 @@ import type { AnonCredsTestsAgent } from '../packages/anoncreds/tests/anoncredsS
 
 import { getAnonCredsModules } from '../packages/anoncreds/tests/anoncredsSetup'
 import { askarModule } from '../packages/askar/tests/helpers'
-import { MessageForwardingStrategy } from '../packages/core/src/modules/routing/MessageForwardingStrategy'
 import { getAgentOptions } from '../packages/core/tests/helpers'
-
-import { e2eTest } from './e2e-test'
-
 import {
-  Agent,
+  MessageForwardingStrategy,
   WsOutboundTransport,
   AutoAcceptCredential,
   MediatorPickupStrategy,
   MediationRecipientModule,
   MediatorModule,
-} from '@credo-ts/core'
+} from '../packages/didcomm/src'
+
+import { e2eTest } from './e2e-test'
+
+import { Agent } from '@credo-ts/core'
 import { WsInboundTransport } from '@credo-ts/node'
 
 // FIXME: somehow if we use the in memory wallet and storage service in the WS test it will fail,
@@ -27,6 +27,7 @@ const mediatorOptions = getAgentOptions(
   {
     endpoints: [`ws://localhost:${mediatorPort}`],
   },
+  {},
   {
     ...getAnonCredsModules({
       autoAcceptCredentials: AutoAcceptCredential.ContentApproved,
@@ -45,6 +46,7 @@ const senderOptions = getAgentOptions(
   {
     endpoints: [`ws://localhost:${senderPort}`],
   },
+  {},
   {
     ...getAnonCredsModules({
       autoAcceptCredentials: AutoAcceptCredential.ContentApproved,
@@ -78,6 +80,7 @@ describe('E2E WS Pickup V2 tests', () => {
     const recipientOptions = getAgentOptions(
       'E2E WS Pickup V2 Recipient polling mode',
       {},
+      {},
       {
         ...getAnonCredsModules({
           autoAcceptCredentials: AutoAcceptCredential.ContentApproved,
@@ -93,17 +96,17 @@ describe('E2E WS Pickup V2 tests', () => {
     recipientAgent = new Agent(recipientOptions) as unknown as AnonCredsTestsAgent
 
     // Recipient Setup
-    recipientAgent.registerOutboundTransport(new WsOutboundTransport())
+    recipientAgent.modules.didcomm.registerOutboundTransport(new WsOutboundTransport())
     await recipientAgent.initialize()
 
     // Mediator Setup
-    mediatorAgent.registerInboundTransport(new WsInboundTransport({ port: mediatorPort }))
-    mediatorAgent.registerOutboundTransport(new WsOutboundTransport())
+    mediatorAgent.modules.didcomm.registerInboundTransport(new WsInboundTransport({ port: mediatorPort }))
+    mediatorAgent.modules.didcomm.registerOutboundTransport(new WsOutboundTransport())
     await mediatorAgent.initialize()
 
     // Sender Setup
-    senderAgent.registerInboundTransport(new WsInboundTransport({ port: senderPort }))
-    senderAgent.registerOutboundTransport(new WsOutboundTransport())
+    senderAgent.modules.didcomm.registerInboundTransport(new WsInboundTransport({ port: senderPort }))
+    senderAgent.modules.didcomm.registerOutboundTransport(new WsOutboundTransport())
     await senderAgent.initialize()
 
     await e2eTest({
@@ -116,6 +119,7 @@ describe('E2E WS Pickup V2 tests', () => {
   test('Full WS flow (connect, request mediation, issue, verify) using Message Pickup V2 live mode', async () => {
     const recipientOptions = getAgentOptions(
       'E2E WS Pickup V2 Recipient live mode',
+      {},
       {},
       {
         ...getAnonCredsModules({
@@ -131,17 +135,17 @@ describe('E2E WS Pickup V2 tests', () => {
     recipientAgent = new Agent(recipientOptions) as unknown as AnonCredsTestsAgent
 
     // Recipient Setup
-    recipientAgent.registerOutboundTransport(new WsOutboundTransport())
+    recipientAgent.modules.didcomm.registerOutboundTransport(new WsOutboundTransport())
     await recipientAgent.initialize()
 
     // Mediator Setup
-    mediatorAgent.registerInboundTransport(new WsInboundTransport({ port: mediatorPort }))
-    mediatorAgent.registerOutboundTransport(new WsOutboundTransport())
+    mediatorAgent.modules.didcomm.registerInboundTransport(new WsInboundTransport({ port: mediatorPort }))
+    mediatorAgent.modules.didcomm.registerOutboundTransport(new WsOutboundTransport())
     await mediatorAgent.initialize()
 
     // Sender Setup
-    senderAgent.registerInboundTransport(new WsInboundTransport({ port: senderPort }))
-    senderAgent.registerOutboundTransport(new WsOutboundTransport())
+    senderAgent.modules.didcomm.registerInboundTransport(new WsInboundTransport({ port: senderPort }))
+    senderAgent.modules.didcomm.registerOutboundTransport(new WsOutboundTransport())
     await senderAgent.initialize()
 
     await e2eTest({

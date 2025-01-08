@@ -1,6 +1,7 @@
-import type { BaseAgent, CredentialExchangeRecord } from '@credo-ts/core'
+import type { BaseAgent } from '@credo-ts/core'
+import type { CredentialExchangeRecord } from '@credo-ts/didcomm'
 
-import { CredentialRepository } from '@credo-ts/core'
+import { CredentialRepository } from '@credo-ts/didcomm'
 
 /**
  * Migrates the {@link CredentialExchangeRecord} to 0.4 compatible format. It fetches all credential exchange records from

@@ -1,6 +1,6 @@
-import type { ProblemReportErrorOptions, PresentationProblemReportReason } from '@credo-ts/core'
+import type { ProblemReportErrorOptions, PresentationProblemReportReason } from '@credo-ts/didcomm'
 
-import { ProblemReportError } from '@credo-ts/core'
+import { ProblemReportError } from '@credo-ts/didcomm'
 
 import { V1PresentationProblemReportMessage } from '../messages'
 

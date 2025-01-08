@@ -1,7 +1,7 @@
 import type { ActionMenuProblemReportReason } from './ActionMenuProblemReportReason'
-import type { ProblemReportErrorOptions } from '@credo-ts/core'
+import type { ProblemReportErrorOptions } from '@credo-ts/didcomm'
 
-import { ProblemReportError } from '@credo-ts/core'
+import { ProblemReportError } from '@credo-ts/didcomm'
 
 import { ActionMenuProblemReportMessage } from '../messages'
 

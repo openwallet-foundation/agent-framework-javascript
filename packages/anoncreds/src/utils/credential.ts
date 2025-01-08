@@ -1,7 +1,8 @@
 import type { AnonCredsSchema, AnonCredsCredentialValues } from '../models'
-import type { CredentialPreviewAttributeOptions, LinkedAttachment } from '@credo-ts/core'
+import type { CredentialPreviewAttributeOptions, LinkedAttachment } from '@credo-ts/didcomm'
 
-import { Buffer, CredoError, Hasher, TypedArrayEncoder, encodeAttachment } from '@credo-ts/core'
+import { Buffer, CredoError, Hasher, TypedArrayEncoder } from '@credo-ts/core'
+import { encodeAttachment } from '@credo-ts/didcomm'
 import bigInt from 'big-integer'
 
 export type AnonCredsClaimRecord = Record<string, string | number>

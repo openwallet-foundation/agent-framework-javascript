@@ -1,5 +1,5 @@
 import type { AnonCredsCredential, AnonCredsCredentialOffer, AnonCredsCredentialRequest } from '../models'
-import type { CredentialPreviewAttributeOptions, CredentialFormat, LinkedAttachment } from '@credo-ts/core'
+import type { CredentialPreviewAttributeOptions, CredentialFormat, LinkedAttachment } from '@credo-ts/didcomm'
 
 export interface AnonCredsCredentialProposalFormat {
   schema_issuer_id?: string

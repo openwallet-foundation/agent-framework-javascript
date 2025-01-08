@@ -3,20 +3,24 @@ import type { Module } from '../../plugins'
 import { injectable } from 'tsyringe'
 
 import { InMemoryWalletModule } from '../../../../../tests/InMemoryWalletModule'
-import { getInMemoryAgentOptions } from '../../../tests/helpers'
-import { InjectionSymbols } from '../../constants'
-import { BasicMessageRepository, BasicMessageService } from '../../modules/basic-messages'
-import { BasicMessagesApi } from '../../modules/basic-messages/BasicMessagesApi'
-import { DidRotateService } from '../../modules/connections'
-import { ConnectionsApi } from '../../modules/connections/ConnectionsApi'
-import { ConnectionRepository } from '../../modules/connections/repository/ConnectionRepository'
-import { ConnectionService } from '../../modules/connections/services/ConnectionService'
-import { TrustPingService } from '../../modules/connections/services/TrustPingService'
-import { CredentialRepository } from '../../modules/credentials'
-import { CredentialsApi } from '../../modules/credentials/CredentialsApi'
-import { MessagePickupApi, InMemoryMessagePickupRepository } from '../../modules/message-pickup'
-import { ProofRepository } from '../../modules/proofs'
-import { ProofsApi } from '../../modules/proofs/ProofsApi'
+import {
+  BasicMessageRepository,
+  BasicMessageService,
+  ConnectionService,
+  DidRotateService,
+  TrustPingService,
+  Dispatcher,
+  EnvelopeService,
+  FeatureRegistry,
+  MessageReceiver,
+  MessageSender,
+} from '../../../../didcomm/src'
+import { BasicMessagesApi } from '../../../../didcomm/src/modules/basic-messages/BasicMessagesApi'
+import { ConnectionsApi, ConnectionRepository } from '../../../../didcomm/src/modules/connections'
+import { CredentialRepository } from '../../../../didcomm/src/modules/credentials'
+import { CredentialsApi } from '../../../../didcomm/src/modules/credentials/CredentialsApi'
+import { MessagePickupApi, InMemoryMessagePickupRepository } from '../../../../didcomm/src/modules/message-pickup'
+import { ProofsApi, ProofRepository } from '../../../../didcomm/src/modules/proofs'
 import {
   MediationRecipientService,
   MediationRepository,
@@ -24,14 +28,12 @@ import {
   MediatorService,
   MediationRecipientApi,
   MediationRecipientModule,
-} from '../../modules/routing'
+} from '../../../../didcomm/src/modules/routing'
+import { getDefaultDidcommModules } from '../../../../didcomm/src/util/modules'
+import { getInMemoryAgentOptions } from '../../../tests/helpers'
+import { InjectionSymbols } from '../../constants'
 import { WalletError } from '../../wallet/error'
 import { Agent } from '../Agent'
-import { Dispatcher } from '../Dispatcher'
-import { EnvelopeService } from '../EnvelopeService'
-import { FeatureRegistry } from '../FeatureRegistry'
-import { MessageReceiver } from '../MessageReceiver'
-import { MessageSender } from '../MessageSender'
 
 const agentOptions = getInMemoryAgentOptions('Agent Class Test')
 
@@ -51,11 +53,15 @@ class MyModule implements Module {
 describe('Agent', () => {
   describe('Module registration', () => {
     test('does not return default modules on modules key if no modules were provided', () => {
-      const agent = new Agent(agentOptions)
+      const agent = new Agent({
+        ...agentOptions,
+        modules: {
+          inMemory: new InMemoryWalletModule(),
+        },
+      })
 
       expect(agent.modules).toEqual({})
     })
-
     test('registers custom and default modules if custom modules are provided', () => {
       const agent = new Agent({
         ...agentOptions,
@@ -75,6 +81,7 @@ describe('Agent', () => {
       const agent = new Agent({
         ...agentOptions,
         modules: {
+          ...getDefaultDidcommModules(),
           myModule: new MyModule(),
           mediationRecipient: new MediationRecipientModule({
             maximumMessagePickup: 42,
@@ -84,10 +91,8 @@ describe('Agent', () => {
       })
 
       // Should be custom module config property, not the default value
-      expect(agent.mediationRecipient.config.maximumMessagePickup).toBe(42)
-      expect(agent.modules).toEqual({
-        myModule: expect.any(MyApi),
-      })
+      expect(agent.modules.mediationRecipient.config.maximumMessagePickup).toBe(42)
+      expect(agent.modules.myModule).toEqual(expect.any(MyApi))
     })
   })
 
@@ -237,11 +242,14 @@ describe('Agent', () => {
     })
   })
 
-  it('all core features are properly registered', () => {
+  it('all core features are properly registered', async () => {
     const agent = new Agent(agentOptions)
+    await agent.initialize() // Initialization is needed to properly register DIDComm features
     const registry = agent.dependencyManager.resolve(FeatureRegistry)
 
     const protocols = registry.query({ featureType: 'protocol', match: '*' }).map((p) => p.id)
+
+    expect(protocols.length).toEqual(14)
 
     expect(protocols).toEqual(
       expect.arrayContaining([
@@ -261,6 +269,5 @@ describe('Agent', () => {
         'https://didcomm.org/revocation_notification/2.0',
       ])
     )
-    expect(protocols.length).toEqual(14)
   })
 })

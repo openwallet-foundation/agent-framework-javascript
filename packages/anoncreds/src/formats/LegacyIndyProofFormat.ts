@@ -5,7 +5,7 @@ import type {
   AnonCredsCredentialsForProofRequest,
 } from './AnonCredsProofFormat'
 import type { AnonCredsProof, AnonCredsProofRequest, AnonCredsSelectedCredentials } from '../models'
-import type { ProofFormat } from '@credo-ts/core'
+import type { ProofFormat } from '@credo-ts/didcomm'
 
 // TODO: Custom restrictions to remove `_id` from restrictions?
 export type LegacyIndyProofRequest = AnonCredsProofRequest

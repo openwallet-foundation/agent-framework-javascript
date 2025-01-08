@@ -34,56 +34,15 @@ export interface WalletExportImportConfig {
   path: string
 }
 
-export type EncryptedMessage = {
-  /**
-   * The "protected" member MUST be present and contain the value
-   * BASE64URL(UTF8(JWE Protected Header)) when the JWE Protected
-   * Header value is non-empty; otherwise, it MUST be absent.  These
-   * Header Parameter values are integrity protected.
-   */
-  protected: string
-
-  /**
-   * The "iv" member MUST be present and contain the value
-   * BASE64URL(JWE Initialization Vector) when the JWE Initialization
-   * Vector value is non-empty; otherwise, it MUST be absent.
-   */
-  iv: string
-
-  /**
-   * The "ciphertext" member MUST be present and contain the value
-   * BASE64URL(JWE Ciphertext).
-   */
-  ciphertext: string
-
-  /**
-   * The "tag" member MUST be present and contain the value
-   * BASE64URL(JWE Authentication Tag) when the JWE Authentication Tag
-   * value is non-empty; otherwise, it MUST be absent.
-   */
-  tag: string
-}
-
-export enum DidCommMimeType {
-  V0 = 'application/ssi-agent-wire',
-  V1 = 'application/didcomm-envelope-enc',
-}
-
 export interface InitConfig {
   /**
    * Agent public endpoints, sorted by priority (higher priority first)
    */
-  endpoints?: string[]
   label: string
   walletConfig?: WalletConfig
   logger?: Logger
-  didCommMimeType?: DidCommMimeType
-  useDidKeyInProtocols?: boolean
-  useDidSovPrefixWhereAllowed?: boolean
-  connectionImageUrl?: string
   autoUpdateStorageOnStartup?: boolean
   backupBeforeStorageUpdate?: boolean
-  processDidCommMessagesConcurrently?: boolean
 
   /**
    * Allow insecure http urls in places where this is usually required.
@@ -97,24 +56,6 @@ export interface InitConfig {
    * @default false
    */
   allowInsecureHttpUrls?: boolean
-}
-
-export type ProtocolVersion = `${number}.${number}`
-export interface PlaintextMessage {
-  '@type': string
-  '@id': string
-  '~thread'?: {
-    thid?: string
-    pthid?: string
-  }
-  [key: string]: unknown
-}
-
-export interface OutboundPackage {
-  payload: EncryptedMessage
-  responseRequested?: boolean
-  endpoint?: string
-  connectionId?: string
 }
 
 export type JsonValue = string | number | boolean | null | JsonObject | JsonArray
@@ -144,3 +85,22 @@ export type Awaited<T> = T extends Promise<infer U> ? U : never
  * Type util that returns `true` or `false` based on whether the input type `T` is of type `any`
  */
 export type IsAny<T> = unknown extends T ? ([keyof T] extends [never] ? false : true) : false
+
+// FIXME: the following types are duplicated in DIDComm module. They were placed here to remove dependency
+// to that module
+export interface PlaintextMessage {
+  '@type': string
+  '@id': string
+  '~thread'?: {
+    thid?: string
+    pthid?: string
+  }
+  [key: string]: unknown
+}
+
+export type EncryptedMessage = {
+  protected: string
+  iv: string
+  ciphertext: string
+  tag: string
+}

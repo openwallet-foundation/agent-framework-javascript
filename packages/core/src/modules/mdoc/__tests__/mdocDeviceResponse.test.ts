@@ -1,7 +1,9 @@
 import { Optionality } from '@sphereon/pex-models'
 
-import { Agent, KeyType, X509Service } from '../../..'
 import { getInMemoryAgentOptions } from '../../../../tests'
+import { Agent } from '../../../agent/Agent'
+import { KeyType } from '../../../crypto'
+import { X509Service } from '../../x509'
 import { Mdoc } from '../Mdoc'
 import { MdocDeviceResponse } from '../MdocDeviceResponse'
 

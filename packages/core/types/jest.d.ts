@@ -1,4 +1,4 @@
-import type { ConnectionRecord } from '../src/modules/connections/repository/ConnectionRecord'
+import type { ConnectionRecord } from '../../didcomm/src'
 
 declare global {
   namespace jest {

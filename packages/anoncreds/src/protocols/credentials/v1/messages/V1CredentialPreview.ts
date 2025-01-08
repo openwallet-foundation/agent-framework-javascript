@@ -1,12 +1,12 @@
-import type { CredentialPreviewOptions } from '@credo-ts/core'
+import type { CredentialPreviewOptions } from '@credo-ts/didcomm'
 
+import { JsonTransformer } from '@credo-ts/core'
 import {
   CredentialPreviewAttribute,
   IsValidMessageType,
   parseMessageType,
-  JsonTransformer,
   replaceLegacyDidSovPrefix,
-} from '@credo-ts/core'
+} from '@credo-ts/didcomm'
 import { Expose, Transform, Type } from 'class-transformer'
 import { ValidateNested, IsInstance } from 'class-validator'
 

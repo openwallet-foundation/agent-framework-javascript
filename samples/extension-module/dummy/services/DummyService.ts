@@ -1,5 +1,6 @@
 import type { DummyStateChangedEvent } from './DummyEvents'
-import type { Query, QueryOptions, AgentContext, ConnectionRecord, InboundMessageContext } from '@credo-ts/core'
+import type { Query, QueryOptions, AgentContext } from '@credo-ts/core'
+import type { ConnectionRecord, InboundMessageContext } from '@credo-ts/didcomm'
 
 import { injectable, EventEmitter } from '@credo-ts/core'
 

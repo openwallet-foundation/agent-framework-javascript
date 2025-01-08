@@ -1,13 +1,12 @@
+import { OutOfBandDidCommService } from '../../../../../../../didcomm/src/modules/oob/domain/OutOfBandDidCommService'
+import {
+  outOfBandServiceToInlineKeysNumAlgo2Did,
+  outOfBandServiceToNumAlgo2Did,
+} from '../../../../../../../didcomm/src/modules/oob/helpers'
 import { JsonTransformer } from '../../../../../utils'
-import { OutOfBandDidCommService } from '../../../../oob/domain/OutOfBandDidCommService'
 import { DidDocument } from '../../../domain'
 import { isValidPeerDid } from '../didPeer'
-import {
-  didToNumAlgo2DidDocument,
-  didDocumentToNumAlgo2Did,
-  outOfBandServiceToNumAlgo2Did,
-  outOfBandServiceToInlineKeysNumAlgo2Did,
-} from '../peerDidNumAlgo2'
+import { didToNumAlgo2DidDocument, didDocumentToNumAlgo2Did } from '../peerDidNumAlgo2'
 
 import didPeer2Ez6L from './__fixtures__/didPeer2Ez6L.json'
 import didPeer2Ez6LMoreServices from './__fixtures__/didPeer2Ez6LMoreServices.json'

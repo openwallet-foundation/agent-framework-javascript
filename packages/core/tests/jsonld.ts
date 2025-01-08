@@ -1,5 +1,5 @@
 import type { EventReplaySubject } from './events'
-import type { AutoAcceptCredential, AutoAcceptProof, ConnectionRecord } from '../src'
+import type { AutoAcceptCredential, AutoAcceptProof, ConnectionRecord } from '../../didcomm/src'
 
 import { InMemoryWalletModule } from '../../../tests/InMemoryWalletModule'
 import { askarModule } from '../../askar/tests/helpers'
@@ -7,17 +7,15 @@ import { BbsModule } from '../../bbs-signatures/src/BbsModule'
 import {
   DifPresentationExchangeProofFormatService,
   V2ProofProtocol,
-  CacheModule,
   CredentialEventTypes,
-  InMemoryLruCache,
   ProofEventTypes,
-  Agent,
   ProofsModule,
   CredentialsModule,
   JsonLdCredentialFormatService,
   V2CredentialProtocol,
-  W3cCredentialsModule,
-} from '../src'
+} from '../../didcomm/src'
+import { getDefaultDidcommModules } from '../../didcomm/src/util/modules'
+import { CacheModule, InMemoryLruCache, Agent, W3cCredentialsModule } from '../src'
 import { customDocumentLoader } from '../src/modules/vc/data-integrity/__tests__/documentLoader'
 
 import { setupEventReplaySubjects } from './events'
@@ -32,6 +30,7 @@ export const getJsonLdModules = ({
   useBbs = false,
 }: { autoAcceptCredentials?: AutoAcceptCredential; autoAcceptProofs?: AutoAcceptProof; useBbs?: boolean } = {}) =>
   ({
+    ...getDefaultDidcommModules(),
     credentials: new CredentialsModule({
       credentialProtocols: [new V2CredentialProtocol({ credentialFormats: [new JsonLdCredentialFormatService()] })],
       autoAcceptCredentials,
@@ -116,6 +115,7 @@ export async function setupJsonLdTests<
       {
         endpoints: ['rxjs:issuer'],
       },
+      {},
       modules
     )
   )
@@ -126,6 +126,7 @@ export async function setupJsonLdTests<
       {
         endpoints: ['rxjs:holder'],
       },
+      {},
       modules
     )
   )
@@ -137,6 +138,7 @@ export async function setupJsonLdTests<
           {
             endpoints: ['rxjs:verifier'],
           },
+          {},
           modules
         )
       )

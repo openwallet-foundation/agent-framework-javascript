@@ -2,7 +2,6 @@ import type { ValidationOptions } from 'class-validator'
 
 import { Transform, TransformationType } from 'class-transformer'
 import { isString, ValidateBy, buildMessage } from 'class-validator'
-import { DateTime } from 'luxon'
 
 import { Metadata } from '../storage/Metadata'
 
@@ -43,23 +42,6 @@ export function DateTransformer() {
       return new Date(value.getTime())
     }
   })
-}
-
-/*
- * Function that parses date from multiple formats
- * including SQL formats.
- */
-
-export function DateParser(value: string): Date {
-  const parsedDate = new Date(value)
-  if (parsedDate instanceof Date && !isNaN(parsedDate.getTime())) {
-    return parsedDate
-  }
-  const luxonDate = DateTime.fromSQL(value)
-  if (luxonDate.isValid) {
-    return new Date(luxonDate.toString())
-  }
-  return new Date()
 }
 
 /**

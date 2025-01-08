@@ -1,8 +1,9 @@
-import type { AgentContext } from '../../..'
+import type { AgentContext } from '../../../agent'
 
-import { KeyType, X509Service } from '../../..'
 import { InMemoryWallet } from '../../../../../../tests/InMemoryWallet'
 import { getAgentConfig, getAgentContext } from '../../../../tests'
+import { KeyType } from '../../../crypto'
+import { X509Service } from '../../x509'
 import { Mdoc } from '../Mdoc'
 
 import { sprindFunkeTestVectorBase64Url, sprindFunkeX509TrustedCertificate } from './mdoc.fixtures'

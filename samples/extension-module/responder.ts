@@ -1,7 +1,7 @@
 import type { DummyStateChangedEvent } from './dummy'
 import type { Socket } from 'net'
 
-import { Agent, ConnectionsModule, ConsoleLogger, LogLevel } from '@credo-ts/core'
+import { Agent, ConnectionsModule, ConsoleLogger, DidCommModule, LogLevel } from '@credo-ts/core'
 import { agentDependencies, HttpInboundTransport, WsInboundTransport } from '@credo-ts/node'
 import express from 'express'
 import { Server } from 'ws'
@@ -22,7 +22,6 @@ const run = async () => {
   const agent = new Agent({
     config: {
       label: 'Dummy-powered agent - responder',
-      endpoints: [`http://localhost:${port}`],
       walletConfig: {
         id: 'responder',
         key: 'responder',
@@ -30,6 +29,7 @@ const run = async () => {
       logger: new ConsoleLogger(LogLevel.debug),
     },
     modules: {
+      didcomm: new DidCommModule({ endpoints: [`http://localhost:${port}`] }),
       dummy: new DummyModule({ autoAcceptRequests }),
       connections: new ConnectionsModule({
         autoAcceptConnections: true,
@@ -39,8 +39,8 @@ const run = async () => {
   })
 
   // Register transports
-  agent.registerInboundTransport(httpInboundTransport)
-  agent.registerInboundTransport(wsInboundTransport)
+  agent.didcomm.registerInboundTransport(httpInboundTransport)
+  agent.didcomm.registerInboundTransport(wsInboundTransport)
 
   // Allow to create invitation, no other way to ask for invitation yet
   app.get('/invitation', async (req, res) => {

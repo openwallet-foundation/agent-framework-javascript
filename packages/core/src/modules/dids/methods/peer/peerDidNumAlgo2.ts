@@ -1,18 +1,13 @@
 import type { JsonObject } from '../../../../types'
-import type { OutOfBandDidCommService } from '../../../oob/domain/OutOfBandDidCommService'
 import type { DidDocument, VerificationMethod } from '../../domain'
 
 import { Key } from '../../../../crypto/Key'
 import { CredoError } from '../../../../error'
 import { JsonEncoder, JsonTransformer } from '../../../../utils'
-import { DidCommV1Service, DidDocumentService } from '../../domain'
+import { DidDocumentService } from '../../domain'
 import { DidDocumentBuilder } from '../../domain/DidDocumentBuilder'
 import { getKeyFromVerificationMethod, getKeyDidMappingByKeyType } from '../../domain/key-type'
 import { parseDid } from '../../domain/parse'
-import { didKeyToInstanceOfKey } from '../../helpers'
-import { DidKey } from '../key'
-
-import { createPeerDidDocumentFromServices } from './createPeerDidDocumentFromServices'
 
 enum DidPeerPurpose {
   Assertion = 'A',
@@ -161,49 +156,6 @@ export function didDocumentToNumAlgo2Did(didDocument: DidDocument) {
       did += `.${DidPeerPurpose.Service}${encodedService}`
     }
   }
-
-  return did
-}
-
-export function outOfBandServiceToNumAlgo2Did(service: OutOfBandDidCommService) {
-  const didDocument = createPeerDidDocumentFromServices([
-    {
-      id: service.id,
-      recipientKeys: service.recipientKeys.map(didKeyToInstanceOfKey),
-      serviceEndpoint: service.serviceEndpoint,
-      routingKeys: service.routingKeys?.map(didKeyToInstanceOfKey) ?? [],
-    },
-  ])
-
-  const did = didDocumentToNumAlgo2Did(didDocument)
-
-  return did
-}
-
-// This method is kept to support searching for existing connections created by
-// credo-ts <= 0.5.1
-// TODO: Remove in 0.6.0 (when ConnectionRecord.invitationDid will be migrated)
-export function outOfBandServiceToInlineKeysNumAlgo2Did(service: OutOfBandDidCommService) {
-  const didDocument = new DidDocumentBuilder('')
-    .addService(
-      new DidCommV1Service({
-        id: service.id,
-        serviceEndpoint: service.serviceEndpoint,
-        accept: service.accept,
-        recipientKeys: service.recipientKeys.map((recipientKey) => {
-          const did = DidKey.fromDid(recipientKey)
-          return `${did.did}#${did.key.fingerprint}`
-        }),
-        // Map did:key:xxx to actual did:key:xxx#123
-        routingKeys: service.routingKeys?.map((routingKey) => {
-          const did = DidKey.fromDid(routingKey)
-          return `${did.did}#${did.key.fingerprint}`
-        }),
-      })
-    )
-    .build()
-
-  const did = didDocumentToNumAlgo2Did(didDocument)
 
   return did
 }

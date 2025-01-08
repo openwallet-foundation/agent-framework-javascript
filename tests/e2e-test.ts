@@ -1,5 +1,5 @@
 import type { AnonCredsTestsAgent } from '../packages/anoncreds/tests/anoncredsSetup'
-import type { AgentMessageProcessedEvent, AgentMessageSentEvent } from '@credo-ts/core'
+import type { AgentMessageProcessedEvent, AgentMessageSentEvent } from '@credo-ts/didcomm'
 
 import { filter, firstValueFrom, map } from 'rxjs'
 
@@ -23,7 +23,7 @@ import {
   CredentialEventTypes,
   ProofEventTypes,
   AgentEventTypes,
-} from '@credo-ts/core'
+} from '@credo-ts/didcomm'
 
 export async function e2eTest({
   mediatorAgent,
@@ -49,13 +49,15 @@ export async function e2eTest({
   expect(recipientMediatorConnection).toBeConnectedWith(mediatorRecipientConnection)
 
   // Request mediation from mediator
-  const mediationRecord = await recipientAgent.mediationRecipient.requestAndAwaitGrant(recipientMediatorConnection)
+  const mediationRecord = await recipientAgent.modules.mediationRecipient.requestAndAwaitGrant(
+    recipientMediatorConnection
+  )
   expect(mediationRecord.state).toBe(MediationState.Granted)
 
   // Set mediator as default for recipient, start picking up messages
-  await recipientAgent.mediationRecipient.setDefaultMediator(mediationRecord)
-  await recipientAgent.mediationRecipient.initiateMessagePickup(mediationRecord)
-  const defaultMediator = await recipientAgent.mediationRecipient.findDefaultMediator()
+  await recipientAgent.modules.mediationRecipient.setDefaultMediator(mediationRecord)
+  await recipientAgent.modules.mediationRecipient.initiateMessagePickup(mediationRecord)
+  const defaultMediator = await recipientAgent.modules.mediationRecipient.findDefaultMediator()
   expect(defaultMediator?.id).toBe(mediationRecord.id)
 
   // Make connection between sender and recipient
@@ -128,7 +130,7 @@ export async function e2eTest({
   expect(verifierProofExchangeRecord.state).toBe(ProofState.Done)
 
   // We want to stop the mediator polling before the agent is shutdown.
-  await recipientAgent.mediationRecipient.stopMessagePickup()
+  await recipientAgent.modules.mediationRecipient.stopMessagePickup()
 
   const pickupRequestMessages = [V2DeliveryRequestMessage.type.messageTypeUri, V1BatchPickupMessage.type.messageTypeUri]
   const deliveryMessages = [V2MessageDeliveryMessage.type.messageTypeUri, V1BatchMessage.type.messageTypeUri]

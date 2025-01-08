@@ -1,5 +1,5 @@
 import type { SubjectMessage } from '../../../tests/transport/SubjectInboundTransport'
-import type { ConnectionRecord, InboundMessageContext } from '../src'
+import type { ConnectionRecord, InboundMessageContext } from '../../didcomm'
 
 import { Subject } from 'rxjs'
 
@@ -11,9 +11,8 @@ import {
   getOutboundMessageContext,
   MessageSender,
   AgentMessage,
-  JsonTransformer,
-  Agent,
-} from '../src'
+} from '../../didcomm/src'
+import { JsonTransformer, Agent } from '../src'
 
 import {
   getInMemoryAgentOptions,
@@ -46,13 +45,13 @@ describe('Message Handler Middleware E2E', () => {
     }
 
     faberAgent = new Agent(faberConfig)
-    faberAgent.registerInboundTransport(new SubjectInboundTransport(faberMessages))
-    faberAgent.registerOutboundTransport(new SubjectOutboundTransport(subjectMap))
+    faberAgent.modules.didcomm.registerInboundTransport(new SubjectInboundTransport(faberMessages))
+    faberAgent.modules.didcomm.registerOutboundTransport(new SubjectOutboundTransport(subjectMap))
     await faberAgent.initialize()
 
     aliceAgent = new Agent(aliceConfig)
-    aliceAgent.registerInboundTransport(new SubjectInboundTransport(aliceMessages))
-    aliceAgent.registerOutboundTransport(new SubjectOutboundTransport(subjectMap))
+    aliceAgent.modules.didcomm.registerInboundTransport(new SubjectInboundTransport(aliceMessages))
+    aliceAgent.modules.didcomm.registerOutboundTransport(new SubjectOutboundTransport(subjectMap))
     await aliceAgent.initialize()
     ;[aliceConnection, faberConnection] = await makeConnection(aliceAgent, faberAgent)
   })
@@ -66,7 +65,7 @@ describe('Message Handler Middleware E2E', () => {
 
   test('Correctly calls the fallback message handler if no message handler is defined', async () => {
     // Fallback message handler
-    aliceAgent.dependencyManager.setFallbackMessageHandler((messageContext) => {
+    aliceAgent.modules.didcomm.setFallbackMessageHandler((messageContext) => {
       return getOutboundMessageContext(messageContext.agentContext, {
         connectionRecord: messageContext.connection,
         message: new BasicMessage({
@@ -98,7 +97,7 @@ describe('Message Handler Middleware E2E', () => {
   })
 
   test('Correctly calls the registered message handler middleware', async () => {
-    aliceAgent.dependencyManager.registerMessageHandlerMiddleware(
+    aliceAgent.modules.didcomm.registerMessageHandlerMiddleware(
       async (inboundMessageContext: InboundMessageContext, next) => {
         await next()
 
@@ -110,7 +109,7 @@ describe('Message Handler Middleware E2E', () => {
       }
     )
 
-    await faberAgent.connections.sendPing(faberConnection.id, {})
+    await faberAgent.modules.connections.sendPing(faberConnection.id, {})
     const receiveMessage = await waitForAgentMessageProcessedEvent(faberAgent, {
       messageType: TrustPingResponseMessage.type.messageTypeUri,
     })

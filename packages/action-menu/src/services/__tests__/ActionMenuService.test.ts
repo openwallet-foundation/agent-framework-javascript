@@ -2,7 +2,8 @@ import type { ActionMenuStateChangedEvent } from '../../ActionMenuEvents'
 import type { ActionMenuSelection } from '../../models'
 import type { AgentContext, AgentConfig, Repository } from '@credo-ts/core'
 
-import { DidExchangeState, EventEmitter, InboundMessageContext } from '@credo-ts/core'
+import { EventEmitter } from '@credo-ts/core'
+import { DidExchangeState, InboundMessageContext } from '@credo-ts/didcomm'
 import { Subject } from 'rxjs'
 
 import {
