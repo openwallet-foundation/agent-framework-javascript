@@ -2,7 +2,7 @@
   "name": "@credo-ts/drpc",
   "main": "src/index",
   "types": "src/index",
-  "version": "0.5.13",
+  "version": "0.6.0",
   "files": [
     "build"
   ],
