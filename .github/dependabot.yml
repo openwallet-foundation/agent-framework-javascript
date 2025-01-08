@@ -1,39 +1,54 @@
-########################################################################################################################################
-# GitHub Dependabot Config info                                                                                                        #
-# For details on how this file works refer to:                                                                                         #
-#   - https://docs.github.com/en/code-security/dependabot/dependabot-version-updates/configuration-options-for-the-dependabot.yml-file #
-########################################################################################################################################
-
+ # For details on how this file works refer to:
+ #   - https://docs.github.com/en/code-security/dependabot/dependabot-version-updates/configuration-options-for-the-dependabot.yml-file
 version: 2
 updates:
-  # Maintain dependencies for NPM
-  - package-ecosystem: 'npm'
-    directory: '/'
-    schedule:
-      interval: 'monthly'
-    allow:
-      # Focus on main dependencies, not devDependencies
-      - dependency-type: 'production'
-
   # Maintain dependencies for GitHub Actions
-  #  - Check for updates once a month
+  #  - Check for updates once a week
   #  - Group all updates into a single PR
-  - package-ecosystem: 'github-actions'
-    directory: '/'
+  - package-ecosystem: "github-actions"
+    directory: "/"
     schedule:
-      interval: 'monthly'
+      interval: "weekly"
     groups:
       all-actions:
-        patterns: ['*']
+        patterns: [ "*" ]
 
-  # Maintain dependencies for Docker
-  - package-ecosystem: 'docker'
-    directory: '/'
+  # Maintain dependencies for TypeScript and JavaScript
+  - package-ecosystem: "npm"
+    directory: "/"
     schedule:
-      interval: 'monthly'
+      interval: "weekly"
+      day: "monday"
+      time: "04:00"
+      timezone: "Canada/Pacific"
+    ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major", "version-update:semver-patch"]
 
-  # Maintain dependencies for Cargo
-  - package-ecosystem: 'cargo'
-    directory: '/'
+  # Maintain dependencies for dev Container
+  - package-ecosystem: "devcontainers"
+    directory: "/.devcontainer"
     schedule:
-      interval: 'monthly'
+      interval: "weekly"
+      day: "monday"
+      time: "04:00"
+      timezone: "Canada/Pacific"
+
+  # Maintain dependencies for docker
+  - package-ecosystem: "docker"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "04:00"
+      timezone: "Canada/Pacific"
+
+  # Maintain dependencies for docker
+  - package-ecosystem: "docker"
+    directory: "/network"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "04:00"
+      timezone: "Canada/Pacific"
+
