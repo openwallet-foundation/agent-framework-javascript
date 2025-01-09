@@ -63,3 +63,10 @@ export function parseCheqdDid(didUrl: string): ParsedCheqdDid | null {
   }
   return null
 }
+
+export const cheqdAnonCredsResourceTypes = {
+  schema: 'anonCredsSchema',
+  credentialDefinition: 'anonCredsCredDef',
+  revocationRegistryDefinition: 'anonCredsRevocRegDef',
+  revocationStatusList: 'anonCredsStatusList',
+}

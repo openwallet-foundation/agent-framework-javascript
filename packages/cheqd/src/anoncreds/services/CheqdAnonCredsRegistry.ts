@@ -19,7 +19,11 @@ import type { AgentContext } from '@credo-ts/core'
 import { CredoError, Hasher, JsonTransformer, TypedArrayEncoder, utils } from '@credo-ts/core'
 
 import { CheqdDidResolver, CheqdDidRegistrar } from '../../dids'
-import { cheqdSdkAnonCredsRegistryIdentifierRegex, parseCheqdDid } from '../utils/identifiers'
+import {
+  cheqdAnonCredsResourceTypes,
+  cheqdSdkAnonCredsRegistryIdentifierRegex,
+  parseCheqdDid,
+} from '../utils/identifiers'
 import {
   CheqdCredentialDefinition,
   CheqdRevocationRegistryDefinition,
@@ -87,7 +91,7 @@ export class CheqdAnonCredsRegistry implements AnonCredsRegistry {
       const schemaResource = {
         id: utils.uuid(),
         name: `${schema.name}-Schema`,
-        resourceType: 'anonCredsSchema',
+        resourceType: cheqdAnonCredsResourceTypes.schema,
         data: {
           name: schema.name,
           version: schema.version,
@@ -145,7 +149,7 @@ export class CheqdAnonCredsRegistry implements AnonCredsRegistry {
       const credDefResource = {
         id: utils.uuid(),
         name: TypedArrayEncoder.toHex(credDefNameHashBuffer),
-        resourceType: 'anonCredsCredDef',
+        resourceType: cheqdAnonCredsResourceTypes.credentialDefinition,
         data: {
           type: credentialDefinition.type,
           tag: credentialDefinition.tag,
@@ -250,9 +254,9 @@ export class CheqdAnonCredsRegistry implements AnonCredsRegistry {
 
       const searchDid = parsedDid.path
         ? revocationRegistryDefinitionId
-        : `${revocationRegistryDefinitionId}${
-            revocationRegistryDefinitionId.includes('?') ? '&' : '?'
-          }resourceType=anonCredsRevocRegDef`
+        : `${revocationRegistryDefinitionId}${revocationRegistryDefinitionId.includes('?') ? '&' : '?'}resourceType=${
+            cheqdAnonCredsResourceTypes.revocationRegistryDefinition
+          }`
 
       const response = await cheqdDidResolver.resolveResource(agentContext, searchDid)
       const revocationRegistryDefinition = JsonTransformer.fromJSON(
@@ -306,10 +310,13 @@ export class CheqdAnonCredsRegistry implements AnonCredsRegistry {
 
       const cheqdDidRegistrar = agentContext.dependencyManager.resolve(CheqdDidRegistrar)
 
+      const revocDefName = `${credentialDefinitionName}-${revocationRegistryDefinition.tag}`
+      const revocDefNameHashedBuffer = Hasher.hash(revocDefName, 'sha-256')
+
       const revocationRegistryDefinitionResource = {
         id: utils.uuid(),
-        name: credentialDefinitionName as string,
-        resourceType: 'anonCredsRevocRegDef',
+        name: TypedArrayEncoder.toHex(revocDefNameHashedBuffer),
+        resourceType: cheqdAnonCredsResourceTypes.revocationRegistryDefinition,
         data: {
           credDefId: revocationRegistryDefinition.credDefId,
           revocDefType: revocationRegistryDefinition.revocDefType,
@@ -385,7 +392,7 @@ export class CheqdAnonCredsRegistry implements AnonCredsRegistry {
 
       const response = await cheqdDidResolver.resolveResource(
         agentContext,
-        `${parsedDid.did}?resourceType=anonCredsStatusList&resourceVersionTime=${timestamp}&resourceName=${revocationRegistryDefinitionName}`
+        `${parsedDid.did}?resourceType=${cheqdAnonCredsResourceTypes.revocationStatusList}&resourceVersionTime=${timestamp}&resourceName=${revocationRegistryDefinitionName}`
       )
 
       const revocationStatusList = JsonTransformer.fromJSON(response.resource, CheqdRevocationStatusList)
@@ -444,7 +451,7 @@ export class CheqdAnonCredsRegistry implements AnonCredsRegistry {
       const revocationStatusListResource = {
         id: utils.uuid(),
         name: revocationRegistryDefinitionName as string,
-        resourceType: 'anonCredsStatusList',
+        resourceType: cheqdAnonCredsResourceTypes.revocationStatusList,
         data: {
           currentAccumulator: revocationStatusList.currentAccumulator,
           revRegDefId: revocationStatusList.revRegDefId,

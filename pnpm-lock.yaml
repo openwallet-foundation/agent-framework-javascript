@@ -391,8 +391,8 @@ importers:
   packages/cheqd:
     dependencies:
       '@cheqd/sdk':
-        specifier: ^2.5.1
-        version: 2.5.1
+        specifier: 2.6.0
+        version: 2.6.0
       '@cheqd/ts-proto':
         specifier: ~2.3.2
         version: 2.3.2
@@ -1981,6 +1981,9 @@ packages:
   '@bcoe/v8-coverage@0.2.3':
     resolution: {integrity: sha512-0hYQ8SB4Db5zvZB4axdMHGwEaQjkZzFjQiN9LVYvIFB2nSUHW9tYpxWriPrWDASIxiaXax83REcLxuSdnGPZtw==}
 
+  '@bufbuild/protobuf@2.2.3':
+    resolution: {integrity: sha512-tFQoXHJdkEOSwj5tRIZSPNUuXK3RaR7T1nUrPgbYX1pUbvqqaaZAsfo+NXBPsz5rZMSKVFrgK1WL8Q/MSLvprg==}
+
   '@changesets/apply-release-plan@7.0.4':
     resolution: {integrity: sha512-HLFwhKWayKinWAul0Vj+76jVx1Pc2v55MGPVjZ924Y/ROeSsBMFutv9heHmCUj48lJyRfOTJG5+ar+29FUky/A==}
 
@@ -2036,13 +2039,17 @@ packages:
   '@changesets/write@0.3.1':
     resolution: {integrity: sha512-SyGtMXzH3qFqlHKcvFY2eX+6b0NGiFcNav8AFsYwy5l8hejOeoeTDemu5Yjmke2V5jpzY+pBvM0vCCQ3gdZpfw==}
 
-  '@cheqd/sdk@2.5.1':
-    resolution: {integrity: sha512-Vm9hwFIzgXhK1/ilaciauPnfa2mm8/aGPVRxM/O3LCLUyBdmS+dKIY6G6FKN/ttcsfUJSRmpR50weFY/vMqs3g==}
+  '@cheqd/sdk@2.6.0':
+    resolution: {integrity: sha512-Lx3/0dT7QoKaWfQcc4PzhcaFud5Fkgm1//Q7KfPXakerSLuOkyaVy95VnFnnoLERuWZcE6r3nI1xoKq1GFckDg==}
     engines: {node: '>=18'}
 
   '@cheqd/ts-proto@2.3.2':
     resolution: {integrity: sha512-WqwthQGyF16tx3LyqwJlLq/4DfTigNsCWtGY3ct9RSfTNTPI/JZ1qLE7eSkcE9Glk4Yk95d+SYbqOeoSNP442Q==}
     engines: {node: '>=18'}
+
+  '@cheqd/ts-proto@2.4.0':
+    resolution: {integrity: sha512-+iPJujk1IfeWdcbVzMEjleVXab1leYshiFZNQGpDw6PCOWkRRZ/0BOJgRm6/LQjcj70ceDje4Io/8+CIh+9A5g==}
+    engines: {node: '>=20'}
 
   '@confio/ics23@0.6.8':
     resolution: {integrity: sha512-wB6uo+3A50m0sW/EWcU64xpV/8wShZ6bMTa7pF8eYsTrSkQA7oLUIJcs/wb8g4y2Oyq701BaGiO6n/ak5WXO1w==}
@@ -10485,6 +10492,8 @@ snapshots:
 
   '@bcoe/v8-coverage@0.2.3': {}
 
+  '@bufbuild/protobuf@2.2.3': {}
+
   '@changesets/apply-release-plan@7.0.4':
     dependencies:
       '@babel/runtime': 7.25.0
@@ -10641,9 +10650,9 @@ snapshots:
       human-id: 1.0.2
       prettier: 2.8.8
 
-  '@cheqd/sdk@2.5.1':
+  '@cheqd/sdk@2.6.0':
     dependencies:
-      '@cheqd/ts-proto': 2.3.2
+      '@cheqd/ts-proto': 2.4.0
       '@cosmjs/amino': 0.30.1
       '@cosmjs/crypto': 0.30.1
       '@cosmjs/encoding': 0.30.1
@@ -10669,6 +10678,12 @@ snapshots:
 
   '@cheqd/ts-proto@2.3.2':
     dependencies:
+      long: 5.2.3
+      protobufjs: 7.4.0
+
+  '@cheqd/ts-proto@2.4.0':
+    dependencies:
+      '@bufbuild/protobuf': 2.2.3
       long: 5.2.3
       protobufjs: 7.4.0
 
