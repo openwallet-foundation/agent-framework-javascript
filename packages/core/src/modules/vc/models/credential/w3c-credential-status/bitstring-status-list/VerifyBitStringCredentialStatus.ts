@@ -40,6 +40,13 @@ export const verifyBitStringCredentialStatus = async (
     credentialStatus.statusListCredential
   )
 
+  if (Array.isArray(bitStringStatusListCredential.credentialSubject)) {
+    agentContext.config.logger.debug('Credential subject type is array for the fetched Bitstring Status List Credential')
+    throw new CredoError(
+      'Invalid credential subject type. Currently only a single credentialSubject is supported per BitstringStatusListCredential'
+    )
+  }
+
   // Decode the encoded bit string
   const encodedBitString = bitStringStatusListCredential.credentialSubject.encodedList
   const compressedBuffer = Uint8Array.from(atob(encodedBitString), (char) => char.charCodeAt(0))
