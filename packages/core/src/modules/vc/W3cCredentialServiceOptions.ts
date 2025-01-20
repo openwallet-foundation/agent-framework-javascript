@@ -193,3 +193,10 @@ export interface W3cJsonLdVerifyPresentationOptions extends W3cVerifyPresentatio
 export interface StoreCredentialOptions {
   credential: W3cVerifiableCredential
 }
+
+/**
+ * Interface for W3cCredentialsApi.revokeCredential. revoke a w3c credential.
+ */
+export interface RevokeCredentialOptions {
+  credentialRecordId: string
+}

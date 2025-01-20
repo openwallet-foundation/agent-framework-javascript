@@ -62,7 +62,7 @@ export interface CredentialsApi<CPs extends CredentialProtocol[]> {
   // Issue Credential Methods
   acceptCredential(options: AcceptCredentialOptions): Promise<CredentialExchangeRecord>
 
-  // Revoke Credential Methods
+  // Send Credential revocation notification Methods
   sendRevocationNotification(options: SendRevocationNotificationOptions): Promise<void>
 
   // out of band
