@@ -22,7 +22,7 @@ import type {
   W3CVerifiablePresentation,
 } from '@sphereon/ssi-types'
 
-import { PEVersion, PEX, PresentationSubmissionLocation, Status } from '@animo-id/pex'
+import { PEVersion, PEX, Status } from '@animo-id/pex'
 import { PartialSdJwtDecodedVerifiableCredential } from '@animo-id/pex/dist/main/lib'
 import { injectable } from 'tsyringe'
 
@@ -86,7 +86,8 @@ export class DifPresentationExchangeService {
     const credentials: DifPexInputDescriptorToCredentials = {}
 
     for (const requirement of credentialsForRequest.requirements) {
-      for (const submission of requirement.submissionEntry) {
+      // Take needsCount entries from the submission entry
+      for (const submission of requirement.submissionEntry.slice(0, requirement.needsCount)) {
         if (!credentials[submission.inputDescriptorId]) {
           credentials[submission.inputDescriptorId] = []
         }
@@ -210,11 +211,17 @@ export class DifPresentationExchangeService {
             },
           })
 
+        if (presentationSubmissionLocation !== DifPresentationExchangeSubmissionLocation.EXTERNAL) {
+          throw new DifPresentationExchangeError(
+            'Only EXTERNAL DifPresentationExchangeSubmissionLocation supported for mdoc presentations'
+          )
+        }
+
         verifiablePresentationResultsWithFormat.push({
           verifiablePresentationResult: {
             presentationSubmission: presentationSubmission,
             verifiablePresentations: [deviceResponseBase64Url],
-            presentationSubmissionLocation: PresentationSubmissionLocation.EXTERNAL,
+            presentationSubmissionLocation,
           },
           claimFormat: presentationToCreate.claimFormat,
         })
@@ -234,8 +241,7 @@ export class DifPresentationExchangeService {
               domain,
             },
             signatureOptions: {},
-            presentationSubmissionLocation:
-              presentationSubmissionLocation ?? DifPresentationExchangeSubmissionLocation.PRESENTATION,
+            presentationSubmissionLocation,
           }
         )
 

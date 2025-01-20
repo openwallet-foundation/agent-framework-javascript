@@ -61,20 +61,16 @@ export interface DifPexCredentialsForRequestRequirement {
    * Array of objects, where each entry contains one or more credentials that will be part
    * of the submission.
    *
-   * NOTE: if the `isRequirementSatisfied` is `false` the submission list will
-   * contain entries where the verifiable credential list is empty. In this case it could also
+   * NOTE: Make sure to check the `needsCount` value
+   * to see how many of those submissions needed. if the `isRequirementSatisfied` is `false` the submission list will
+   * contain entries where the verifiable credential list is empty. It could also
    * contain more entries than are actually needed (as you sometimes can choose from
-   * e.g. 4 types of credentials and need to submit at least two). If
-   * `isRequirementSatisfied` is `false`, make sure to check the `needsCount` value
-   * to see how many of those submissions needed.
+   * e.g. 4 types of credentials and need to submit at least two).
    */
   submissionEntry: DifPexCredentialsForRequestSubmissionEntry[]
 
   /**
    * The number of submission entries that are needed to fulfill the requirement.
-   * If `isRequirementSatisfied` is `true`, the submission list will always be equal
-   * to the number of `needsCount`. If `isRequirementSatisfied` is `false` the list of
-   * submissions could be longer.
    */
   needsCount: number
 

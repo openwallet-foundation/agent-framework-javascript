@@ -174,9 +174,18 @@ export class MdocDeviceResponse {
     }
 
     const publicDeviceJwk = COSEKey.import(deviceKeyInfo.deviceKey).toJWK()
+    const docTypes = mdoc.documents.map((d) => d.docType)
+
+    // We do PEX filtering on a different layer, so we only include the needed input descriptors here
+    const presentationDefinitionForDocuments = {
+      ...presentationDefinition,
+      input_descriptors: presentationDefinition.input_descriptors.filter((inputDescriptor) =>
+        docTypes.includes(inputDescriptor.id)
+      ),
+    }
 
     const deviceResponseBuilder = DeviceResponse.from(mdoc)
-      .usingPresentationDefinition(presentationDefinition)
+      .usingPresentationDefinition(presentationDefinitionForDocuments)
       .usingSessionTranscriptForOID4VP(sessionTranscriptOptions)
       .authenticateWithSignature(publicDeviceJwk, 'ES256')
 
@@ -190,7 +199,7 @@ export class MdocDeviceResponse {
       deviceResponseBase64Url: TypedArrayEncoder.toBase64URL(deviceResponseMdoc.encode()),
       presentationSubmission: MdocDeviceResponse.createPresentationSubmission({
         id: 'MdocPresentationSubmission ' + uuid(),
-        presentationDefinition,
+        presentationDefinition: presentationDefinitionForDocuments,
       }),
     }
   }
